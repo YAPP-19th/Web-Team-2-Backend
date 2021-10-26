@@ -18,5 +18,4 @@ class BookmarkService(
         val bookmark = Bookmark(1, 1, url)
         return bookmarkRepository.save(bookmark)
     }
-
 }
