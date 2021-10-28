@@ -7,6 +7,7 @@ import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.GlobalExceptionHandler
+import com.yapp.web2.exception.ObjectNotFoundException
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -59,15 +60,15 @@ internal class BookmarkServiceTest {
         fun `url을 추가할 때, 폴더가 존재하지 않으면 예외를 던진다`() {
             //given
             every { folderRepository.findById(1) } returns Optional.empty()
-            val businessException = BusinessException("없어요.")
+            val predictException = ObjectNotFoundException("해당 폴더가 존재하지 않습니다.")
 
             //when
-            val exception = Assertions.assertThrows(BusinessException::class.java) {
+            val actualException = Assertions.assertThrows(ObjectNotFoundException::class.java) {
                 bookmarkService.addBookmark(1, urlDto)
             }
 
             //then
-            Assertions.assertEquals(businessException.message, exception.message)
+            Assertions.assertEquals(predictException.message, actualException.message)
         }
 
         @Test
