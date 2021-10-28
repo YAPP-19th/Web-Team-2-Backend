@@ -36,9 +36,11 @@ internal class BookmarkServiceTest {
         private lateinit var bookmark: Bookmark
         private lateinit var url: Url
         private lateinit var urlDto: UrlDto
+        private var folderId: Long = 0
 
         @BeforeEach
         internal fun setUp() {
+            folderId = 1
             url = Url("www.naver.com", "", 0)
             bookmark = Bookmark(1, 1, url)
             urlDto = UrlDto("www.naver.com")
@@ -50,7 +52,7 @@ internal class BookmarkServiceTest {
             every { bookmarkRepository.save(any()) } returns bookmark
 
             // when
-            val addBookmark = bookmarkService.addBookmark(1, urlDto)
+            val addBookmark = bookmarkService.addBookmark(folderId, urlDto)
 
             // then
             assertThat(addBookmark).isEqualTo(bookmark)
@@ -59,12 +61,12 @@ internal class BookmarkServiceTest {
         @Test
         fun `url을 추가할 때, 폴더가 존재하지 않으면 예외를 던진다`() {
             //given
-            every { folderRepository.findById(1) } returns Optional.empty()
+            every { folderRepository.findById(folderId) } returns Optional.empty()
             val predictException = ObjectNotFoundException("해당 폴더가 존재하지 않습니다.")
 
             //when
             val actualException = Assertions.assertThrows(ObjectNotFoundException::class.java) {
-                bookmarkService.addBookmark(1, urlDto)
+                bookmarkService.addBookmark(folderId, urlDto)
             }
 
             //then
@@ -73,7 +75,18 @@ internal class BookmarkServiceTest {
 
         @Test
         fun `같은 url이 존재한다면, 예외가 발생한다`() {
+            //given
+            val sameUrlDto = UrlDto("www.naver.com")
+            val predictException = BusinessException("똑같은 게 있어요.")
+            every { bookmarkRepository.findAllByFolderId() } returns listOf(bookmark)
 
+            //when
+            val actualException = Assertions.assertThrows(BusinessException::class.java) {
+                bookmarkService.addBookmark(1, sameUrlDto)
+            }
+
+            //then
+            Assertions.assertEquals(predictException.message, actualException.message)
         }
     }
 
