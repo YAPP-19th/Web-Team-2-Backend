@@ -4,13 +4,16 @@ import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.entity.Url
 import com.yapp.web2.domain.bookmark.entity.UrlDto
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
+import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
+import com.yapp.web2.domain.user.entity.Account
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.GlobalExceptionHandler
 import com.yapp.web2.exception.ObjectNotFoundException
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import java.util.*
@@ -22,12 +25,10 @@ internal class BookmarkServiceTest {
     @MockK
     private lateinit var folderRepository: FolderRepository
     private lateinit var bookmarkService: BookmarkService
-    lateinit var globalExceptionHandler: GlobalExceptionHandler
 
     @BeforeEach
     internal fun init() {
         MockKAnnotations.init(this)
-        globalExceptionHandler = GlobalExceptionHandler()
         bookmarkService = BookmarkService(bookmarkRepository, folderRepository)
     }
 
@@ -36,11 +37,15 @@ internal class BookmarkServiceTest {
         private lateinit var bookmark: Bookmark
         private lateinit var url: Url
         private lateinit var urlDto: UrlDto
+        private lateinit var folder: Folder
         private var folderId: Long = 0
+
 
         @BeforeEach
         internal fun setUp() {
+            folder = Folder("test", "asdf", mockk(), null, null)
             folderId = 1
+            folder.id = folderId
             url = Url("www.naver.com", "", 0)
             bookmark = Bookmark(1, 1, url)
             urlDto = UrlDto("www.naver.com")
@@ -50,6 +55,8 @@ internal class BookmarkServiceTest {
         fun `폴더가 존재하고, URL을 추가한다`() {
             // given
             every { bookmarkRepository.save(any()) } returns bookmark
+            every { folderRepository.findById(folderId) } returns Optional.of(folder)
+            every { bookmarkRepository.findAllByFolderId(folderId)} returns emptyList()
 
             // when
             val addBookmark = bookmarkService.addBookmark(folderId, urlDto)
@@ -74,11 +81,13 @@ internal class BookmarkServiceTest {
         }
 
         @Test
-        fun `같은 url이 존재한다면, 예외가 발생한다`() {
+        fun `같은 url이 존재한다면, 예외를 던진다`() {
+            //TODO: 같은 bookmark가 존재하는 stub를 만들자.
             //given
             val sameUrlDto = UrlDto("www.naver.com")
             val predictException = BusinessException("똑같은 게 있어요.")
-            every { bookmarkRepository.findAllByFolderId() } returns listOf(bookmark)
+            every { folderRepository.findById(folderId) } returns Optional.of(folder)
+            every { bookmarkRepository.findAllByFolderId(folderId) } returns listOf(bookmark)
 
             //when
             val actualException = Assertions.assertThrows(BusinessException::class.java) {
