@@ -46,10 +46,13 @@ class BookmarkService(
     }
 
     fun deleteBookmark(bookmarkId: Long) {
-        checkBookmarkAbsence(bookmarkId)
+        val bookmark = getBookmarkIfPresent(bookmarkId)
+        bookmarkRepository.delete(bookmark)
     }
 
-    private fun checkBookmarkAbsence(bookmarkId: Long) {
-        if(bookmarkRepository.findById(bookmarkId).isEmpty) throw BusinessException("없어요")
+    private fun getBookmarkIfPresent(bookmarkId: Long): Bookmark {
+        val bookmark = bookmarkRepository.findById(bookmarkId)
+        if(bookmark.isEmpty) throw BusinessException("없어요")
+        return bookmark.get()
     }
 }
