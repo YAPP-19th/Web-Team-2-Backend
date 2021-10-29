@@ -56,7 +56,7 @@ internal class BookmarkServiceTest {
             // given
             every { bookmarkRepository.save(any()) } returns bookmark
             every { folderRepository.findById(folderId) } returns Optional.of(folder)
-            every { bookmarkRepository.findAllByFolderId(folderId)} returns emptyList()
+            every { bookmarkRepository.findAllByFolderId(folderId) } returns emptyList()
 
             // when
             val addBookmark = bookmarkService.addBookmark(folderId, urlDto)
@@ -82,7 +82,6 @@ internal class BookmarkServiceTest {
 
         @Test
         fun `같은 url이 존재한다면, 예외를 던진다`() {
-            //TODO: 같은 bookmark가 존재하는 stub를 만들자.
             //given
             val sameUrlDto = UrlDto("www.naver.com")
             val predictException = BusinessException("똑같은 게 있어요.")
@@ -100,8 +99,35 @@ internal class BookmarkServiceTest {
     }
 
 
-    @Test
-    fun `폴더가 존재하고, 존재하는 URL을 삭제한다`() {
+    @Nested
+    inner class DeleteUrl {
 
+        @Test
+        fun `url이 존재하지 않으면 예외를 던진다`() {
+            //given
+            val bookmarkId: Long = 1
+            val url = Url("www.naver.com", "", 0)
+            val bookmark = Bookmark(1, 1, url)
+            val predictException = BusinessException("없어요")
+            bookmark._id = bookmarkId
+            every { bookmarkRepository.findById(bookmarkId) } returns Optional.empty()
+
+            //when
+            val actualException = Assertions.assertThrows(BusinessException::class.java) {
+                bookmarkService.deleteBookmark(bookmarkId)
+            }
+
+            //then
+            Assertions.assertEquals(predictException.message, actualException.message)
+        }
+
+        @Test
+        fun `폴더가 존재하고, 존재하는 URL을 삭제한다`() {
+
+        }
     }
+
+
 }
+
+
