@@ -3,7 +3,7 @@ package com.yapp.web2.domain.bookmark.entity
 import java.time.LocalDate
 
 data class Url(
-    var url: String,
+    var link: String,
     var title: String,
     var order: Int
 ) {
@@ -13,7 +13,7 @@ data class Url(
     var deleted: Boolean = false
     val saveTime: LocalDate = LocalDate.now()
 
-    constructor(url: String, title: String, order: Int, deleted: Boolean) : this(url, title, order) {
+    constructor(link: String, title: String, order: Int, deleted: Boolean) : this(link, title, order) {
         this.deleted = deleted
     }
 }

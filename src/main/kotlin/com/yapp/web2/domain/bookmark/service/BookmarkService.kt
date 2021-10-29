@@ -19,9 +19,22 @@ class BookmarkService(
     fun addBookmark(folderId: Long, urlDto: UrlDto): Bookmark {
         // TODO: Order 어떻게 해줄건지? --> 폴더에 가지고 있는 북마크의 수를 저장하고 가져오기로?
         // TODO: 토큰을 통해 userId 가져오기.
+        checkFolderAbsence(folderId)
+        val toSaveUrl = urlDtoToUrl(urlDto, 0)
+        checkSameUrl(toSaveUrl, folderId)
+
+        return bookmarkRepository.save(Bookmark(1, 1, toSaveUrl))
+    }
+
+    private fun checkFolderAbsence(folderId: Long) {
         if(folderRepository.findById(folderId).isEmpty) throw ObjectNotFoundException("해당 폴더가 존재하지 않습니다.")
-        val url = urlDtoToUrl(urlDto, 0)
-        return bookmarkRepository.save(Bookmark(1, 1, url))
+    }
+
+    private fun checkSameUrl(url: Url, folderId: Long) {
+        val bookmarkList = bookmarkRepository.findAllByFolderId(folderId).toMutableList()
+        for (bookmark in bookmarkList) {
+            if (bookmark.urlInformation.link == url.link) throw BusinessException("똑같은 게 있어요.")
+        }
     }
 
     private fun urlDtoToUrl(urlDto: UrlDto, order: Int): Url {
@@ -29,6 +42,6 @@ class BookmarkService(
     }
 
     private fun urlToUrlDto(url: Url): UrlDto {
-        return UrlDto(url.url, url.title)
+        return UrlDto(url.link, url.title)
     }
 }

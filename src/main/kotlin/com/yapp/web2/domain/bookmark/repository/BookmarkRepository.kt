@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface BookmarkRepository : MongoRepository<Bookmark, Long> {
+    fun findAllByFolderId(folderId: Long): List<Bookmark>
 }

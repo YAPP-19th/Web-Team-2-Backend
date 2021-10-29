@@ -5,13 +5,12 @@ import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
 
-@Document(collection = "BookMark")
+@Document(collection = "Bookmark")
 class Bookmark(
     var userId: Long,
     var folderId: Long,
-    var url: Url
+    var urlInformation: Url
 ) {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     var _id: Long = 0
 }
