@@ -44,4 +44,12 @@ class BookmarkService(
     private fun urlToUrlDto(url: Url): UrlDto {
         return UrlDto(url.link, url.title)
     }
+
+    fun deleteBookmark(bookmarkId: Long) {
+        checkBookmarkAbsence(bookmarkId)
+    }
+
+    private fun checkBookmarkAbsence(bookmarkId: Long) {
+        if(bookmarkRepository.findById(bookmarkId).isEmpty) throw BusinessException("없어요")
+    }
 }
