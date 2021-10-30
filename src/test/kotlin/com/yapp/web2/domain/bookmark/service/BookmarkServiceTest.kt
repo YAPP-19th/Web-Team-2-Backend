@@ -130,12 +130,42 @@ internal class BookmarkServiceTest {
                 //given
                 every { bookmarkRepository.findById(bookmarkId) } returns Optional.of(bookmark)
                 every { folderRepository.findById(folderId) } returns Optional.of(folder)
-                every { bookmarkRepository.delete(bookmark) } returns Unit
 
                 //when+then
                 Assertions.assertDoesNotThrow { bookmarkService.deleteBookmark(bookmarkId) }
             }
         }
+
+//        @Nested
+//        inner class UpdateBookmark {
+//            private var testBookmarkId: Long = 0
+//            private lateinit var informationDto: InformationDto
+//
+//            @BeforeEach
+//            internal fun setUp() {
+////                informationDto = InformationDto()
+//            }
+//
+//            @Test
+//            fun `존재하지 않는 북마크라면 예외를 던진다`() {
+//                //given
+//                every { bookmarkRepository.findById(testBookmarkId) } returns Optional.empty()
+//
+//                //when
+//                bookmarkService.updateBookmark(testBookmarkId, )
+//                //then
+//            }
+//
+//            @Test
+//            fun `북마크의 제목을 변경한다`() {
+//
+//            }
+//
+//            @Test
+//            fun `북마크의 clickCount를 변경한다`() {
+//
+//            }
+//        }
     }
 }
 

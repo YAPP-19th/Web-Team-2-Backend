@@ -10,6 +10,7 @@ import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.ObjectNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 @Service
 class BookmarkService(
@@ -49,17 +50,23 @@ class BookmarkService(
         return InformationDto(information.link, information.title)
     }
 
+    @Transactional
     fun deleteBookmark(bookmarkId: Long) {
         val bookmark = getBookmarkIfPresent(bookmarkId)
         val folder = checkFolderAbsence(bookmark.folderId)
 
-        folder.bookmarkCount--;
-        bookmarkRepository.delete(bookmark)
+        folder.bookmarkCount--
+        bookmark.information.deleteTime = LocalDate.now()
+        bookmark.information.deleted = true
     }
 
     private fun getBookmarkIfPresent(bookmarkId: Long): Bookmark {
         val bookmark = bookmarkRepository.findById(bookmarkId)
         if (bookmark.isEmpty) throw BusinessException("없어요")
         return bookmark.get()
+    }
+
+    fun updateBookmark(bookmarkId: Long, informationDto: InformationDto) {
+
     }
 }
