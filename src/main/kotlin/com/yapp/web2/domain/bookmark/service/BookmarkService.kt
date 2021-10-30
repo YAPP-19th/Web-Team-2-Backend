@@ -77,4 +77,11 @@ class BookmarkService(
         }
         return toChangeBookmark
     }
+
+    @Transactional
+    fun plusBookmarkClickCount(bookmarkId: Long): Bookmark {
+        val bookmark = getBookmarkIfPresent(bookmarkId)
+        bookmark.information.clickCount++
+        return bookmark
+    }
 }

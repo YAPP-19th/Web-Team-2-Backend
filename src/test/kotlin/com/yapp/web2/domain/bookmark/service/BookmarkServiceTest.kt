@@ -98,105 +98,123 @@ internal class BookmarkServiceTest {
             assertEquals(predictException.message, actualException.message)
         }
 
+    }
 
-        @Nested
-        inner class DeleteBookmark {
-            private lateinit var information: Information
-            private lateinit var bookmark: Bookmark
-            private val bookmarkId: Long = 1
+    @Nested
+    inner class DeleteBookmark {
+        private lateinit var information: Information
+        private lateinit var bookmark: Bookmark
+        private val bookmarkId: Long = 1
+        private lateinit var folder: Folder
+        private var folderId: Long = 0
 
-            @BeforeEach
-            internal fun setUp() {
-                information = Information("www.naver.com", "test1", null)
-                bookmark = Bookmark(1, 1, information)
-                bookmark.id = bookmarkId
-            }
-
-            @Test
-            fun `북마크가 존재하지 않으면 예외를 던진다`() {
-                //given
-                val predictException = BusinessException("없어요")
-                every { bookmarkRepository.findById(bookmarkId) } returns Optional.empty()
-
-                //when
-                val actualException = Assertions.assertThrows(BusinessException::class.java) {
-                    bookmarkService.deleteBookmark(bookmarkId)
-                }
-
-                //then
-                assertEquals(predictException.message, actualException.message)
-            }
-
-            @Test
-            fun `폴더가 존재하고, 삭제하고자하는 북마크를 삭제한다`() {
-                //given
-                every { bookmarkRepository.findById(bookmarkId) } returns Optional.of(bookmark)
-                every { folderRepository.findById(folderId) } returns Optional.of(folder)
-
-                //when+then
-                assertDoesNotThrow { bookmarkService.deleteBookmark(bookmarkId) }
-            }
+        @BeforeEach
+        internal fun setUp() {
+            information = Information("www.naver.com", "test1", null)
+            bookmark = Bookmark(1, 1, information)
+            folder = Folder("test", "asdf", 0, mockk(), null, null)
+            folderId = 1
+            bookmark.id = bookmarkId
         }
 
-        @Nested
-        inner class UpdateBookmark {
-            private var testBookmarkId: Long = 0
-            private lateinit var bookmark: Bookmark
-            private lateinit var updateBookmarkDto: Bookmark.UpdateBookmarkDto
-            private lateinit var information: Information
+        @Test
+        fun `북마크가 존재하지 않으면 예외를 던진다`() {
+            //given
+            val predictException = BusinessException("없어요")
+            every { bookmarkRepository.findById(bookmarkId) } returns Optional.empty()
 
-            @BeforeEach
-            internal fun setUp() {
-                information = Information("www.naver.com", "test2", LocalDateTime.now())
-                bookmark = Bookmark(1, 1, information)
+            //when
+            val actualException = Assertions.assertThrows(BusinessException::class.java) {
+                bookmarkService.deleteBookmark(bookmarkId)
             }
 
-            @Test
-            fun `존재하지 않는 북마크라면 예외를 던진다`() {
-                //given
-                updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", true)
-                every { bookmarkRepository.findById(testBookmarkId) } returns Optional.empty()
-                val predictException = BusinessException("없어요")
+            //then
+            assertEquals(predictException.message, actualException.message)
+        }
 
-                //when
-                val actualException = Assertions.assertThrows(BusinessException::class.java) {
-                    bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
-                }
+        @Test
+        fun `폴더가 존재하고, 삭제하고자하는 북마크를 삭제한다`() {
+            //given
+            every { bookmarkRepository.findById(bookmarkId) } returns Optional.of(bookmark)
+            every { folderRepository.findById(folderId) } returns Optional.of(folder)
 
-                //then
-                assertEquals(predictException.message, actualException.message)
-            }
-
-            @Test
-            fun `북마크의 title을 변경한다`() {
-                //given
-                val predictBookmark = Bookmark(1, 1, information)
-                val updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", null)
-                every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
-
-                //when
-                val actualBookmark = bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
-
-                //then
-                assertEquals(predictBookmark.information.title, actualBookmark.information.title)
-            }
-
-            @Test
-            fun `북마크의 remind를 변경한다`() {
-                //given
-                val predictBookmark = Bookmark(1, 1, information)
-                val updateBookmarkDto = Bookmark.UpdateBookmarkDto(null, false)
-                every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
-
-                //when
-                val actualBookmark = bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
-
-                //then
-                assertEquals(predictBookmark.information.remindTime, actualBookmark.information.remindTime)
-
-            }
+            //when+then
+            assertDoesNotThrow { bookmarkService.deleteBookmark(bookmarkId) }
         }
     }
+
+    @Nested
+    inner class UpdateBookmark {
+        private var testBookmarkId: Long = 0
+        private lateinit var bookmark: Bookmark
+
+        private lateinit var updateBookmarkDto: Bookmark.UpdateBookmarkDto
+        private lateinit var information: Information
+
+        @BeforeEach
+        internal fun setUp() {
+            information = Information("www.naver.com", "test2", LocalDateTime.now(), 0)
+            bookmark = Bookmark(1, 1, information)
+        }
+
+        @Test
+        fun `존재하지 않는 북마크라면 예외를 던진다`() {
+            //given
+            updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", true)
+            every { bookmarkRepository.findById(testBookmarkId) } returns Optional.empty()
+            val predictException = BusinessException("없어요")
+
+            //when
+            val actualException = Assertions.assertThrows(BusinessException::class.java) {
+                bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
+            }
+
+            //then
+            assertEquals(predictException.message, actualException.message)
+        }
+
+        @Test
+        fun `북마크의 title을 변경한다`() {
+            //given
+            val predictBookmark = Bookmark(1, 1, information)
+            val updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", null)
+            every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
+
+            //when
+            val actualBookmark = bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
+
+            //then
+            assertEquals(predictBookmark.information.title, actualBookmark.information.title)
+        }
+
+        @Test
+        fun `북마크의 remind를 변경한다`() {
+            //given
+            val predictBookmark = Bookmark(1, 1, information)
+            val updateBookmarkDto = Bookmark.UpdateBookmarkDto(null, false)
+            every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
+
+            //when
+            val actualBookmark = bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
+
+            //then
+            assertEquals(predictBookmark.information.remindTime, actualBookmark.information.remindTime)
+        }
+
+        @Test
+        fun `북마크의 clickCount를 올린다`() {
+            //given
+            every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
+            val predictClickCount = 1
+
+            //when
+            val actualBookmark = bookmarkService.plusBookmarkClickCount(testBookmarkId)
+
+            //then
+            assertEquals(predictClickCount, actualBookmark.information.clickCount)
+        }
+    }
+
 }
 
 

@@ -8,12 +8,12 @@ data class Information(
     var title: String?,
     var remindTime: LocalDateTime?
 ) {
-    var clickCount: Int? = null
+    var clickCount: Int = 0
     var deleteTime: LocalDateTime? = null
     var deleted: Boolean = false
     val saveTime: LocalDate = LocalDate.now()
 
-    constructor(link: String, title: String, remindTime: LocalDateTime?, clickCount: Int?) : this(link, title, remindTime) {
+    constructor(link: String, title: String, remindTime: LocalDateTime?, clickCount: Int) : this(link, title, remindTime) {
         this.clickCount = clickCount
     }
 }
