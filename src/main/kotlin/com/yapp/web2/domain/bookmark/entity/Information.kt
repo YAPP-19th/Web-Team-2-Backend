@@ -2,7 +2,7 @@ package com.yapp.web2.domain.bookmark.entity
 
 import java.time.LocalDate
 
-data class Url(
+data class Information(
     var link: String,
     var title: String,
     var order: Int

@@ -9,8 +9,9 @@ import javax.persistence.Id
 class Bookmark(
     var userId: Long,
     var folderId: Long,
-    var urlInformation: Url
+    var information: Information
 ) {
     @Id
-    var _id: Long = 0
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long = 0
 }

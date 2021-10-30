@@ -1,14 +1,12 @@
 package com.yapp.web2.domain.bookmark.service
 
 import com.yapp.web2.domain.bookmark.entity.Bookmark
-import com.yapp.web2.domain.bookmark.entity.Url
-import com.yapp.web2.domain.bookmark.entity.UrlDto
+import com.yapp.web2.domain.bookmark.entity.Information
+import com.yapp.web2.domain.bookmark.entity.InformationDto
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
-import com.yapp.web2.domain.user.entity.Account
 import com.yapp.web2.exception.BusinessException
-import com.yapp.web2.exception.GlobalExceptionHandler
 import com.yapp.web2.exception.ObjectNotFoundException
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -33,10 +31,10 @@ internal class BookmarkServiceTest {
     }
 
     @Nested
-    inner class SaveUrl {
+    inner class SaveBookmark {
         private lateinit var bookmark: Bookmark
-        private lateinit var url: Url
-        private lateinit var urlDto: UrlDto
+        private lateinit var information: Information
+        private lateinit var informationDto: InformationDto
         private lateinit var folder: Folder
         private var folderId: Long = 0
 
@@ -46,34 +44,35 @@ internal class BookmarkServiceTest {
             folder = Folder("test", "asdf", mockk(), null, null)
             folderId = 1
             folder.id = folderId
-            url = Url("www.naver.com", "", 0)
-            bookmark = Bookmark(1, 1, url)
-            urlDto = UrlDto("www.naver.com")
+            information = Information("www.naver.com", "", 0)
+            bookmark = Bookmark(1, 1, information)
+            informationDto = InformationDto("www.naver.com")
         }
 
         @Test
-        fun `폴더가 존재하고, Url을 추가한다`() {
+        fun `폴더가 존재하고, 북마크} 추가한다`() {
             // given
             every { bookmarkRepository.save(any()) } returns bookmark
+
             every { folderRepository.findById(folderId) } returns Optional.of(folder)
             every { bookmarkRepository.findAllByFolderId(folderId) } returns emptyList()
 
             // when
-            val addBookmark = bookmarkService.addBookmark(folderId, urlDto)
+            val addBookmark = bookmarkService.addBookmark(folderId, informationDto)
 
             // then
             assertThat(addBookmark).isEqualTo(bookmark)
         }
 
         @Test
-        fun `Url을 추가할 때, 폴더가 존재하지 않으면 예외를 던진다`() {
+        fun `북마크를 추가할 때, 폴더가 존재하지 않으면 예외를 던진다`() {
             //given
             every { folderRepository.findById(folderId) } returns Optional.empty()
             val predictException = ObjectNotFoundException("해당 폴더가 존재하지 않습니다.")
 
             //when
             val actualException = Assertions.assertThrows(ObjectNotFoundException::class.java) {
-                bookmarkService.addBookmark(folderId, urlDto)
+                bookmarkService.addBookmark(folderId, informationDto)
             }
 
             //then
@@ -81,9 +80,9 @@ internal class BookmarkServiceTest {
         }
 
         @Test
-        fun `같은 Url이 존재한다면, 예외를 던진다`() {
+        fun `같은 폴더에 같은 북마크가 존재한다면, 예외를 던진다`() {
             //given
-            val sameUrlDto = UrlDto("www.naver.com")
+            val sameUrlDto = InformationDto("www.naver.com")
             val predictException = BusinessException("똑같은 게 있어요.")
             every { folderRepository.findById(folderId) } returns Optional.of(folder)
             every { bookmarkRepository.findAllByFolderId(folderId) } returns listOf(bookmark)
@@ -96,52 +95,50 @@ internal class BookmarkServiceTest {
             //then
             Assertions.assertEquals(predictException.message, actualException.message)
         }
-    }
 
 
-    @Nested
-    inner class DeleteUrl {
-        private lateinit var url: Url
-        private lateinit var bookmark: Bookmark
-        private val bookmarkId: Long = 1
+        @Nested
+        inner class DeleteBookmark {
+            private lateinit var information: Information
+            private lateinit var bookmark: Bookmark
+            private val bookmarkId: Long = 1
 
-        @BeforeEach
-        internal fun setUp() {
-            url = Url("www.naver.com", "", 0)
-            bookmark = Bookmark(1, 1, url)
-            bookmark._id = bookmarkId
-        }
-
-        @Test
-        fun `url이 존재하지 않으면 예외를 던진다`() {
-            //given
-            val predictException = BusinessException("없어요")
-            every { bookmarkRepository.findById(bookmarkId) } returns Optional.empty()
-
-            //when
-            val actualException = Assertions.assertThrows(BusinessException::class.java) {
-                bookmarkService.deleteBookmark(bookmarkId)
+            @BeforeEach
+            internal fun setUp() {
+                information = Information("www.naver.com", "", 0)
+                bookmark = Bookmark(1, 1, information)
+                bookmark.id = bookmarkId
             }
 
-            //then
-            Assertions.assertEquals(predictException.message, actualException.message)
-        }
+            @Test
+            fun `북마크가 존재하지 않으면 예외를 던진다`() {
+                //given
+                val predictException = BusinessException("없어요")
+                every { bookmarkRepository.findById(bookmarkId) } returns Optional.empty()
 
-        @Test
-        fun `폴더가 존재하고, 삭제하고자하는 Url을 삭제한다`() {
-            //given
-            every { bookmarkRepository.findById(bookmarkId) } returns Optional.of(bookmark)
-            every { bookmarkRepository.delete(bookmark) } returns Unit
+                //when
+                val actualException = Assertions.assertThrows(BusinessException::class.java) {
+                    bookmarkService.deleteBookmark(bookmarkId)
+                }
 
-            //when
-            val deleteBookmark = bookmarkService.deleteBookmark(bookmarkId)
+                //then
+                Assertions.assertEquals(predictException.message, actualException.message)
+            }
 
-            //then
-            Assertions.assertEquals(Unit, deleteBookmark)
+            @Test
+            fun `폴더가 존재하고, 삭제하고자하는 북마크를 삭제한다`() {
+                //given
+                every { bookmarkRepository.findById(bookmarkId) } returns Optional.of(bookmark)
+                every { bookmarkRepository.delete(bookmark) } returns Unit
+
+                //when
+                val deleteBookmark = bookmarkService.deleteBookmark(bookmarkId)
+
+                //then
+                Assertions.assertEquals(Unit, deleteBookmark)
+            }
         }
     }
-
-
 }
 
 

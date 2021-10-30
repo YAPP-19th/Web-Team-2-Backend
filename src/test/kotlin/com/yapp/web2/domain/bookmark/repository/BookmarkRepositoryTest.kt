@@ -1,9 +1,8 @@
 package com.yapp.web2.domain.bookmark.repository
 
 import com.yapp.web2.domain.bookmark.entity.Bookmark
-import com.yapp.web2.domain.bookmark.entity.Url
+import com.yapp.web2.domain.bookmark.entity.Information
 import org.assertj.core.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
@@ -18,7 +17,7 @@ internal class BookmarkRepositoryTest {
     @Test
     fun `bookmark가 mongoDB에 저장된다`() {
         // given
-        val url = Url("www.naver.com", "", 0)
+        val url = Information("www.naver.com", "", 0)
         val bookmark = Bookmark(1, 1, url)
 
         //when, then
