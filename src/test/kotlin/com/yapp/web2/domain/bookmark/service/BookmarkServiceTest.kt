@@ -41,7 +41,7 @@ internal class BookmarkServiceTest {
 
         @BeforeEach
         internal fun setUp() {
-            folder = Folder("test", "asdf", mockk(), null, null)
+            folder = Folder("test", "asdf", 0, mockk(), null, null)
             folderId = 1
             folder.id = folderId
             information = Information("www.naver.com", "", 0)
@@ -50,7 +50,7 @@ internal class BookmarkServiceTest {
         }
 
         @Test
-        fun `폴더가 존재하고, 북마크} 추가한다`() {
+        fun `폴더가 존재하고, 북마크를 추가한다`() {
             // given
             every { bookmarkRepository.save(any()) } returns bookmark
 
@@ -129,13 +129,11 @@ internal class BookmarkServiceTest {
             fun `폴더가 존재하고, 삭제하고자하는 북마크를 삭제한다`() {
                 //given
                 every { bookmarkRepository.findById(bookmarkId) } returns Optional.of(bookmark)
+                every { folderRepository.findById(folderId) } returns Optional.of(folder)
                 every { bookmarkRepository.delete(bookmark) } returns Unit
 
-                //when
-                val deleteBookmark = bookmarkService.deleteBookmark(bookmarkId)
-
-                //then
-                Assertions.assertEquals(Unit, deleteBookmark)
+                //when+then
+                Assertions.assertDoesNotThrow { bookmarkService.deleteBookmark(bookmarkId) }
             }
         }
     }
