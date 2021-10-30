@@ -14,6 +14,9 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import java.awt.print.Book
+import java.time.LocalDateTime
 import java.util.*
 
 internal class BookmarkServiceTest {
@@ -44,7 +47,7 @@ internal class BookmarkServiceTest {
             folder = Folder("test", "asdf", 0, mockk(), null, null)
             folderId = 1
             folder.id = folderId
-            information = Information("www.naver.com", "", 0)
+            information = Information("www.naver.com", "", null)
             bookmark = Bookmark(1, 1, information)
             informationDto = InformationDto("www.naver.com")
         }
@@ -53,7 +56,6 @@ internal class BookmarkServiceTest {
         fun `폴더가 존재하고, 북마크를 추가한다`() {
             // given
             every { bookmarkRepository.save(any()) } returns bookmark
-
             every { folderRepository.findById(folderId) } returns Optional.of(folder)
             every { bookmarkRepository.findAllByFolderId(folderId) } returns emptyList()
 
@@ -76,7 +78,7 @@ internal class BookmarkServiceTest {
             }
 
             //then
-            Assertions.assertEquals(predictException.message, actualException.message)
+            assertEquals(predictException.message, actualException.message)
         }
 
         @Test
@@ -93,7 +95,7 @@ internal class BookmarkServiceTest {
             }
 
             //then
-            Assertions.assertEquals(predictException.message, actualException.message)
+            assertEquals(predictException.message, actualException.message)
         }
 
 
@@ -105,7 +107,7 @@ internal class BookmarkServiceTest {
 
             @BeforeEach
             internal fun setUp() {
-                information = Information("www.naver.com", "", 0)
+                information = Information("www.naver.com", "test1", null)
                 bookmark = Bookmark(1, 1, information)
                 bookmark.id = bookmarkId
             }
@@ -122,7 +124,7 @@ internal class BookmarkServiceTest {
                 }
 
                 //then
-                Assertions.assertEquals(predictException.message, actualException.message)
+                assertEquals(predictException.message, actualException.message)
             }
 
             @Test
@@ -132,40 +134,68 @@ internal class BookmarkServiceTest {
                 every { folderRepository.findById(folderId) } returns Optional.of(folder)
 
                 //when+then
-                Assertions.assertDoesNotThrow { bookmarkService.deleteBookmark(bookmarkId) }
+                assertDoesNotThrow { bookmarkService.deleteBookmark(bookmarkId) }
             }
         }
 
-//        @Nested
-//        inner class UpdateBookmark {
-//            private var testBookmarkId: Long = 0
-//            private lateinit var informationDto: InformationDto
-//
-//            @BeforeEach
-//            internal fun setUp() {
-////                informationDto = InformationDto()
-//            }
-//
-//            @Test
-//            fun `존재하지 않는 북마크라면 예외를 던진다`() {
-//                //given
-//                every { bookmarkRepository.findById(testBookmarkId) } returns Optional.empty()
-//
-//                //when
-//                bookmarkService.updateBookmark(testBookmarkId, )
-//                //then
-//            }
-//
-//            @Test
-//            fun `북마크의 제목을 변경한다`() {
-//
-//            }
-//
-//            @Test
-//            fun `북마크의 clickCount를 변경한다`() {
-//
-//            }
-//        }
+        @Nested
+        inner class UpdateBookmark {
+            private var testBookmarkId: Long = 0
+            private lateinit var bookmark: Bookmark
+            private lateinit var updateBookmarkDto: Bookmark.UpdateBookmarkDto
+            private lateinit var information: Information
+
+            @BeforeEach
+            internal fun setUp() {
+                information = Information("www.naver.com", "test2", LocalDateTime.now())
+                bookmark = Bookmark(1, 1, information)
+            }
+
+            @Test
+            fun `존재하지 않는 북마크라면 예외를 던진다`() {
+                //given
+                updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", true)
+                every { bookmarkRepository.findById(testBookmarkId) } returns Optional.empty()
+                val predictException = BusinessException("없어요")
+
+                //when
+                val actualException = Assertions.assertThrows(BusinessException::class.java) {
+                    bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
+                }
+
+                //then
+                assertEquals(predictException.message, actualException.message)
+            }
+
+            @Test
+            fun `북마크의 title을 변경한다`() {
+                //given
+                val predictBookmark = Bookmark(1, 1, information)
+                val updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", null)
+                every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
+
+                //when
+                val actualBookmark = bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
+
+                //then
+                assertEquals(predictBookmark.information.title, actualBookmark.information.title)
+            }
+
+            @Test
+            fun `북마크의 remind를 변경한다`() {
+                //given
+                val predictBookmark = Bookmark(1, 1, information)
+                val updateBookmarkDto = Bookmark.UpdateBookmarkDto(null, false)
+                every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
+
+                //when
+                val actualBookmark = bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
+
+                //then
+                assertEquals(predictBookmark.information.remindTime, actualBookmark.information.remindTime)
+
+            }
+        }
     }
 }
 

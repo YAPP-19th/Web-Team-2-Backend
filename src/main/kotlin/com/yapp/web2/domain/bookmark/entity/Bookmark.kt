@@ -14,4 +14,9 @@ class Bookmark(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0
+
+    class UpdateBookmarkDto(
+        var title: String?,
+        var remind: Boolean?
+    )
 }

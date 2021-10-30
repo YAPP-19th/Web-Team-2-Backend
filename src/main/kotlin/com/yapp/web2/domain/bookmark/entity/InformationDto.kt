@@ -3,9 +3,9 @@ package com.yapp.web2.domain.bookmark.entity
 data class InformationDto(
     var url: String
 ) {
-    var title: String = ""
-    var remind: Boolean = false
-    var clickCount: Int? = null
+    var title: String? = ""
+    var remind: Boolean? = false
+    var clickCount: Int? = 0
     var deleted: Boolean? = false
 
     constructor(url: String, title: String) : this(url) {

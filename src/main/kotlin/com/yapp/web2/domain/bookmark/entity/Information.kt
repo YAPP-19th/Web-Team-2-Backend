@@ -1,19 +1,19 @@
 package com.yapp.web2.domain.bookmark.entity
 
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class Information(
-    var link: String,
-    var title: String,
-    var order: Int
+    val link: String,
+    var title: String?,
+    var remindTime: LocalDateTime?
 ) {
-    var remindTime: LocalDate? = null
-    var deleteTime: LocalDate? = null
-    var clickCount: Int = 0
+    var clickCount: Int? = null
+    var deleteTime: LocalDateTime? = null
     var deleted: Boolean = false
     val saveTime: LocalDate = LocalDate.now()
 
-    constructor(link: String, title: String, order: Int, deleted: Boolean) : this(link, title, order) {
-        this.deleted = deleted
+    constructor(link: String, title: String, remindTime: LocalDateTime?, clickCount: Int?) : this(link, title, remindTime) {
+        this.clickCount = clickCount
     }
 }

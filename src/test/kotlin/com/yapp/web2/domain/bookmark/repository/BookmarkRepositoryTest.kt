@@ -17,7 +17,7 @@ internal class BookmarkRepositoryTest {
     @Test
     fun `bookmark가 mongoDB에 저장된다`() {
         // given
-        val url = Information("www.naver.com", "", 0)
+        val url = Information("www.naver.com", "", null)
         val bookmark = Bookmark(1, 1, url)
 
         //when, then

@@ -10,7 +10,7 @@ import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.ObjectNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Service
 class BookmarkService(
@@ -22,7 +22,7 @@ class BookmarkService(
         // TODO: Order 어떻게 해줄건지? --> 폴더에 가지고 있는 북마크의 수를 저장하고 가져오기로?
         // TODO: 토큰을 통해 userId 가져오기.
         val folder = checkFolderAbsence(folderId)
-        val toSaveInformation = informationDtoToInformation(informationDto, 0)
+        val toSaveInformation = informationDtoToInformation(informationDto, folder.bookmarkCount)
         checkSameInformation(toSaveInformation, folderId)
 
         folder.bookmarkCount++
@@ -43,11 +43,9 @@ class BookmarkService(
     }
 
     private fun informationDtoToInformation(informationDto: InformationDto, order: Int): Information {
-        return Information(informationDto.url, informationDto.title, order)
-    }
-
-    private fun urlToUrlDto(information: Information): InformationDto {
-        return InformationDto(information.link, information.title)
+        var remindTime: LocalDateTime? = null
+        if (informationDto.remind == true) remindTime = LocalDateTime.now()
+        return Information(informationDto.url, informationDto.title, remindTime)
     }
 
     @Transactional
@@ -56,7 +54,7 @@ class BookmarkService(
         val folder = checkFolderAbsence(bookmark.folderId)
 
         folder.bookmarkCount--
-        bookmark.information.deleteTime = LocalDate.now()
+        bookmark.information.deleteTime = LocalDateTime.now()
         bookmark.information.deleted = true
     }
 
@@ -66,7 +64,17 @@ class BookmarkService(
         return bookmark.get()
     }
 
-    fun updateBookmark(bookmarkId: Long, informationDto: InformationDto) {
+    @Transactional
+    fun updateBookmark(bookmarkId: Long, updateBookmarkDto: Bookmark.UpdateBookmarkDto): Bookmark {
+        val toChangeBookmark = getBookmarkIfPresent(bookmarkId)
+        val information = toChangeBookmark.information
 
+        updateBookmarkDto.let {
+            information.title = it.title
+            when (updateBookmarkDto.remind) {
+                true -> information.remindTime = LocalDateTime.now()
+            }
+        }
+        return toChangeBookmark
     }
 }
