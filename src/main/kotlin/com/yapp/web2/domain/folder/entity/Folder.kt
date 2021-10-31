@@ -56,7 +56,6 @@ class Folder(
         return "Folder(name='$name', index=$index, bookmarkCount=$bookmarkCount, parentFolder=$parentFolder, emoji=$emoji)"
     }
 
-
     class FolderCreateRequest(
         @field: PositiveOrZero
         val parentId: Long = 0,
@@ -70,6 +69,20 @@ class Folder(
 
     class FolderNameChangeRequest(
         val name: String
+    )
+
+    class FolderMoveRequest(
+        @field: PositiveOrZero
+        val prevParentId: Long,
+
+        @field: PositiveOrZero
+        val nextParentId: Long,
+
+        @field: PositiveOrZero
+        val prevIndex: Int,
+
+        @field: PositiveOrZero
+        val nextIndex: Int
     )
 
 }
