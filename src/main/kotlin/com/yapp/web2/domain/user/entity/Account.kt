@@ -1,7 +1,7 @@
 package com.yapp.web2.domain.user.entity
 
 import com.yapp.web2.domain.BaseTimeEntity
-import com.yapp.web2.domain.folder.entity.Folder
+import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.notification.entity.NotifIcation
 import javax.persistence.*
 
@@ -22,7 +22,7 @@ class Account(
     var remindNotiCheck: Boolean,
 
     @OneToMany(mappedBy = "account")
-    var children: MutableList<Folder>?,
+    var accounts: MutableList<AccountFolder>? = mutableListOf(),
 
     @OneToMany(mappedBy = "account")
     var notifications: MutableList<NotifIcation>?
