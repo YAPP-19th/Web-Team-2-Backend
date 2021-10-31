@@ -84,4 +84,15 @@ class BookmarkService(
         bookmark.information.clickCount++
         return bookmark
     }
+
+    @Transactional
+    fun moveBookmark(prevFolderId: Long, nextFolderId: Long, bookmarkIdList: List<Long>) {
+        if (isSameFolder(prevFolderId, nextFolderId)) return
+        for (bookmarkId in bookmarkIdList) {
+            val bookmark = getBookmarkIfPresent(bookmarkId)
+            bookmark.folderId = nextFolderId
+        }
+    }
+
+    fun isSameFolder(prevFolderId: Long, nextFolderId: Long) = prevFolderId == nextFolderId
 }

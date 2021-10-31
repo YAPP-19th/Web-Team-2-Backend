@@ -114,7 +114,6 @@ internal class BookmarkServiceTest {
             bookmark = Bookmark(1, 1, information)
             folder = Folder("test", "asdf", 0, mockk(), null, null)
             folderId = 1
-            bookmark.id = bookmarkId
         }
 
         @Test
@@ -214,6 +213,66 @@ internal class BookmarkServiceTest {
             assertEquals(predictClickCount, actualBookmark.information.clickCount)
         }
     }
+
+    @Nested
+    inner class MoveBookmark {
+        private var testBookmarkId1: Long = 0
+        private var testBookmarkId2: Long = 3
+        private var prevFolderId: Long = 0
+        private var nextFolderId: Long = 1
+
+        @Test
+        fun `북마크가 존재하지 않으면 예외를 던진다`() {
+            //given
+            val predictException = BusinessException("없어요")
+            every { bookmarkRepository.findById(testBookmarkId1) } returns Optional.empty()
+
+            //when
+            val actualException = Assertions.assertThrows(BusinessException::class.java) {
+                bookmarkService.moveBookmark(prevFolderId, nextFolderId, listOf(testBookmarkId1))
+            }
+
+            //then
+            assertEquals(predictException.message, actualException.message)
+        }
+
+        @Test
+        fun `같은 폴더로 변경한다면 변경하지 않는다`() {
+            //given
+            var sameFolderId: Long = 0
+            var information = Information("www.naver.com", "test2", LocalDateTime.now(), 0)
+            var bookmark1 = Bookmark(1, 0, information)
+            var bookmark2 = Bookmark(1, 0, information)
+            every { bookmarkRepository.findById(testBookmarkId1) } returns Optional.of(bookmark1)
+            every { bookmarkRepository.findById(testBookmarkId2) } returns Optional.of(bookmark2)
+
+            //when
+            bookmarkService.moveBookmark(prevFolderId, sameFolderId, listOf(testBookmarkId1, testBookmarkId2))
+
+            //then
+            assertEquals(bookmark1.folderId, sameFolderId)
+            assertEquals(bookmark2.folderId, sameFolderId)
+
+        }
+
+        @Test
+        fun `다른 폴더로 url을 넘겨준다`() {
+            //given : prev, next가 다른 id와 존재하는 bookmarkListId를 전송받아야한다.
+            var information = Information("www.naver.com", "test2", LocalDateTime.now(), 0)
+            var bookmark1 = Bookmark(1, 0, information)
+            var bookmark2 = Bookmark(1, 0, information)
+            every { bookmarkRepository.findById(testBookmarkId1) } returns Optional.of(bookmark1)
+            every { bookmarkRepository.findById(testBookmarkId2) } returns Optional.of(bookmark2)
+
+            //when : move bookmark를 돌린다.
+            bookmarkService.moveBookmark(prevFolderId, nextFolderId, listOf(testBookmarkId1, testBookmarkId2))
+
+            //then: bookmark들의 folderid가 변경되었는지 확인한다.
+            assertEquals(bookmark1.folderId, nextFolderId)
+            assertEquals(bookmark2.folderId, nextFolderId)
+        }
+    }
+
 
 }
 

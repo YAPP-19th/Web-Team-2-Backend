@@ -1,5 +1,6 @@
 package com.yapp.web2.domain.bookmark.entity
 
+import org.bson.types.ObjectId
 import org.springframework.data.mongodb.core.mapping.Document
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
@@ -12,8 +13,7 @@ class Bookmark(
     var information: Information
 ) {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0
+    lateinit var id: ObjectId
 
     class UpdateBookmarkDto(
         var title: String?,
