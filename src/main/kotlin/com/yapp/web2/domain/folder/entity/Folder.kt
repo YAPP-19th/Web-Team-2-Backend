@@ -5,6 +5,7 @@ import javax.persistence.Entity
 import javax.persistence.JoinColumn
 import javax.persistence.ManyToOne
 import javax.persistence.OneToMany
+import javax.persistence.FetchType
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.PositiveOrZero
 
@@ -14,7 +15,7 @@ class Folder(
     var index: Int,
     var bookmarkCount: Int = 0,
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     var parentFolder: Folder?,
 ) : BaseTimeEntity() {
