@@ -1,8 +1,6 @@
 package com.yapp.web2.domain.bookmark.service
 
 import com.yapp.web2.domain.bookmark.entity.Bookmark
-import com.yapp.web2.domain.bookmark.entity.Information
-import com.yapp.web2.domain.bookmark.entity.InformationDto
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
@@ -18,14 +16,14 @@ class BookmarkService(
     private val folderRepository: FolderRepository
 ) {
     @Transactional
-    fun addBookmark(folderId: Long, informationDto: InformationDto): Bookmark {
+    fun addBookmark(folderId: Long, bookmarkDto: Bookmark.AddBookmarkDto): Bookmark {
         // TODO: 토큰을 통해 userId 가져오기.
         val folder = checkFolderAbsence(folderId)
-        val toSaveInformation = informationDtoToInformation(informationDto, folder.bookmarkCount)
-        checkSameInformation(toSaveInformation, folderId)
+        val toSaveBookmark = bookmarkAddDtoToBookmark(bookmarkDto, folderId, userId = 1)
+        checkSameBookmark(toSaveBookmark, folderId)
 
         folder.bookmarkCount++
-        return bookmarkRepository.save(Bookmark(1, 1, toSaveInformation))
+        return bookmarkRepository.save(toSaveBookmark)
     }
 
     private fun checkFolderAbsence(folderId: Long): Folder {
@@ -34,17 +32,19 @@ class BookmarkService(
         return folder.get()
     }
 
-    private fun checkSameInformation(information: Information, folderId: Long) {
+    private fun checkSameBookmark(bookmark: Bookmark, folderId: Long) {
         val bookmarkList = bookmarkRepository.findAllByFolderId(folderId)
-        for (bookmark in bookmarkList) {
-            if (bookmark.information.link == information.link) throw BusinessException("똑같은 게 있어요.")
+        for (savedBookmark in bookmarkList) {
+            if (savedBookmark.link == bookmark.link) throw BusinessException("똑같은 게 있어요.")
         }
     }
 
-    private fun informationDtoToInformation(informationDto: InformationDto, order: Int): Information {
-        var remindTime: LocalDateTime? = null
-        if (informationDto.remind == true) remindTime = LocalDateTime.now()
-        return Information(informationDto.url, informationDto.title, remindTime)
+    private fun bookmarkAddDtoToBookmark(bookmarkDto: Bookmark.AddBookmarkDto, folderId: Long, userId: Long): Bookmark {
+        lateinit var bookmark: Bookmark
+        when (bookmarkDto.remind) {
+            true -> bookmark = Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDateTime.now())
+        }
+        return bookmark
     }
 
     @Transactional
@@ -53,8 +53,8 @@ class BookmarkService(
         val folder = checkFolderAbsence(bookmark.folderId)
 
         folder.bookmarkCount--
-        bookmark.information.deleteTime = LocalDateTime.now()
-        bookmark.information.deleted = true
+        bookmark.deleteTime = LocalDateTime.now()
+        bookmark.deleted = true
     }
 
     private fun getBookmarkIfPresent(bookmarkId: Long): Bookmark {
@@ -66,12 +66,11 @@ class BookmarkService(
     @Transactional
     fun updateBookmark(bookmarkId: Long, updateBookmarkDto: Bookmark.UpdateBookmarkDto): Bookmark {
         val toChangeBookmark = getBookmarkIfPresent(bookmarkId)
-        val information = toChangeBookmark.information
 
         updateBookmarkDto.let {
-            information.title = it.title
+            toChangeBookmark.title = it.title
             when (updateBookmarkDto.remind) {
-                true -> information.remindTime = LocalDateTime.now()
+                true -> toChangeBookmark.remindTime = LocalDateTime.now()
             }
         }
         return toChangeBookmark
@@ -80,7 +79,7 @@ class BookmarkService(
     @Transactional
     fun increaseBookmarkClickCount(bookmarkId: Long): Bookmark {
         val bookmark = getBookmarkIfPresent(bookmarkId)
-        bookmark.information.clickCount++
+        bookmark.clickCount++
         return bookmark
     }
 
@@ -88,6 +87,7 @@ class BookmarkService(
     fun moveBookmark(prevFolderId: Long, nextFolderId: Long, bookmarkId: Long) {
         if (isSameFolder(prevFolderId, nextFolderId)) return
         val bookmark = getBookmarkIfPresent(bookmarkId)
+        //TODO: count를 enum으로 변환할 것
         updateClickCountByFolderId(prevFolderId, -1)
         updateClickCountByFolderId(nextFolderId, 1)
         bookmark.folderId = nextFolderId

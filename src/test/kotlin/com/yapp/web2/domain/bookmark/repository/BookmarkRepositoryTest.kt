@@ -1,7 +1,6 @@
 package com.yapp.web2.domain.bookmark.repository
 
 import com.yapp.web2.domain.bookmark.entity.Bookmark
-import com.yapp.web2.domain.bookmark.entity.Information
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,8 +16,7 @@ internal class BookmarkRepositoryTest {
     @Test
     fun `bookmark가 mongoDB에 저장된다`() {
         // given
-        val url = Information("www.naver.com", "", null)
-        val bookmark = Bookmark(1, 1, url)
+        val bookmark = Bookmark(1, 1, "www.naver.com")
 
         //when, then
         Assertions.assertThat(bookmarkRepository.save(bookmark)).isEqualTo(bookmark)

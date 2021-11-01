@@ -30,20 +30,18 @@ internal class BookmarkServiceTest {
     @Nested
     inner class SaveBookmark {
         private lateinit var bookmark: Bookmark
-        private lateinit var information: Information
-        private lateinit var informationDto: InformationDto
+
         private lateinit var folder: Folder
         private var folderId: Long = 0
-
+        private lateinit var bookmarkDto: Bookmark.AddBookmarkDto
 
         @BeforeEach
         internal fun setUp() {
             folder = Folder("test", "asdf", 0, mockk(), null, null)
             folderId = 1
             folder.id = folderId
-            information = Information("www.naver.com", "", null)
-            bookmark = Bookmark(1, 1, information)
-            informationDto = InformationDto("www.naver.com")
+            bookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", null, false)
+            bookmark = Bookmark(1, 1, "www.naver.com")
         }
 
         @Test
@@ -54,7 +52,7 @@ internal class BookmarkServiceTest {
             every { bookmarkRepository.findAllByFolderId(folderId) } returns emptyList()
 
             // when
-            val addBookmark = bookmarkService.addBookmark(folderId, informationDto)
+            val addBookmark = bookmarkService.addBookmark(folderId, bookmarkDto)
 
             // then
             assertThat(addBookmark).isEqualTo(bookmark)
@@ -68,7 +66,7 @@ internal class BookmarkServiceTest {
 
             //when
             val actualException = Assertions.assertThrows(ObjectNotFoundException::class.java) {
-                bookmarkService.addBookmark(folderId, informationDto)
+                bookmarkService.addBookmark(folderId, bookmarkDto)
             }
 
             //then
@@ -78,14 +76,14 @@ internal class BookmarkServiceTest {
         @Test
         fun `같은 폴더에 같은 북마크가 존재한다면, 예외를 던진다`() {
             //given
-            val sameUrlDto = InformationDto("www.naver.com")
+            val sameBookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", null, false)
             val predictException = BusinessException("똑같은 게 있어요.")
             every { folderRepository.findById(folderId) } returns Optional.of(folder)
             every { bookmarkRepository.findAllByFolderId(folderId) } returns listOf(bookmark)
 
             //when
             val actualException = Assertions.assertThrows(BusinessException::class.java) {
-                bookmarkService.addBookmark(1, sameUrlDto)
+                bookmarkService.addBookmark(1, sameBookmarkDto)
             }
 
             //then
@@ -96,7 +94,6 @@ internal class BookmarkServiceTest {
 
     @Nested
     inner class DeleteBookmark {
-        private lateinit var information: Information
         private lateinit var bookmark: Bookmark
         private val bookmarkId: Long = 1
         private lateinit var folder: Folder
@@ -104,8 +101,7 @@ internal class BookmarkServiceTest {
 
         @BeforeEach
         internal fun setUp() {
-            information = Information("www.naver.com", "test1", null)
-            bookmark = Bookmark(1, 1, information)
+            bookmark = Bookmark(1, 1, "www.naver.com")
             folder = Folder("test", "asdf", 0, mockk(), null, null)
             folderId = 1
         }
@@ -142,12 +138,10 @@ internal class BookmarkServiceTest {
         private lateinit var bookmark: Bookmark
 
         private lateinit var updateBookmarkDto: Bookmark.UpdateBookmarkDto
-        private lateinit var information: Information
 
         @BeforeEach
         internal fun setUp() {
-            information = Information("www.naver.com", "test2", LocalDateTime.now(), 0)
-            bookmark = Bookmark(1, 1, information)
+            bookmark = Bookmark(1, 1, "www.naver.com")
         }
 
         @Test
@@ -169,7 +163,7 @@ internal class BookmarkServiceTest {
         @Test
         fun `북마크의 title을 변경한다`() {
             //given
-            val predictBookmark = Bookmark(1, 1, information)
+            val predictBookmark = Bookmark(1, 1, "www.naver.com", "test2")
             val updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", null)
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
 
@@ -177,13 +171,13 @@ internal class BookmarkServiceTest {
             val actualBookmark = bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
 
             //then
-            assertEquals(predictBookmark.information.title, actualBookmark.information.title)
+            assertEquals(predictBookmark.title, actualBookmark.title)
         }
 
         @Test
         fun `북마크의 remind를 변경한다`() {
             //given
-            val predictBookmark = Bookmark(1, 1, information)
+            val predictBookmark = Bookmark(1, 1, "www.naver.com")
             val updateBookmarkDto = Bookmark.UpdateBookmarkDto(null, false)
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
 
@@ -191,7 +185,7 @@ internal class BookmarkServiceTest {
             val actualBookmark = bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
 
             //then
-            assertEquals(predictBookmark.information.remindTime, actualBookmark.information.remindTime)
+            assertEquals(predictBookmark.remindTime, actualBookmark.remindTime)
         }
 
         @Test
@@ -204,7 +198,7 @@ internal class BookmarkServiceTest {
             val actualBookmark = bookmarkService.increaseBookmarkClickCount(testBookmarkId)
 
             //then
-            assertEquals(predictClickCount, actualBookmark.information.clickCount)
+            assertEquals(predictClickCount, actualBookmark.clickCount)
         }
     }
 
@@ -239,8 +233,7 @@ internal class BookmarkServiceTest {
         fun `같은 폴더로 변경한다면 변경하지 않는다`() {
             //given
             var sameFolderId: Long = 0
-            var information = Information("www.naver.com", "test2", LocalDateTime.now(), 0)
-            var bookmark1 = Bookmark(1, 0, information)
+            var bookmark1 = Bookmark(1, 0, "www.naver.com")
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark1)
             every { folderRepository.findById(prevFolderId) } returns Optional.of(folder)
             every { folderRepository.findById(nextFolderId) } returns Optional.of(folder)
@@ -255,17 +248,16 @@ internal class BookmarkServiceTest {
 
         @Test
         fun `다른 폴더로 url을 넘겨준다`() {
-            //given : prev, next가 다른 id와 존재하는 bookmarkListId를 전송받아야한다.
-            var information = Information("www.naver.com", "test2", LocalDateTime.now(), 0)
-            var bookmark1 = Bookmark(1, 0, information)
+            //given
+            var bookmark1 = Bookmark(1, 0, "www.naver.com")
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark1)
             every { folderRepository.findById(prevFolderId) } returns Optional.of(folder)
             every { folderRepository.findById(nextFolderId) } returns Optional.of(folder)
 
-            //when : move bookmark를 돌린다.
+            //when
             bookmarkService.moveBookmark(prevFolderId, nextFolderId, testBookmarkId)
 
-            //then: bookmark들의 folderid가 변경되었는지 확인한다.
+            //then
             assertEquals(bookmark1.folderId, nextFolderId)
         }
     }
