@@ -1,21 +1,15 @@
 package com.yapp.web2.domain.bookmark.service
 
-import com.yapp.web2.domain.bookmark.entity.Bookmark
-import com.yapp.web2.domain.bookmark.entity.Information
-import com.yapp.web2.domain.bookmark.entity.InformationDto
+import com.yapp.web2.domain.bookmark.entity.*
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
-import com.yapp.web2.exception.BusinessException
-import com.yapp.web2.exception.ObjectNotFoundException
-import io.mockk.MockKAnnotations
-import io.mockk.every
+import com.yapp.web2.exception.*
+import io.mockk.*
 import io.mockk.impl.annotations.MockK
-import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import java.awt.print.Book
 import java.time.LocalDateTime
 import java.util.*
 
@@ -207,7 +201,7 @@ internal class BookmarkServiceTest {
             val predictClickCount = 1
 
             //when
-            val actualBookmark = bookmarkService.plusBookmarkClickCount(testBookmarkId)
+            val actualBookmark = bookmarkService.increaseBookmarkClickCount(testBookmarkId)
 
             //then
             assertEquals(predictClickCount, actualBookmark.information.clickCount)
@@ -216,20 +210,25 @@ internal class BookmarkServiceTest {
 
     @Nested
     inner class MoveBookmark {
-        private var testBookmarkId1: Long = 0
-        private var testBookmarkId2: Long = 3
+        private lateinit var folder: Folder
+        private var testBookmarkId: Long = 0
         private var prevFolderId: Long = 0
         private var nextFolderId: Long = 1
+
+        @BeforeEach
+        fun init() {
+            folder = Folder("test", "asdf", 0, mockk(), null, null)
+        }
 
         @Test
         fun `북마크가 존재하지 않으면 예외를 던진다`() {
             //given
             val predictException = BusinessException("없어요")
-            every { bookmarkRepository.findById(testBookmarkId1) } returns Optional.empty()
+            every { bookmarkRepository.findById(testBookmarkId) } returns Optional.empty()
 
             //when
             val actualException = Assertions.assertThrows(BusinessException::class.java) {
-                bookmarkService.moveBookmark(prevFolderId, nextFolderId, listOf(testBookmarkId1))
+                bookmarkService.moveBookmark(prevFolderId, nextFolderId, testBookmarkId)
             }
 
             //then
@@ -242,16 +241,15 @@ internal class BookmarkServiceTest {
             var sameFolderId: Long = 0
             var information = Information("www.naver.com", "test2", LocalDateTime.now(), 0)
             var bookmark1 = Bookmark(1, 0, information)
-            var bookmark2 = Bookmark(1, 0, information)
-            every { bookmarkRepository.findById(testBookmarkId1) } returns Optional.of(bookmark1)
-            every { bookmarkRepository.findById(testBookmarkId2) } returns Optional.of(bookmark2)
+            every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark1)
+            every { folderRepository.findById(prevFolderId) } returns Optional.of(folder)
+            every { folderRepository.findById(nextFolderId) } returns Optional.of(folder)
 
             //when
-            bookmarkService.moveBookmark(prevFolderId, sameFolderId, listOf(testBookmarkId1, testBookmarkId2))
+            bookmarkService.moveBookmark(prevFolderId, sameFolderId, testBookmarkId)
 
             //then
             assertEquals(bookmark1.folderId, sameFolderId)
-            assertEquals(bookmark2.folderId, sameFolderId)
 
         }
 
@@ -260,16 +258,15 @@ internal class BookmarkServiceTest {
             //given : prev, next가 다른 id와 존재하는 bookmarkListId를 전송받아야한다.
             var information = Information("www.naver.com", "test2", LocalDateTime.now(), 0)
             var bookmark1 = Bookmark(1, 0, information)
-            var bookmark2 = Bookmark(1, 0, information)
-            every { bookmarkRepository.findById(testBookmarkId1) } returns Optional.of(bookmark1)
-            every { bookmarkRepository.findById(testBookmarkId2) } returns Optional.of(bookmark2)
+            every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark1)
+            every { folderRepository.findById(prevFolderId) } returns Optional.of(folder)
+            every { folderRepository.findById(nextFolderId) } returns Optional.of(folder)
 
             //when : move bookmark를 돌린다.
-            bookmarkService.moveBookmark(prevFolderId, nextFolderId, listOf(testBookmarkId1, testBookmarkId2))
+            bookmarkService.moveBookmark(prevFolderId, nextFolderId, testBookmarkId)
 
             //then: bookmark들의 folderid가 변경되었는지 확인한다.
             assertEquals(bookmark1.folderId, nextFolderId)
-            assertEquals(bookmark2.folderId, nextFolderId)
         }
     }
 

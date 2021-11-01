@@ -19,7 +19,6 @@ class BookmarkService(
 ) {
     @Transactional
     fun addBookmark(folderId: Long, informationDto: InformationDto): Bookmark {
-        // TODO: Order 어떻게 해줄건지? --> 폴더에 가지고 있는 북마크의 수를 저장하고 가져오기로?
         // TODO: 토큰을 통해 userId 가져오기.
         val folder = checkFolderAbsence(folderId)
         val toSaveInformation = informationDtoToInformation(informationDto, folder.bookmarkCount)
@@ -79,19 +78,25 @@ class BookmarkService(
     }
 
     @Transactional
-    fun plusBookmarkClickCount(bookmarkId: Long): Bookmark {
+    fun increaseBookmarkClickCount(bookmarkId: Long): Bookmark {
         val bookmark = getBookmarkIfPresent(bookmarkId)
         bookmark.information.clickCount++
         return bookmark
     }
 
     @Transactional
-    fun moveBookmark(prevFolderId: Long, nextFolderId: Long, bookmarkIdList: List<Long>) {
+    fun moveBookmark(prevFolderId: Long, nextFolderId: Long, bookmarkId: Long) {
         if (isSameFolder(prevFolderId, nextFolderId)) return
-        for (bookmarkId in bookmarkIdList) {
-            val bookmark = getBookmarkIfPresent(bookmarkId)
-            bookmark.folderId = nextFolderId
-        }
+        val bookmark = getBookmarkIfPresent(bookmarkId)
+        updateClickCountByFolderId(prevFolderId, -1)
+        updateClickCountByFolderId(nextFolderId, 1)
+        bookmark.folderId = nextFolderId
+    }
+
+    @Transactional
+    protected fun updateClickCountByFolderId(folderId: Long, count: Int) {
+        val folder = checkFolderAbsence(folderId)
+        folder.bookmarkCount += count
     }
 
     fun isSameFolder(prevFolderId: Long, nextFolderId: Long) = prevFolderId == nextFolderId
