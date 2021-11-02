@@ -24,13 +24,13 @@ class Bookmark(
     var deleteTime: LocalDateTime? = null
     var deleted: Boolean = false
 
-    val saveTime: LocalDateTime = LocalDateTime.now()
+    var saveTime: LocalDateTime = LocalDateTime.now()
 
     constructor(userId: Long, folderId: Long, link: String, title: String?) : this(userId, folderId, link) {
         this.title = title
     }
 
-    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDateTime) : this(userId, folderId, link, title) {
+    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDateTime?) : this(userId, folderId, link, title) {
         this.remindTime = remindTime
     }
 

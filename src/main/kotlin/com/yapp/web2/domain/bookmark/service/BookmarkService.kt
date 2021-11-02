@@ -40,7 +40,7 @@ class BookmarkService(
     }
 
     private fun bookmarkAddDtoToBookmark(bookmarkDto: Bookmark.AddBookmarkDto, folderId: Long, userId: Long): Bookmark {
-        lateinit var bookmark: Bookmark
+        var bookmark = Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, null)
         when (bookmarkDto.remind) {
             true -> bookmark = Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDateTime.now())
         }
