@@ -10,7 +10,6 @@ import io.mockk.impl.annotations.MockK
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import java.time.LocalDateTime
 import java.util.*
 
 internal class BookmarkServiceTest {
@@ -261,8 +260,4 @@ internal class BookmarkServiceTest {
             assertEquals(bookmark1.folderId, nextFolderId)
         }
     }
-
-
 }
-
-
