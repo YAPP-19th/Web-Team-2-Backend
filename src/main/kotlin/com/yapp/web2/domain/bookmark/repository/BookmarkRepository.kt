@@ -8,7 +8,8 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface BookmarkRepository : MongoRepository<Bookmark, Long> {
-    fun findAllByFolderIdAndRemindTimeIsNotNull(FolderId: Long, pageable: Pageable): Page<Bookmark>
-    fun findAllByFolderId(FolderId: Long, pageable: Pageable): Page<Bookmark>
-    fun findAllByFolderId(FolderId: Long): List<Bookmark>
+    fun findAllByFolderId(folderId: Long): List<Bookmark>
+    fun findAllByFolderIdAndRemindTimeIsNotNull(folderId: Long, pageable: Pageable): Page<Bookmark>
+    fun findAllByFolderId(folderId: Long, pageable: Pageable): Page<Bookmark>
+    fun findByUserIdAndTitleContainingIgnoreCaseOrLinkContainingIgnoreCase(userId: Long, title: String, link: String, pageable: Pageable): Page<Bookmark>
 }

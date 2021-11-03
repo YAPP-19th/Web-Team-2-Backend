@@ -27,7 +27,6 @@ internal open class BookmarkRepositoryTest {
 
     @Nested
     inner class PageNation {
-
         @Test
         fun `폴더 아이디에 해당하는 북마크들을 최신순으로 가져온다`() {
             // when
@@ -46,6 +45,32 @@ internal open class BookmarkRepositoryTest {
             for (page in bookmarkPages) {
                 assertEquals(1, page.folderId)
                 assertNotNull(page.remindTime)
+            }
+        }
+    }
+
+    @Nested
+    inner class Search {
+
+        @Test
+        fun `사용자 아이디에 해당하는 북마크 중 검색어가 들어간 것을 제목과 url에서 검색한다`() {
+            //given
+            val testUserId: Long = 1
+            val testKeyword = "nav"
+            val pageAble = PageRequest.of(2, 4, Sort.by("saveTime").descending())
+
+            //when
+            val actualPages = bookmarkRepository.findByUserIdAndTitleContainingIgnoreCaseOrLinkContainingIgnoreCase(testUserId,
+                testKeyword,
+                testKeyword,
+                pageAble)
+
+            //then
+            for (page in actualPages) {
+                assertTrue(page.link.contains(testKeyword))
+                when (page.title.isNullOrEmpty()) {
+                    false -> assertTrue(page.title!!.contains(testKeyword))
+                }
             }
         }
     }
