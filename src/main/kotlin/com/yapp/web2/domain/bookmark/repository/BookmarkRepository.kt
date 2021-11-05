@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface BookmarkRepository : MongoRepository<Bookmark, Long> {
+interface BookmarkRepository : MongoRepository<Bookmark, String> {
     fun findAllByFolderId(folderId: Long): List<Bookmark>
     fun findAllByFolderIdAndRemindTimeIsNotNull(folderId: Long, pageable: Pageable): Page<Bookmark>
     fun findAllByFolderId(folderId: Long, pageable: Pageable): Page<Bookmark>

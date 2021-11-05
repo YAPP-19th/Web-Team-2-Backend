@@ -15,7 +15,7 @@ class Bookmark(
     val link: String
 ) {
     @Id
-    lateinit var id: ObjectId
+    lateinit var id: String
 
     var title: String? = ""
 
@@ -47,5 +47,10 @@ class Bookmark(
         var url: String,
         var title: String?,
         var remind: Boolean
+    )
+
+    class MoveBookmarkDto(
+        val prevFolderId: Long,
+        val nextFolderId: Long
     )
 }

@@ -17,6 +17,6 @@ internal class BookmarkSearchServiceTest {
 
     @Test
     fun `사용자의 아이디가 존재하지 않는다면 예외를 던진다`() {
-
+        //TODO: jwtprovider를 먼저 만들어서 진행하자.
     }
 }
