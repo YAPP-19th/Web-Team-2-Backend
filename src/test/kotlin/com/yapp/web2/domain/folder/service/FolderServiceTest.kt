@@ -35,14 +35,12 @@ internal open class FolderServiceTest {
     private lateinit var folder: Folder
     private lateinit var expected: String
     private lateinit var changeRequest: Folder.FolderNameChangeRequest
-    private lateinit var moveRequest: Folder.FolderMoveRequest
 
     @BeforeEach
     fun setup() {
         folder = Folder("Folder", 0, parentFolder = null)
         expected = "Update Folder"
         changeRequest = Folder.FolderNameChangeRequest(expected)
-        moveRequest = Folder.FolderMoveRequest(1L, 2L, 2, 3)
     }
 
     @Test
@@ -99,24 +97,31 @@ internal open class FolderServiceTest {
         )
     }
 
-    // TODO: 2021/10/31 인덱스가 맞지않아서 수정해야 함
     @Test
-    fun `prevParentId = 1L, nextParentId = 2L인 부모폴더에서 prevIndex가 2인 폴더가 nextIndex가 3인 폴더로 이동한다`() {
+    fun `prevIndex가 2인 폴더가 nextIndex가 3인 폴더로 이동한다`() {
         // given & when
-        val prevParentFolder = Folder("이동 전 부모폴더", 0, 0, null)
-        val nextParentFolder = Folder("이동 후 부모폴더", 0, 0, null)
-        val prevChildFolders = getChildFolders(prevParentFolder)
-        val nextChildFolders = getChildFolders(nextParentFolder)
+        val moveRequest = Folder.FolderMoveRequest(1L, 2L, 2, 3)
+        val prevParentFolder = getParentFolder("이동 전 부모폴더")
+        val nextParentFolder = getParentFolder("이동 후 부모폴더")
+        val prevChildFolders = getChildFolders(prevParentFolder, 0, 9)
         val prevMoveFolder = prevChildFolders[2]
+
+        // prevIndex, nextIndex 보다 큰 인덱스를 가진 폴더 리스트
+        val stubPrevChildFolders = getChildFolders(prevParentFolder, 3, 9)
+        val stubNextChildFolders = getChildFolders(nextParentFolder, 4, 9)
 
         every { folderRepository.findById(1L).orElse(null) } returns prevParentFolder
         every { folderRepository.findById(2L).orElse(null) } returns nextParentFolder
         every { folderRepository.findById(10L).orElse(null) } returns prevMoveFolder
+        every { folderRepository.findByIndexGreaterThan(prevParentFolder, 2) } returns stubPrevChildFolders
+        every { folderRepository.findByIndexGreaterThan(nextParentFolder, 3) } returns stubNextChildFolders
 
         // then
         assertAll(
             { assertDoesNotThrow { folderService.moveFolder(10L, moveRequest) } },
-            { assertThat(prevChildFolders.size).isNotEqualTo(nextChildFolders.size) }
+            { assertThat(stubPrevChildFolders.size).isNotEqualTo(stubNextChildFolders.size) },
+            { assertThat(stubPrevChildFolders.size + 1).isEqualTo(stubNextChildFolders.size) },
+            { assertThat(prevMoveFolder).isEqualTo(stubNextChildFolders[moveRequest.nextIndex]) }
         )
     }
 
@@ -156,10 +161,14 @@ internal open class FolderServiceTest {
         assertThrows<FolderNotFoundException> { folderService.changeFolderName(1L, changeRequest) }
     }
 
-    private fun getChildFolders(parentFolder: Folder): MutableList<Folder> {
+    private fun getParentFolder(name: String): Folder {
+        return Folder(name, 0, 0, null)
+    }
+
+    private fun getChildFolders(parentFolder: Folder, start: Int, end: Int): MutableList<Folder> {
         val childFolders: MutableList<Folder> = mutableListOf()
 
-        (0..4).forEach {
+        (start..end).forEach {
             val folder = Folder("$it 번 폴더", it, 0, parentFolder)
             childFolders.add(folder)
         }
