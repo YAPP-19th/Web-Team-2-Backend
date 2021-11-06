@@ -2,7 +2,7 @@ package com.yapp.web2.domain.user.entity
 
 import com.yapp.web2.domain.BaseTimeEntity
 import com.yapp.web2.domain.folder.entity.AccountFolder
-import com.yapp.web2.domain.notification.entity.NotifIcation
+import com.yapp.web2.domain.notification.entity.Notification
 import javax.persistence.*
 
 @Entity
@@ -25,7 +25,7 @@ class Account(
     var accounts: MutableList<AccountFolder>? = mutableListOf(),
 
     @OneToMany(mappedBy = "account")
-    var notifications: MutableList<NotifIcation>?
+    var notifications: MutableList<Notification>?
 
 ) : BaseTimeEntity() {
 

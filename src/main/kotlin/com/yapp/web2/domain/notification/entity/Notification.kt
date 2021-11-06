@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 import javax.persistence.*
 
 @Entity
-class NotifIcation(
+class Notification(
     var remindSetTime: LocalDateTime,
     var remindCycle: LocalDateTime,
 
