@@ -26,9 +26,7 @@ class Folder(
         }
 
         fun dtoToEntity(dto: FolderCreateRequest, parentFolder: Folder?): Folder {
-            return Folder(
-                dto.name, dto.index, 0, parentFolder
-            )
+            return Folder(dto.name, dto.index, 0, parentFolder)
         }
     }
 
