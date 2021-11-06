@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*
 class FolderController(val folderService: FolderService) {
 
     // TODO: 2021/10/31 토큰에서 유저 찾기
-    
+
     @PostMapping
     fun createFolder(
         @RequestBody request: Folder.FolderCreateRequest
@@ -29,6 +29,7 @@ class FolderController(val folderService: FolderService) {
         @RequestBody request: Folder.FolderNameChangeRequest
     ): ResponseEntity<String> {
         folderService.changeFolderName(folderId, request)
+
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
