@@ -1,7 +1,6 @@
 package com.yapp.web2.domain.folder.service
 
 import com.yapp.web2.domain.bookmark.entity.Bookmark
-import com.yapp.web2.domain.bookmark.entity.Urls
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
@@ -181,7 +180,7 @@ internal open class FolderServiceTest {
         val bookmarks: MutableList<Bookmark> = mutableListOf()
 
         (0..4).forEach {
-            bookmarks.add(Bookmark(it.toLong(), it.toLong(), it.toLong(), Urls()))
+            bookmarks.add(Bookmark(it.toLong(), it.toLong(), "www.naver.com"))
         }
 
         return bookmarks
