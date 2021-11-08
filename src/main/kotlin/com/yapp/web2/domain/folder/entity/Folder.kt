@@ -8,6 +8,7 @@ import javax.persistence.*
 class Folder(
     var name: String,
     var emoji: String?,
+    var bookmarkCount: Int,
 
     @ManyToOne
     var account: Account,
@@ -19,5 +20,4 @@ class Folder(
     @OneToMany(mappedBy = "parentFolder")
     var children: MutableList<Folder>? = mutableListOf()
 ) : BaseTimeEntity() {
-
 }
