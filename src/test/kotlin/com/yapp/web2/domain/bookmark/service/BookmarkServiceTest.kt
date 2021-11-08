@@ -94,7 +94,7 @@ internal class BookmarkServiceTest {
     @Nested
     inner class DeleteBookmark {
         private lateinit var bookmark: Bookmark
-        private val bookmarkId: Long = 1
+        private val bookmarkId: String = "1"
         private lateinit var folder: Folder
         private var folderId: Long = 0
 
@@ -125,6 +125,7 @@ internal class BookmarkServiceTest {
             //given
             every { bookmarkRepository.findById(bookmarkId) } returns Optional.of(bookmark)
             every { folderRepository.findById(folderId) } returns Optional.of(folder)
+            every { bookmarkRepository.save(any()) } returns bookmark
 
             //when+then
             assertDoesNotThrow { bookmarkService.deleteBookmark(bookmarkId) }
@@ -133,7 +134,7 @@ internal class BookmarkServiceTest {
 
     @Nested
     inner class UpdateBookmark {
-        private var testBookmarkId: Long = 0
+        private var testBookmarkId: String = "0"
         private lateinit var bookmark: Bookmark
 
         private lateinit var updateBookmarkDto: Bookmark.UpdateBookmarkDto
@@ -165,6 +166,7 @@ internal class BookmarkServiceTest {
             val predictBookmark = Bookmark(1, 1, "www.naver.com", "test2")
             val updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", null)
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
+            every { bookmarkRepository.save(any()) } returns bookmark
 
             //when
             val actualBookmark = bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
@@ -179,6 +181,7 @@ internal class BookmarkServiceTest {
             val predictBookmark = Bookmark(1, 1, "www.naver.com")
             val updateBookmarkDto = Bookmark.UpdateBookmarkDto(null, false)
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
+            every { bookmarkRepository.save(any()) } returns bookmark
 
             //when
             val actualBookmark = bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
@@ -204,9 +207,10 @@ internal class BookmarkServiceTest {
     @Nested
     inner class MoveBookmark {
         private lateinit var folder: Folder
-        private var testBookmarkId: Long = 0
+        private var testBookmarkId: String = "0"
         private var prevFolderId: Long = 0
         private var nextFolderId: Long = 1
+        private var moveBookmarkDto = Bookmark.MoveBookmarkDto(prevFolderId, nextFolderId)
 
         @BeforeEach
         fun init() {
@@ -221,7 +225,7 @@ internal class BookmarkServiceTest {
 
             //when
             val actualException = Assertions.assertThrows(BusinessException::class.java) {
-                bookmarkService.moveBookmark(prevFolderId, nextFolderId, testBookmarkId)
+                bookmarkService.moveBookmark(testBookmarkId, moveBookmarkDto)
             }
 
             //then
@@ -233,16 +237,17 @@ internal class BookmarkServiceTest {
             //given
             var sameFolderId: Long = 0
             var bookmark1 = Bookmark(1, 0, "www.naver.com")
+            var testMoveBookmarkDto = Bookmark.MoveBookmarkDto(prevFolderId, sameFolderId)
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark1)
             every { folderRepository.findById(prevFolderId) } returns Optional.of(folder)
             every { folderRepository.findById(nextFolderId) } returns Optional.of(folder)
+            every { bookmarkRepository.save(any()) } returns bookmark1
 
             //when
-            bookmarkService.moveBookmark(prevFolderId, sameFolderId, testBookmarkId)
+            bookmarkService.moveBookmark(testBookmarkId, testMoveBookmarkDto)
 
             //then
-            assertEquals(bookmark1.folderId, sameFolderId)
-
+            assertEquals(sameFolderId, bookmark1.folderId)
         }
 
         @Test
@@ -252,9 +257,10 @@ internal class BookmarkServiceTest {
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark1)
             every { folderRepository.findById(prevFolderId) } returns Optional.of(folder)
             every { folderRepository.findById(nextFolderId) } returns Optional.of(folder)
+            every { bookmarkRepository.save(any()) } returns bookmark1
 
             //when
-            bookmarkService.moveBookmark(prevFolderId, nextFolderId, testBookmarkId)
+            bookmarkService.moveBookmark(testBookmarkId, moveBookmarkDto)
 
             //then
             assertEquals(bookmark1.folderId, nextFolderId)
