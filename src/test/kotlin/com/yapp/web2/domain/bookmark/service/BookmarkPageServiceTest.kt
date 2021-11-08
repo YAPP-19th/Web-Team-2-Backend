@@ -33,7 +33,7 @@ internal class BookmarkPageServiceTest {
         MockKAnnotations.init(this)
         bookmarkPageService = BookmarkPageService(bookmarkRepository, folderRepository)
         testPageRequest = PageRequest.of(1, 3, Sort.by("saveTime").descending())
-        testFolder = Folder("test", "asdf", 0, mockk(), null, null)
+        testFolder = Folder("Folder", 0, parentFolder = null)
     }
 
     @Test

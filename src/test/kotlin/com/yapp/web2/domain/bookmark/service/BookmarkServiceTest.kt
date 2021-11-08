@@ -36,7 +36,7 @@ internal class BookmarkServiceTest {
 
         @BeforeEach
         internal fun setUp() {
-            folder = Folder("test", "asdf", 0, mockk(), null, null)
+            folder = Folder("Folder", 0, parentFolder = null)
             folderId = 1
             folder.id = folderId
             bookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", null, false)
@@ -101,7 +101,7 @@ internal class BookmarkServiceTest {
         @BeforeEach
         internal fun setUp() {
             bookmark = Bookmark(1, 1, "www.naver.com")
-            folder = Folder("test", "asdf", 0, mockk(), null, null)
+            folder = Folder("Folder", 0, parentFolder = null)
             folderId = 1
         }
 
@@ -214,7 +214,7 @@ internal class BookmarkServiceTest {
 
         @BeforeEach
         fun init() {
-            folder = Folder("test", "asdf", 0, mockk(), null, null)
+            folder = Folder("Folder", 0, parentFolder = null)
         }
 
         @Test
