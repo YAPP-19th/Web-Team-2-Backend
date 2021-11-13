@@ -1,17 +1,13 @@
 package com.yapp.web2.domain.bookmark.entity
 
-import org.bson.types.ObjectId
 import org.springframework.data.mongodb.core.mapping.Document
-import java.time.LocalDate
 import java.time.LocalDateTime
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
 import javax.persistence.Id
 
 @Document(collection = "Bookmark")
 class Bookmark(
     var userId: Long,
-    var folderId: Long,
+    var folderId: Long?,
     val link: String
 ) {
     @Id
@@ -53,4 +49,23 @@ class Bookmark(
         val prevFolderId: Long,
         val nextFolderId: Long
     )
+
+    class RestoreBookmarkRequest(
+        val bookmarkIdList: MutableList<String>?
+    )
+
+    class TruncateBookmarkRequest(
+        val bookmarkIdList: MutableList<String>?
+    )
+
+    fun restore() {
+        this.deleted = false
+        this.deleteTime = null
+    }
+
+    fun deletedByFolder() {
+        this.folderId = null
+        this.deleted = true
+    }
+
 }
