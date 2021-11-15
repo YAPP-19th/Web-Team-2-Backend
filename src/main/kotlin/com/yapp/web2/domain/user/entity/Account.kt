@@ -7,26 +7,31 @@ import javax.persistence.*
 
 @Entity
 class Account(
-    var email: String,
-    var password: String?,
-    var nickname: String,
-    var sex: String?,
-    var age: Int?,
-
-    // TODO: 디폴트 사진 url 추가하기
-    var image: String,
-
-    // TODO: 기본값 체크
-    var backgroundColor: String,
-    var remindToggle: Boolean,
-    var remindNotiCheck: Boolean,
-
-    @OneToMany(mappedBy = "account")
-    var accounts: MutableList<AccountFolder>? = mutableListOf(),
-
-    @OneToMany(mappedBy = "account")
-    var notifications: MutableList<Notification>?
-
+    var email: String
 ) : BaseTimeEntity() {
 
+    constructor(email: String, image: String, socialType: String) : this(email) {
+        this.image = image
+        this.socialType = socialType
+    }
+
+    var password: String? = null
+    var nickname: String = ""
+    var sex: String = ""
+    var age: Int = -1
+    var socialType: String = "none"
+
+    // TODO: 디폴트 사진 url 추가하기
+    var image: String = ""
+
+    // TODO: 기본값 체크
+    var backgroundColor: String = "black"
+    var remindToggle: Boolean = true
+    var remindNotiCheck: Boolean = true
+
+    @OneToMany(mappedBy = "account")
+    var accounts: MutableList<AccountFolder>? = mutableListOf()
+
+    @OneToMany(mappedBy = "account")
+    var notifications: MutableList<Notification>? = mutableListOf()
 }

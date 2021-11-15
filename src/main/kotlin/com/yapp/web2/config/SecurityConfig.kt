@@ -16,31 +16,18 @@ class SecurityConfig(
 
     override fun configure(http: HttpSecurity?) {
         http!!.csrf().disable()
-            .formLogin()
-            .and()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .authorizeRequests()
+
+        http.formLogin()
+
+        http.sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+
+        http.authorizeRequests()
             .anyRequest().authenticated()
-            .and()
-            .oauth2Login()
+
+        http.oauth2Login()
             .userInfoEndpoint()
             .userService(customOAuth2UserService)
-
-//        http!!.csrf().disable()
-//
-//        http.formLogin()
-//
-//        http.sessionManagement()
-//            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//
-//        http.authorizeRequests()
-//            .antMatchers("/auth/**", "/", "/loginSuccess", "/test").permitAll()
-//            .anyRequest().authenticated()
-//
-//        http.oauth2Login()
-//            .userInfoEndpoint()
-//            .userService(customOAuth2UserService)
 
     }
 
