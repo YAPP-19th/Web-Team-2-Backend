@@ -86,11 +86,12 @@ class FolderService(
         nextParentFolder.childrens = nextChildFolderList
     }
 
+    // TODO: 2021/11/13 MongoDB ID 타입 변경
     @Transactional
     fun deleteAllBookmark(id: Long) {
         bookmarkRepository.findByFolderId(id)
-            ?.let { list ->
-                list.forEach { bookmarkRepository.delete(it) }
+            .let { list ->
+                list.forEach { it.deletedByFolder() }
             }
     }
 

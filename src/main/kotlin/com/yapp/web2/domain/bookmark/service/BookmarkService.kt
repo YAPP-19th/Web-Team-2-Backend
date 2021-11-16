@@ -6,6 +6,7 @@ import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.ObjectNotFoundException
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -42,16 +43,17 @@ class BookmarkService(
     private fun bookmarkAddDtoToBookmark(bookmarkDto: Bookmark.AddBookmarkDto, folderId: Long, userId: Long): Bookmark {
         var bookmark = Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, null)
         when (bookmarkDto.remind) {
-            true -> bookmark = Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDateTime.now())
+            true -> bookmark =
+                Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDateTime.now())
         }
         return bookmark
     }
 
     fun deleteBookmark(bookmarkId: String) {
         val bookmark = getBookmarkIfPresent(bookmarkId)
-        val folder = checkFolderAbsence(bookmark.folderId)
+        val folder = bookmark.folderId?.let { checkFolderAbsence(it) }
 
-        folder.bookmarkCount--
+        folder!!.bookmarkCount--
         bookmark.deleteTime = LocalDateTime.now()
         bookmark.deleted = true
         bookmarkRepository.save(bookmark)
@@ -102,4 +104,23 @@ class BookmarkService(
     }
 
     fun isSameFolder(prevFolderId: Long, nextFolderId: Long) = prevFolderId == nextFolderId
+
+    @Transactional
+    fun restore(bookmarkIdList: MutableList<String>?) {
+        bookmarkIdList?.let {
+            bookmarkIdList.forEach {
+                bookmarkRepository.findByIdOrNull(it)?.restore()
+            }
+        }
+    }
+
+    @Transactional
+    fun permanentDelete(bookmarkIdList: MutableList<String>?) {
+        bookmarkIdList?.let {
+            bookmarkIdList.forEach {
+                val bookmark = bookmarkRepository.findByIdOrNull(it)
+                bookmark?.let { entity -> bookmarkRepository.delete(entity) }
+            }
+        }
+    }
 }
