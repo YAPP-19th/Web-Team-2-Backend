@@ -10,15 +10,16 @@ class Account(
     var email: String
 ) : BaseTimeEntity() {
 
-    constructor(email: String, image: String, socialType: String) : this(email) {
+    constructor(email: String, image: String, nickname: String, socialType: String) : this(email) {
         this.image = image
+        this.nickname = nickname
         this.socialType = socialType
     }
 
     var password: String? = null
-    var nickname: String = ""
+    var nickname: String = "" // 구글로그인은 사용자 이름이 되면 좋겠다.
     var sex: String = ""
-    var age: Int = -1
+    var age: Int? = null
     var socialType: String = "none"
 
     // TODO: 디폴트 사진 url 추가하기
