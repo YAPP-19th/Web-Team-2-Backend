@@ -1,4 +1,7 @@
-package com.yapp.web2.security
+package com.yapp.web2.security.oauth2.utils
+
+import com.yapp.web2.security.oauth2.dto.GoogleUserInfo
+import com.yapp.web2.security.oauth2.dto.OAuth2UserInfo
 
 class OAuth2UserInfoFactory {
     companion object {
