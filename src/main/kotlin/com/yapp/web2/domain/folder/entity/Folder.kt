@@ -1,11 +1,9 @@
 package com.yapp.web2.domain.folder.entity
 
+import com.fasterxml.jackson.annotation.JsonBackReference
+import com.fasterxml.jackson.annotation.JsonManagedReference
 import com.yapp.web2.domain.BaseTimeEntity
-import javax.persistence.Entity
-import javax.persistence.JoinColumn
-import javax.persistence.ManyToOne
-import javax.persistence.OneToMany
-import javax.persistence.FetchType
+import javax.persistence.*
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.PositiveOrZero
 
@@ -17,6 +15,7 @@ class Folder(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
+    @JsonBackReference
     var parentFolder: Folder?,
 ) : BaseTimeEntity() {
 
@@ -30,9 +29,11 @@ class Folder(
         }
     }
 
-    var emoji: String? = null
+    var emoji: String? = ""
 
+    @OrderBy("index asc")
     @OneToMany(mappedBy = "parentFolder")
+    @JsonManagedReference
     var childrens: MutableList<Folder>? = mutableListOf()
 
     @OneToMany(mappedBy = "folder")
@@ -70,6 +71,10 @@ class Folder(
         val name: String
     )
 
+    class FolderEmojiChangeRequest(
+        val emoji: String
+    )
+
     class FolderMoveRequest(
         @field: PositiveOrZero
         val prevParentId: Long,
@@ -83,5 +88,32 @@ class Folder(
         @field: PositiveOrZero
         val nextIndex: Int
     )
+
+    class FolderReadResponse(
+        var rootId: Long,
+        var items: FolderItem
+    ) {
+
+        class FolderItem(
+            var root: Root,
+            var folder: MutableList<RootFolder> = mutableListOf()
+        )
+
+        class Root(
+            var id: Long, // 유저 ID
+            var rootFolders: MutableList<Long> = mutableListOf()
+        )
+
+        class RootFolder(
+            var id: Long, // 폴더 ID
+            var children: MutableList<Int>? = mutableListOf(),
+            var data: RootFolderData
+        )
+
+        class RootFolderData(
+            var name: String,
+            var emoji: String
+        )
+    }
 
 }
