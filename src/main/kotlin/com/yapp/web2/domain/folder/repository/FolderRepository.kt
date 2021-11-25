@@ -10,4 +10,6 @@ interface FolderRepository : JpaRepository<Folder, Long> {
 
     @Query("SELECT f FROM Folder f WHERE f.parentFolder = ?1 and f.index > ?2")
     fun findByIndexGreaterThan(parent: Folder, index: Int): MutableList<Folder>?
+
+    fun findAllByParentFolderIsNull(): MutableList<Folder>
 }
