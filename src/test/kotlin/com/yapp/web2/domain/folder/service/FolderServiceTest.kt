@@ -1,5 +1,6 @@
 package com.yapp.web2.domain.folder.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
@@ -32,14 +33,18 @@ internal open class FolderServiceTest {
     private lateinit var bookmarkRepository: BookmarkRepository
 
     private lateinit var folder: Folder
-    private lateinit var expected: String
-    private lateinit var changeRequest: Folder.FolderNameChangeRequest
+    private lateinit var changeName: String
+    private lateinit var changeEmoji: String
+    private lateinit var changeNameRequest: Folder.FolderNameChangeRequest
+    private lateinit var changeEmojiRequest: Folder.FolderEmojiChangeRequest
 
     @BeforeEach
     fun setup() {
         folder = Folder("Folder", 0, parentFolder = null)
-        expected = "Update Folder"
-        changeRequest = Folder.FolderNameChangeRequest(expected)
+        changeName = "Update Folder"
+        changeEmoji = "️🥕🥕"
+        changeNameRequest = Folder.FolderNameChangeRequest(changeName)
+        changeEmojiRequest = Folder.FolderEmojiChangeRequest(changeEmoji)
     }
 
     @Test
@@ -81,18 +86,34 @@ internal open class FolderServiceTest {
     }
 
     @Test
-    fun `폴더 이름 수정`() {
+    fun `폴더 이름을 수정한다`() {
         // given
         every { folderRepository.findByIdOrNull(any()) } returns folder
         every { folderRepository.save(any()) } returns folder
 
         // when
-        val actual = folderService.changeFolderName(1L, changeRequest)
+        val actual = folderService.changeFolderName(1L, changeNameRequest)
 
         // then
         assertAll(
-            { assertDoesNotThrow { folderService.changeFolderName(10L, changeRequest) } },
-            { assertThat(actual).isEqualTo(expected) }
+            { assertDoesNotThrow { folderService.changeFolderName(10L, changeNameRequest) } },
+            { assertThat(actual).isEqualTo(changeName) }
+        )
+    }
+
+    @Test
+    fun `폴더 이모지를 수정한다`() {
+        // given
+        every { folderRepository.findByIdOrNull(any()) } returns folder
+        every { folderRepository.save(any()) } returns folder
+
+        // when
+        val actual = folderService.changeEmoji(1L, changeEmojiRequest)
+
+        // then
+        assertAll(
+            { assertDoesNotThrow { folderService.changeEmoji(10L, changeEmojiRequest) } },
+            { assertThat(actual).isEqualTo(changeEmoji) }
         )
     }
 
@@ -127,15 +148,18 @@ internal open class FolderServiceTest {
     @Test
     fun `폴더에 존재하는 모든 북마크를 제거한다`() {
         // given & when
-        val bookmarks = makeBookmarks()
+        val bookmarks: MutableList<Bookmark> = makeBookmarks()
         every { bookmarkRepository.findByFolderId(1L) } returns bookmarks
-        every { bookmarkRepository.delete(any()) } returns Unit
 
         // then
         assertAll(
             { assertDoesNotThrow { folderService.deleteAllBookmark(1L) } },
             { verify(exactly = 1) { bookmarkRepository.findByFolderId(any()) } },
-            { verify(exactly = bookmarks.size) { bookmarkRepository.delete(any()) } }
+            { bookmarks.forEach {
+                    assertThat(it.deleted).isEqualTo(true)
+                    assertThat(it.folderId).isNull()
+                }
+            }
         )
     }
 
@@ -157,7 +181,33 @@ internal open class FolderServiceTest {
         every { folderRepository.findByIdOrNull(any()) }.throws(FolderNotFoundException())
 
         // then
-        assertThrows<FolderNotFoundException> { folderService.changeFolderName(1L, changeRequest) }
+        assertThrows<FolderNotFoundException> { folderService.changeFolderName(1L, changeNameRequest) }
+    }
+
+    @Test
+    fun `전체 폴더를 조회하고 출력한다`() {
+        // given
+        val rootFolder1 = getParentFolder("부모폴더 1")
+        val rootFolder2 = getParentFolder("부모폴더 2")
+        rootFolder1.id = 1L
+        rootFolder2.id = 2L
+        rootFolder1.childrens = getChildFolders(rootFolder1, 0, 5)
+        rootFolder2.childrens = getChildFolders(rootFolder2, 0, 6)
+        val allFolder: MutableList<Folder> = mutableListOf(rootFolder1, rootFolder2)
+
+        every { folderRepository.findAllByParentFolderIsNull() } returns allFolder
+
+        // when
+        val actual = folderService.findAll()
+
+        // then
+        printAllFolderToJson(actual)
+    }
+
+    private fun printAllFolderToJson(actual: Folder.FolderReadResponse) {
+        val mapper = ObjectMapper()
+        val json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actual)
+        println(json)
     }
 
     private fun getParentFolder(name: String): Folder {
@@ -168,7 +218,7 @@ internal open class FolderServiceTest {
         val childFolders: MutableList<Folder> = mutableListOf()
 
         (start..end).forEach {
-            val folder = Folder("$it 번 폴더", it, 0, parentFolder)
+            val folder = Folder("${parentFolder.name}-$it", it, 0, parentFolder)
             childFolders.add(folder)
         }
 
