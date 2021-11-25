@@ -10,6 +10,12 @@ class Account(
     var email: String
 ) : BaseTimeEntity() {
 
+    companion object {
+        fun requestToAccount(dto: AccountRequest): Account {
+            return Account(dto.email, dto.imageUrl, dto.name, dto.socialType)
+        }
+    }
+
     constructor(email: String, image: String, nickname: String, socialType: String) : this(email) {
         this.image = image
         this.nickname = nickname
@@ -35,4 +41,11 @@ class Account(
 
     @OneToMany(mappedBy = "account")
     var notifications: MutableList<Notification>? = mutableListOf()
+
+    class AccountRequest(
+        val email: String,
+        val name: String,
+        val imageUrl: String,
+        val socialType: String
+    )
 }
