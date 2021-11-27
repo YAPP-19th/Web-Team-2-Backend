@@ -7,26 +7,45 @@ import javax.persistence.*
 
 @Entity
 class Account(
-    var email: String,
-    var password: String?,
-    var nickname: String,
-    var sex: String?,
-    var age: Int?,
-
-    // TODO: 디폴트 사진 url 추가하기
-    var image: String,
-
-    // TODO: 기본값 체크
-    var backgroundColor: String,
-    var remindToggle: Boolean,
-    var remindNotiCheck: Boolean,
-
-    @OneToMany(mappedBy = "account")
-    var accounts: MutableList<AccountFolder>? = mutableListOf(),
-
-    @OneToMany(mappedBy = "account")
-    var notifications: MutableList<Notification>?
-
+    var email: String
 ) : BaseTimeEntity() {
 
+    companion object {
+        fun requestToAccount(dto: AccountRequest): Account {
+            return Account(dto.email, dto.imageUrl, dto.name, dto.socialType)
+        }
+    }
+
+    constructor(email: String, image: String, nickname: String, socialType: String) : this(email) {
+        this.image = image
+        this.nickname = nickname
+        this.socialType = socialType
+    }
+
+    var password: String? = null
+    var nickname: String = "" // 구글로그인은 사용자 이름이 되면 좋겠다.
+    var sex: String = ""
+    var age: Int? = null
+    var socialType: String = "none"
+
+    // TODO: 디폴트 사진 url 추가하기
+    var image: String = ""
+
+    // TODO: 기본값 체크
+    var backgroundColor: String = "black"
+    var remindToggle: Boolean = true
+    var remindNotiCheck: Boolean = true
+
+    @OneToMany(mappedBy = "account")
+    var accounts: MutableList<AccountFolder>? = mutableListOf()
+
+    @OneToMany(mappedBy = "account")
+    var notifications: MutableList<Notification>? = mutableListOf()
+
+    class AccountRequest(
+        val email: String,
+        val name: String,
+        val imageUrl: String,
+        val socialType: String
+    )
 }
