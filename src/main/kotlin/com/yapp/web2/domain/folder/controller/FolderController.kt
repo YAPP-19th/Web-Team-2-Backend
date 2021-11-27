@@ -22,7 +22,7 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
-    @PatchMapping("/{folderId}")
+    @PatchMapping("/{folderId}/name")
     fun changeFolderName(
         @PathVariable folderId: Long,
         @RequestBody request: Folder.FolderNameChangeRequest
@@ -31,7 +31,16 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
-    @PatchMapping("/move/{folderId}")
+    @PatchMapping("/{folderId}/emoji")
+    fun changeFolderEmoji(
+        @PathVariable folderId: Long,
+        @RequestBody request: Folder.FolderEmojiChangeRequest
+    ): ResponseEntity<String> {
+        folderService.changeEmoji(folderId, request)
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
+    }
+
+    @PatchMapping("/{folderId}/move")
     fun moveFolder(
         @PathVariable folderId: Long,
         @RequestBody request: Folder.FolderMoveRequest
@@ -45,6 +54,13 @@ class FolderController(
         folderService.deleteAllBookmark(folderId)
         folderService.deleteFolder(folderId)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
+    }
+
+    // TODO: 2021/11/21 User Token
+    @GetMapping
+    fun findAll(): ResponseEntity<Folder.FolderReadResponse> {
+         val response = folderService.findAll()
+        return ResponseEntity.status(HttpStatus.OK).body(response)
     }
 
 }
