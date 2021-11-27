@@ -31,7 +31,7 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
-    @PatchMapping("/{folderId}")
+    @PatchMapping("/move/{folderId}")
     fun moveFolder(
         @PathVariable folderId: Long,
         @RequestBody request: Folder.FolderMoveRequest
