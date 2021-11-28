@@ -7,18 +7,20 @@ import com.yapp.web2.util.Message
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import javax.servlet.http.HttpServletRequest
 
 @RestController
 @RequestMapping("/api/v1/folder")
 class FolderController(
     private val folderService: FolderService
 ) {
-    // TODO: 2021/10/31 토큰에서 유저 찾기
     @PostMapping
     fun createFolder(
+        servletRequest: HttpServletRequest,
         @RequestBody request: Folder.FolderCreateRequest
     ): ResponseEntity<String> {
-        folderService.createFolder(request)
+        val accessToken = servletRequest.getHeader("Access-Token")
+        folderService.createFolder(request, accessToken)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
@@ -56,10 +58,10 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
-    // TODO: 2021/11/21 User Token
     @GetMapping
-    fun findAll(): ResponseEntity<Folder.FolderReadResponse> {
-         val response = folderService.findAll()
+    fun findAll(servletRequest: HttpServletRequest): ResponseEntity<Folder.FolderReadResponse> {
+        val accessToken = servletRequest.getHeader("Access-Token")
+        val response = folderService.findAll(accessToken)
         return ResponseEntity.status(HttpStatus.OK).body(response)
     }
 
