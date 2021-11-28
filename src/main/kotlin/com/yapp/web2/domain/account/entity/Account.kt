@@ -1,4 +1,4 @@
-package com.yapp.web2.domain.user.entity
+package com.yapp.web2.domain.account.entity
 
 import com.yapp.web2.domain.BaseTimeEntity
 import com.yapp.web2.domain.folder.entity.AccountFolder
@@ -11,7 +11,7 @@ class Account(
 ) : BaseTimeEntity() {
 
     companion object {
-        fun requestToAccount(dto: AccountRequest): Account {
+        fun requestToAccount(dto: AccountLoginRequest): Account {
             return Account(dto.email, dto.imageUrl, dto.name, dto.socialType)
         }
     }
@@ -37,12 +37,12 @@ class Account(
     var remindNotiCheck: Boolean = true
 
     @OneToMany(mappedBy = "account")
-    var accounts: MutableList<AccountFolder>? = mutableListOf()
+    var accountFolderList: MutableList<AccountFolder>? = mutableListOf()
 
     @OneToMany(mappedBy = "account")
     var notifications: MutableList<Notification>? = mutableListOf()
 
-    class AccountRequest(
+    class AccountLoginRequest(
         val email: String,
         val name: String,
         val imageUrl: String,
