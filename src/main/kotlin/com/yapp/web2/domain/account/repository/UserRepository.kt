@@ -1,6 +1,6 @@
-package com.yapp.web2.domain.user.repository
+package com.yapp.web2.domain.account.repository
 
-import com.yapp.web2.domain.user.entity.Account
+import com.yapp.web2.domain.account.entity.Account
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
