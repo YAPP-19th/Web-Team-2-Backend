@@ -45,7 +45,7 @@ class JwtProvider(
         val accessToken = getBearerToken(accessToken)
         val refreshToken = getBearerToken(refreshToken)
         val idFromToken = getIdFromToken(refreshToken).toString()
-        val refreshTokenInRedis = getRefreshTokenInRedis(idFromToken) ?: throw RuntimeException("리프레시 토큰이 존재하지 않을 때 예외")
+        val refreshTokenInRedis = getRefreshTokenInRedis(idFromToken) ?: throw RuntimeException("리프레시 토큰이 존재하지 않을 때 예외 -> 재 로그인 요청해야함")
         if (isRefreshTokenSame(refreshToken, refreshTokenInRedis)) return TokenDto(createAccessToken(idFromToken), refreshToken)
         throw RuntimeException("not same")
     }
