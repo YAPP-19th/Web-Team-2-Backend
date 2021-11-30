@@ -4,7 +4,6 @@ import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.service.BookmarkPageService
 import com.yapp.web2.domain.bookmark.service.BookmarkSearchService
 import com.yapp.web2.domain.bookmark.service.BookmarkService
-import org.bson.types.ObjectId
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus

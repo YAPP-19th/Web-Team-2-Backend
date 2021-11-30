@@ -1,23 +1,19 @@
 package com.yapp.web2.security.jwt
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.filter.GenericFilterBean
-import org.springframework.web.filter.OncePerRequestFilter
 import javax.servlet.FilterChain
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 class TokenAuthenticationFilter(
     @Autowired private val jwtProvider: JwtProvider
 ) : GenericFilterBean() {
 
     companion object {
-        const val AUTHORIZATION_HEADER: String = "Authorization"
+        const val ACCESS_TOKEN_HEADER: String = "Access-Token"
         const val BEARER_PREFIX = "Bearer "
     }
 
@@ -31,7 +27,7 @@ class TokenAuthenticationFilter(
     }
 
     private fun resolveToken(request: HttpServletRequest): String {
-        val bearerToken: String = request.getHeader(AUTHORIZATION_HEADER)
+        val bearerToken: String = request.getHeader(ACCESS_TOKEN_HEADER)
         if (!bearerToken.startsWith(BEARER_PREFIX)) RuntimeException("prefix 안맞음")
         return bearerToken.substring(BEARER_PREFIX.length)
     }

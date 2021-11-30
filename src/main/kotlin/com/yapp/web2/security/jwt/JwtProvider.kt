@@ -1,6 +1,6 @@
 package com.yapp.web2.security.jwt
 
-import com.yapp.web2.domain.user.entity.Account
+import com.yapp.web2.domain.account.entity.Account
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -11,7 +11,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Component
 import java.util.*
 import java.util.function.Function
-
 
 @Component
 class JwtProvider(
@@ -27,8 +26,8 @@ class JwtProvider(
 
     fun createToken(account: Account): TokenDto {
         val id = account.id!!
-        var accessToken: String = createAccessToken(id)
-        var refreshToken: String = createRefreshToken(id)
+        val accessToken: String = createAccessToken(id)
+        val refreshToken: String = createRefreshToken(id)
 
         return TokenDto(accessToken, refreshToken)
     }
