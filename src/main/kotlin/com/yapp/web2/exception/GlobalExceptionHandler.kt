@@ -1,5 +1,9 @@
 package com.yapp.web2.exception
 
+import com.yapp.web2.exception.custom.NoRefreshTokenException
+import com.yapp.web2.exception.custom.PrefixMisMatchException
+import com.yapp.web2.exception.custom.TokenMisMatchException
+import com.yapp.web2.util.CustomStatusCode
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
@@ -31,6 +35,30 @@ class GlobalExceptionHandler {
         val response = ErrorResponse.of(e.message)
 
         return getResponse(response, HttpStatus.INTERNAL_SERVER_ERROR.value())
+    }
+
+    @ExceptionHandler(PrefixMisMatchException::class)
+    fun handlePrefixMisMatchException(e: PrefixMisMatchException): ResponseEntity<ErrorResponse> {
+        log.error("handleTPrefixMisMatchException", e)
+        val response = ErrorResponse.of(e.message)
+
+        return getResponse(response, HttpStatus.INTERNAL_SERVER_ERROR.value())
+    }
+
+    @ExceptionHandler(TokenMisMatchException::class)
+    fun handleTokenMisMatchException(e: TokenMisMatchException): ResponseEntity<ErrorResponse> {
+        log.error("handleTokenMisMatchException", e)
+        val response = ErrorResponse.of(e.message)
+
+        return getResponse(response, HttpStatus.INTERNAL_SERVER_ERROR.value())
+    }
+
+    @ExceptionHandler(NoRefreshTokenException::class)
+    fun handleNoRefreshTokenException(e: NoRefreshTokenException): ResponseEntity<ErrorResponse> {
+        log.error("handleNoRefreshTokenException", e)
+        val response = ErrorResponse.of(e.message)
+
+        return getResponse(response, CustomStatusCode.NO_REFRESH_TOKEN.code)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)

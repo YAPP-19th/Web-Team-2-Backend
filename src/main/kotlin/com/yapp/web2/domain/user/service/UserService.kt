@@ -13,17 +13,20 @@ class UserService(
     private val jwtProvider: JwtProvider
 ) {
     fun oauth2LoginUser(dto: Account.AccountRequest): TokenDto {
-        var account = Account.requestToAccount(dto)
+        val account = Account.requestToAccount(dto)
 
-        account = userRepository.findByEmail(account.email)?.let {
-            if (it.socialType != account.socialType) throw RuntimeException("동일한 아이디가 다른 oauth로 존재하는 경우")
-            it.image = account.image
-            it
-        } ?: account
-
-        createUser(account)
+        when (val savedAccount = userRepository.findByEmail(account.email)) {
+            null -> createUser(account)
+            else -> updateUser(savedAccount, account)
+        }
 
         return jwtProvider.createToken(account)
+    }
+
+    @Transactional
+    protected fun updateUser(savedAccount: Account, receivedAccount: Account) {
+        savedAccount.image = receivedAccount.image
+        savedAccount.nickname = receivedAccount.nickname
     }
 
     @Transactional

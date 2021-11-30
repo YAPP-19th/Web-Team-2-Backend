@@ -1,5 +1,6 @@
 package com.yapp.web2.security.jwt
 
+import com.yapp.web2.exception.custom.PrefixMisMatchException
 import io.jsonwebtoken.ExpiredJwtException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -24,23 +25,26 @@ class TokenAuthenticationFilter(
     }
 
     override fun doFilter(request: ServletRequest?, response: ServletResponse?, chain: FilterChain?) {
-        val token = resolveToken(request as HttpServletRequest)
-        response as HttpServletResponse
-
         try {
+            val token = resolveToken(request as HttpServletRequest)
+            response as HttpServletResponse
+
             if (!jwtProvider.validateToken(token))
                 SecurityContextHolder.getContext().authentication = jwtProvider.getAuthentication(token)
             chain!!.doFilter(request, response)
         } catch (e: ExpiredJwtException) {
-            response.contentType = "application/json;charset=UTF-8"
+            response!!.contentType = "application/json;charset=UTF-8"
             response.writer.println("token_expired")
+        } catch (e: PrefixMisMatchException) {
+            response!!.contentType = "application/json;charset=UTF-8"
+            response.writer.println("prefix_mismatch")
         }
     }
 
 
     private fun resolveToken(request: HttpServletRequest): String {
         val bearerToken: String = request.getHeader(AUTHORIZATION_HEADER)
-        if (!bearerToken.startsWith(BEARER_PREFIX)) RuntimeException("prefix 안맞음")
-        return bearerToken.substring(BEARER_PREFIX.length)
+        if (!bearerToken.startsWith(BEARER_PREFIX)) throw PrefixMisMatchException()
+        return bearerToken.removePrefix(BEARER_PREFIX)
     }
 }

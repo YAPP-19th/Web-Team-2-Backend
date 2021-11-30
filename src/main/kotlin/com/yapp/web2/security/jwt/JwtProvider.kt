@@ -1,6 +1,8 @@
 package com.yapp.web2.security.jwt
 
 import com.yapp.web2.domain.user.entity.Account
+import com.yapp.web2.exception.custom.NoRefreshTokenException
+import com.yapp.web2.exception.custom.TokenMisMatchException
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -35,25 +37,26 @@ class JwtProvider(
 
     fun createToken(account: Account): TokenDto {
         val id = account.id!!.toString()
-        var accessToken: String = createAccessToken(id)
-        var refreshToken: String = createRefreshToken(id)
+        val accessToken: String = createAccessToken(id)
+        val refreshToken: String = createRefreshToken(id)
 
         return TokenDto(accessToken, refreshToken)
     }
 
     fun reIssuedAccessToken(accessToken: String, refreshToken: String): TokenDto {
-        val accessToken = getBearerToken(accessToken)
         val refreshToken = getBearerToken(refreshToken)
         val idFromToken = getIdFromToken(refreshToken).toString()
-        val refreshTokenInRedis = getRefreshTokenInRedis(idFromToken) ?: throw RuntimeException("리프레시 토큰이 존재하지 않을 때 예외 -> 재 로그인 요청해야함")
-        if (isRefreshTokenSame(refreshToken, refreshTokenInRedis)) return TokenDto(createAccessToken(idFromToken), refreshToken)
-        throw RuntimeException("not same")
+        val refreshTokenInRedis = getRefreshTokenInRedis(idFromToken)
+            ?: throw NoRefreshTokenException()
+
+        if (!isRefreshTokenSame(refreshToken, refreshTokenInRedis)) throw TokenMisMatchException()
+
+        return TokenDto(createAccessToken(idFromToken), refreshToken)
     }
 
     private fun isRefreshTokenSame(receivedRefreshToken: String, existRefreshToken: String) = receivedRefreshToken == existRefreshToken
 
     private fun getRefreshTokenInRedis(idFromToken: String): String? {
-        //존재하지 않으면? error
         return redisTemplate.opsForValue().get(idFromToken) as? String
     }
 
@@ -96,11 +99,11 @@ class JwtProvider(
     }
 
     fun getExpirationDateFromToken(token: String): Date {
-        return getClaimFromToken(token, Function { obj: Claims -> obj.expiration })
+        return getClaimFromToken(token) { obj: Claims -> obj.expiration }
     }
 
     fun getIdFromToken(token: String): Long {
-        return getClaimFromToken(token, Function { obj: Claims -> obj.subject }).toLong()
+        return getClaimFromToken(token) { obj: Claims -> obj.subject }.toLong()
     }
 
     fun <T> getClaimFromToken(token: String, claimsResolver: Function<Claims, T>): T {
