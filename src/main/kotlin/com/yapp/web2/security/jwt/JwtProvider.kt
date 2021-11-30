@@ -44,17 +44,17 @@ class JwtProvider(
     }
 
     fun reIssuedAccessToken(accessToken: String, refreshToken: String): TokenDto {
-        val refreshToken = getBearerToken(refreshToken)
+        val refreshToken = removePrefix(refreshToken)
         val idFromToken = getIdFromToken(refreshToken).toString()
         val refreshTokenInRedis = getRefreshTokenInRedis(idFromToken)
             ?: throw NoRefreshTokenException()
 
-        if (!isRefreshTokenSame(refreshToken, refreshTokenInRedis)) throw TokenMisMatchException()
+        if (!isRefreshTokensSame(refreshToken, refreshTokenInRedis)) throw TokenMisMatchException()
 
         return TokenDto(createAccessToken(idFromToken), refreshToken)
     }
 
-    private fun isRefreshTokenSame(receivedRefreshToken: String, existRefreshToken: String) = receivedRefreshToken == existRefreshToken
+    private fun isRefreshTokensSame(receivedRefreshToken: String, existRefreshToken: String) = receivedRefreshToken == existRefreshToken
 
     private fun getRefreshTokenInRedis(idFromToken: String): String? {
         return redisTemplate.opsForValue().get(idFromToken) as? String
@@ -120,5 +120,5 @@ class JwtProvider(
         return expiration.before(Date())
     }
 
-    private fun getBearerToken(token: String) = token.removePrefix(BEARER_PREFIX)
+    private fun removePrefix(token: String) = token.removePrefix(BEARER_PREFIX)
 }
