@@ -51,7 +51,7 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
-    @DeleteMapping("/{folderId}")
+    @PostMapping("/{folderId}")
     fun deleteAllBookmarkAndFolder(@PathVariable folderId: Long): ResponseEntity<Any> {
         folderService.deleteAllBookmark(folderId)
         folderService.deleteFolder(folderId)
