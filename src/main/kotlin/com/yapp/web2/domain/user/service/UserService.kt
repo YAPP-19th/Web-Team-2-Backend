@@ -13,9 +13,9 @@ class UserService(
     private val jwtProvider: JwtProvider
 ) {
     fun oauth2LoginUser(dto: Account.AccountRequest): TokenDto {
-        val account = Account.requestToAccount(dto)
+        var account = Account.requestToAccount(dto)
 
-        when (val savedAccount = userRepository.findByEmail(account.email)) {
+        account = when (val savedAccount = userRepository.findByEmail(account.email)) {
             null -> createUser(account)
             else -> updateUser(savedAccount, account)
         }
@@ -24,9 +24,10 @@ class UserService(
     }
 
     @Transactional
-    protected fun updateUser(savedAccount: Account, receivedAccount: Account) {
+    protected fun updateUser(savedAccount: Account, receivedAccount: Account): Account {
         savedAccount.image = receivedAccount.image
         savedAccount.nickname = receivedAccount.nickname
+        return savedAccount
     }
 
     @Transactional

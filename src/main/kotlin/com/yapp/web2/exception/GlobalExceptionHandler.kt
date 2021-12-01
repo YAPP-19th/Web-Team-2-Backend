@@ -4,6 +4,8 @@ import com.yapp.web2.exception.custom.NoRefreshTokenException
 import com.yapp.web2.exception.custom.PrefixMisMatchException
 import com.yapp.web2.exception.custom.TokenMisMatchException
 import com.yapp.web2.util.CustomStatusCode
+import com.yapp.web2.util.Message
+import io.jsonwebtoken.ExpiredJwtException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
@@ -27,6 +29,14 @@ class GlobalExceptionHandler {
         val response = ErrorResponse.of(e.message)
 
         return getResponse(response, HttpStatus.INTERNAL_SERVER_ERROR.value())
+    }
+
+    @ExceptionHandler(ExpiredJwtException::class)
+    fun handleExpiredJwtException(e: ExpiredJwtException): ResponseEntity<ErrorResponse> {
+        log.error("ExpiredJwtException", e)
+        val response = ErrorResponse.of(Message.NO_REFRESH_TOKEN)
+
+        return getResponse(response, CustomStatusCode.NO_REFRESH_TOKEN.code)
     }
 
     @ExceptionHandler(BusinessException::class)

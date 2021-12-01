@@ -1,6 +1,7 @@
 package com.yapp.web2.security.jwt
 
 import com.yapp.web2.exception.custom.PrefixMisMatchException
+import com.yapp.web2.util.Message
 import io.jsonwebtoken.ExpiredJwtException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -34,7 +35,7 @@ class TokenAuthenticationFilter(
             chain!!.doFilter(request, response)
         } catch (e: ExpiredJwtException) {
             response!!.contentType = "application/json;charset=UTF-8"
-            response.writer.println("token_expired")
+            response.writer.println(Message.ACCESS_TOKEN_EXPIRED)
         } catch (e: PrefixMisMatchException) {
             response!!.contentType = "application/json;charset=UTF-8"
             response.writer.println("prefix_mismatch")
