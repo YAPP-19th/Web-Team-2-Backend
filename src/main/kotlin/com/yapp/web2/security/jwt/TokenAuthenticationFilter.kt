@@ -13,6 +13,7 @@ import javax.servlet.FilterChain
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 class TokenAuthenticationFilter(
     @Autowired private val jwtProvider: JwtProvider
