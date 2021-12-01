@@ -1,8 +1,8 @@
 package com.yapp.web2.security.jwt
 
-import com.yapp.web2.domain.user.entity.Account
 import com.yapp.web2.exception.custom.NoRefreshTokenException
 import com.yapp.web2.exception.custom.TokenMisMatchException
+import com.yapp.web2.domain.account.entity.Account
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.Function
-
 
 @Component
 class JwtProvider(

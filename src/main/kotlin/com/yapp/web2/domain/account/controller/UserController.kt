@@ -1,7 +1,7 @@
-package com.yapp.web2.domain.user.controller
+package com.yapp.web2.domain.account.controller
 
-import com.yapp.web2.domain.user.entity.Account
-import com.yapp.web2.domain.user.service.UserService
+import com.yapp.web2.domain.account.entity.Account
+import com.yapp.web2.domain.account.service.UserService
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.util.Message
 import org.springframework.http.HttpStatus
@@ -16,7 +16,7 @@ class UserController(
 ) {
     @PostMapping("/oauth2Login")
     fun oauth2Login(
-        @RequestBody request: Account.AccountRequest
+        @RequestBody request: Account.AccountLoginRequest
     ): ResponseEntity<TokenDto> {
         val tokenDto = userService.oauth2LoginUser(request)
         return ResponseEntity.status(HttpStatus.OK).body(tokenDto)

@@ -1,7 +1,7 @@
-package com.yapp.web2.domain.user.service
+package com.yapp.web2.domain.account.service
 
-import com.yapp.web2.domain.user.entity.Account
-import com.yapp.web2.domain.user.repository.UserRepository
+import com.yapp.web2.domain.account.entity.Account
+import com.yapp.web2.domain.account.repository.UserRepository
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
 import org.springframework.stereotype.Service
@@ -12,7 +12,7 @@ class UserService(
     private val userRepository: UserRepository,
     private val jwtProvider: JwtProvider
 ) {
-    fun oauth2LoginUser(dto: Account.AccountRequest): TokenDto {
+    fun oauth2LoginUser(dto: Account.AccountLoginRequest): TokenDto {
         var account = Account.requestToAccount(dto)
 
         account = when (val savedAccount = userRepository.findByEmail(account.email)) {
