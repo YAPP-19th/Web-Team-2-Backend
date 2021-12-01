@@ -34,7 +34,7 @@ class Folder(
     @OrderBy("index asc")
     @OneToMany(mappedBy = "parentFolder")
     @JsonManagedReference
-    var childrens: MutableList<Folder>? = mutableListOf()
+    var children: MutableList<Folder>? = mutableListOf()
 
     @OneToMany(mappedBy = "folder")
     var folders: MutableList<AccountFolder>? = mutableListOf()

@@ -18,6 +18,7 @@ class SecurityConfig(
 
     override fun configure(web: WebSecurity?) {
         web!!.ignoring().antMatchers("/api/v1/user/oauth2Login")
+        web.ignoring().antMatchers("/api/v1/user/reIssuanceAccessToken")
     }
 
     override fun configure(http: HttpSecurity?) {
@@ -27,7 +28,7 @@ class SecurityConfig(
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
         http.authorizeRequests()
-            .antMatchers("/api/v1/user/oauth2Login").permitAll()
+            .antMatchers("/api/v1/user/oauth2Login", "/api/v1/user/reIssuanceAccessToken").permitAll()
             .anyRequest().authenticated()
 
         http.apply(JwtSecurityConfig(jwtProvider))
