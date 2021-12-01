@@ -20,7 +20,7 @@ class TokenAuthenticationFilter(
 ) : GenericFilterBean() {
 
     companion object {
-        const val AUTHORIZATION_HEADER: String = "Access-Token"
+        const val AUTHORIZATION_HEADER: String = "AccessToken"
         const val BEARER_PREFIX = "Bearer "
     }
 

@@ -19,7 +19,7 @@ class FolderController(
         servletRequest: HttpServletRequest,
         @RequestBody request: Folder.FolderCreateRequest
     ): ResponseEntity<String> {
-        val accessToken = servletRequest.getHeader("Access-Token")
+        val accessToken = servletRequest.getHeader("AccessToken")
         folderService.createFolder(request, accessToken)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
@@ -60,7 +60,7 @@ class FolderController(
 
     @GetMapping
     fun findAll(servletRequest: HttpServletRequest): ResponseEntity<Folder.FolderReadResponse> {
-        val accessToken = servletRequest.getHeader("Access-Token")
+        val accessToken = servletRequest.getHeader("AccessToken")
         val response = folderService.findAll(accessToken)
         return ResponseEntity.status(HttpStatus.OK).body(response)
     }

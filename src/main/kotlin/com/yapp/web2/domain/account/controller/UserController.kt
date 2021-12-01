@@ -29,8 +29,8 @@ class UserController(
 
     @GetMapping("/reIssuanceAccessToken")
     fun reIssuanceAccessToken(request: HttpServletRequest): ResponseEntity<TokenDto> {
-        val accessToken = request.getHeader("Access-Token")
-        val refreshToken = request.getHeader("Refresh-Token")
+        val accessToken = request.getHeader("AccessToken")
+        val refreshToken = request.getHeader("RefreshToken")
         val tokenDto = userService.reIssuedAccessToken(accessToken, refreshToken)
         return ResponseEntity.status(HttpStatus.OK).body(tokenDto)
     }
