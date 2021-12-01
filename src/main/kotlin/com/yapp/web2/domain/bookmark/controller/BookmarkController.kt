@@ -26,15 +26,6 @@ class BookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByFolderId(folderId, pageable, remind))
     }
 
-    @GetMapping("/trash")
-    fun getDeletedBookmarkPage(
-        request: HttpServletRequest,
-        pageable: Pageable,
-        @RequestParam remind: Boolean
-    ): ResponseEntity<Page<Bookmark>> {
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByUserId(1, pageable, remind))
-    }
-
     @PostMapping("/{folderId}")
     fun createBookmark(
         @PathVariable folderId: Long,
@@ -70,10 +61,12 @@ class BookmarkController(
 
     @GetMapping("/{userId}/{keyWord}")
     fun searchBookmarkList(
+        request: HttpServletRequest,
         @PathVariable userId: Long,
         @PathVariable keyWord: String,
         pageable: Pageable,
     ): ResponseEntity<Page<Bookmark>> {
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkSearchService.searchKeywordOwnUserId(userId, keyWord, pageable))
+        val token = request.getHeader("Access-Token")
+        return ResponseEntity.status(HttpStatus.OK).body(bookmarkSearchService.searchKeywordOwnUserId(token, keyWord, pageable))
     }
 }

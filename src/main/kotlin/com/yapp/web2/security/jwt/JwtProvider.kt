@@ -102,6 +102,7 @@ class JwtProvider(
     }
 
     fun getIdFromToken(token: String): Long {
+        val token = removePrefix(token)
         return getClaimFromToken(token) { obj: Claims -> obj.subject }.toLong()
     }
 
