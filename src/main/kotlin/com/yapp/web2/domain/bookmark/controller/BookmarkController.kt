@@ -63,7 +63,7 @@ class BookmarkController(
         @PathVariable userId: Long,
         @PathVariable keyWord: String,
         pageable: Pageable,
-    ): Page<Bookmark> {
-        return bookmarkSearchService.searchKeywordOwnUserId(userId, keyWord, pageable)
+    ): ResponseEntity<Page<Bookmark>> {
+        return ResponseEntity.status(HttpStatus.OK).body(bookmarkSearchService.searchKeywordOwnUserId(userId, keyWord, pageable))
     }
 }
