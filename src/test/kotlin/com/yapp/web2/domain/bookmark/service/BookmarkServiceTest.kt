@@ -10,6 +10,8 @@ import io.mockk.impl.annotations.MockK
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.springframework.data.repository.findByIdOrNull
+import java.time.LocalDateTime
 import java.util.*
 
 internal class BookmarkServiceTest {
@@ -264,6 +266,55 @@ internal class BookmarkServiceTest {
 
             //then
             assertEquals(bookmark1.folderId, nextFolderId)
+        }
+    }
+
+    @Nested
+    inner class RestoreBookmark {
+        private val bookmark1 = Bookmark(1, 2, "www.naver.com")
+        private val bookmark2 = Bookmark(2, 1, "www.naver.com")
+
+        @Test
+        fun `휴지통에서 북마크를 복원한다`() {
+            // given
+            val list = mutableListOf("1", "2")
+            bookmark1.deleted = true
+            bookmark1.deleteTime = LocalDateTime.now()
+            bookmark2.deleted = true
+            bookmark2.deleteTime = LocalDateTime.now()
+
+            every { bookmarkRepository.findByIdOrNull("1") } returns bookmark1
+            every { bookmarkRepository.findByIdOrNull("2") } returns bookmark2
+
+            // when
+            bookmarkService.restore(list)
+
+            // then
+            assertAll(
+                { assertThat(bookmark1.deleted).isEqualTo(false) },
+                { assertThat(bookmark1.deleteTime).isNull() },
+                { assertThat(bookmark2.deleted).isEqualTo(false) },
+                { assertThat(bookmark2.deleteTime).isNull() }
+            )
+        }
+    }
+
+    @Nested
+    inner class TruncateBookmark {
+        private val bookmark = Bookmark(1, 2, "www.naver.com")
+
+        @Test
+        fun `휴지통에서 북마크를 영구 삭제한다`() {
+            // given
+            val list = mutableListOf("1", "2")
+            every { bookmarkRepository.findByIdOrNull(any()) } returns bookmark
+            every { bookmarkRepository.delete(any()) } just Runs
+
+            // when
+            bookmarkService.permanentDelete(list)
+
+            // then
+            verify(exactly = list.size) { bookmarkRepository.delete(any()) }
         }
     }
 }

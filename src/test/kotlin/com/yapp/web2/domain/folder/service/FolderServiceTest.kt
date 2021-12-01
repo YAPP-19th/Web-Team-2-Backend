@@ -1,10 +1,14 @@
 package com.yapp.web2.domain.folder.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.yapp.web2.domain.account.entity.Account
+import com.yapp.web2.domain.account.repository.UserRepository
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.custom.FolderNotFoundException
+import com.yapp.web2.security.jwt.JwtProvider
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -31,15 +35,27 @@ internal open class FolderServiceTest {
     @MockK
     private lateinit var bookmarkRepository: BookmarkRepository
 
+    @MockK
+    private lateinit var userRepository: UserRepository
+
+    @MockK
+    private lateinit var jwtProvider: JwtProvider
+
     private lateinit var folder: Folder
-    private lateinit var expected: String
-    private lateinit var changeRequest: Folder.FolderNameChangeRequest
+    private lateinit var changeName: String
+    private lateinit var changeEmoji: String
+    private lateinit var changeNameRequest: Folder.FolderNameChangeRequest
+    private lateinit var changeEmojiRequest: Folder.FolderEmojiChangeRequest
+    private lateinit var user: Account
 
     @BeforeEach
     fun setup() {
         folder = Folder("Folder", 0, parentFolder = null)
-        expected = "Update Folder"
-        changeRequest = Folder.FolderNameChangeRequest(expected)
+        changeName = "Update Folder"
+        changeEmoji = "️🥕🥕"
+        changeNameRequest = Folder.FolderNameChangeRequest(changeName)
+        changeEmojiRequest = Folder.FolderEmojiChangeRequest(changeEmoji)
+        user = Account("test@gmail.com")
     }
 
     @Test
@@ -47,10 +63,14 @@ internal open class FolderServiceTest {
         // given
         val request = Folder.FolderCreateRequest(name = "Root Folder", index = 1)
         val expected = Folder.dtoToEntity(request)
+
+        // mock
+        every { jwtProvider.getIdFromToken(any()) } returns 1L
+        every { userRepository.findByIdOrNull(any()) } returns user
         every { folderRepository.save(expected) } returns expected
 
         // when
-        val actual = folderService.createFolder(request)
+        val actual = folderService.createFolder(request, "test")
 
         // then
         assertAll(
@@ -66,11 +86,14 @@ internal open class FolderServiceTest {
         val request = Folder.FolderCreateRequest(2L, "Children Folder", 2)
         val childFolder = Folder.dtoToEntity(request, parentFolder)
 
+        // mock
+        every { jwtProvider.getIdFromToken(any()) } returns 1L
+        every { userRepository.findByIdOrNull(any()) } returns user
         every { folderRepository.findById(request.parentId).get() } returns parentFolder
         every { folderRepository.save(childFolder) } returns childFolder
 
         // when
-        val actual = folderService.createFolder(request)
+        val actual = folderService.createFolder(request, "test")
         val actual2 = actual.parentFolder
 
         // then
@@ -81,18 +104,34 @@ internal open class FolderServiceTest {
     }
 
     @Test
-    fun `폴더 이름 수정`() {
-        // given
+    fun `폴더 이름을 수정한다`() {
+        // given & mock
         every { folderRepository.findByIdOrNull(any()) } returns folder
         every { folderRepository.save(any()) } returns folder
 
         // when
-        val actual = folderService.changeFolderName(1L, changeRequest)
+        val actual = folderService.changeFolderName(1L, changeNameRequest)
 
         // then
         assertAll(
-            { assertDoesNotThrow { folderService.changeFolderName(10L, changeRequest) } },
-            { assertThat(actual).isEqualTo(expected) }
+            { assertDoesNotThrow { folderService.changeFolderName(10L, changeNameRequest) } },
+            { assertThat(actual).isEqualTo(changeName) }
+        )
+    }
+
+    @Test
+    fun `폴더 이모지를 수정한다`() {
+        // given & mock
+        every { folderRepository.findByIdOrNull(any()) } returns folder
+        every { folderRepository.save(any()) } returns folder
+
+        // when
+        val actual = folderService.changeEmoji(1L, changeEmojiRequest)
+
+        // then
+        assertAll(
+            { assertDoesNotThrow { folderService.changeEmoji(10L, changeEmojiRequest) } },
+            { assertThat(actual).isEqualTo(changeEmoji) }
         )
     }
 
@@ -109,6 +148,7 @@ internal open class FolderServiceTest {
         val stubPrevChildFolders = getChildFolders(prevParentFolder, 3, 9)
         val stubNextChildFolders = getChildFolders(nextParentFolder, 4, 9)
 
+        // mock
         every { folderRepository.findById(1L).orElse(null) } returns prevParentFolder
         every { folderRepository.findById(2L).orElse(null) } returns nextParentFolder
         every { folderRepository.findById(10L).orElse(null) } returns prevMoveFolder
@@ -127,21 +167,26 @@ internal open class FolderServiceTest {
     @Test
     fun `폴더에 존재하는 모든 북마크를 제거한다`() {
         // given & when
-        val bookmarks = makeBookmarks()
+        val bookmarks: MutableList<Bookmark> = makeBookmarks()
+
+        // mock
         every { bookmarkRepository.findByFolderId(1L) } returns bookmarks
-        every { bookmarkRepository.delete(any()) } returns Unit
 
         // then
         assertAll(
             { assertDoesNotThrow { folderService.deleteAllBookmark(1L) } },
             { verify(exactly = 1) { bookmarkRepository.findByFolderId(any()) } },
-            { verify(exactly = bookmarks.size) { bookmarkRepository.delete(any()) } }
+            { bookmarks.forEach {
+                    assertThat(it.deleted).isEqualTo(true)
+                    assertThat(it.folderId).isNull()
+                }
+            }
         )
     }
 
     @Test
     fun `특정 폴더를 삭제한다`() {
-        // given
+        // given & mock
         every { folderRepository.deleteById(any()) } returns Unit
 
         // when
@@ -157,7 +202,36 @@ internal open class FolderServiceTest {
         every { folderRepository.findByIdOrNull(any()) }.throws(FolderNotFoundException())
 
         // then
-        assertThrows<FolderNotFoundException> { folderService.changeFolderName(1L, changeRequest) }
+        assertThrows<FolderNotFoundException> { folderService.changeFolderName(1L, changeNameRequest) }
+    }
+
+    @Test
+    fun `전체 폴더를 조회하고 출력한다`() {
+        // given
+        val rootFolder1 = getParentFolder("부모폴더 1")
+        val rootFolder2 = getParentFolder("부모폴더 2")
+        rootFolder1.id = 1L
+        rootFolder2.id = 2L
+        rootFolder1.children = getChildFolders(rootFolder1, 0, 5)
+        rootFolder2.children = getChildFolders(rootFolder2, 0, 6)
+        val allFolder: MutableList<Folder> = mutableListOf(rootFolder1, rootFolder2)
+
+        // mock
+        every { jwtProvider.getIdFromToken(any()) } returns 1L
+        every { userRepository.findById(any()).get() } returns user
+        every { folderRepository.findAllByParentFolderIsNull(user) } returns allFolder
+
+        // when
+        val actual = folderService.findAll("test")
+
+        // then
+        printAllFolderToJson(actual)
+    }
+
+    private fun printAllFolderToJson(actual: Folder.FolderReadResponse) {
+        val mapper = ObjectMapper()
+        val json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actual)
+        println(json)
     }
 
     private fun getParentFolder(name: String): Folder {
@@ -168,11 +242,11 @@ internal open class FolderServiceTest {
         val childFolders: MutableList<Folder> = mutableListOf()
 
         (start..end).forEach {
-            val folder = Folder("$it 번 폴더", it, 0, parentFolder)
+            val folder = Folder("${parentFolder.name}-$it", it, 0, parentFolder)
             childFolders.add(folder)
         }
 
-        parentFolder.childrens = childFolders
+        parentFolder.children = childFolders
         return childFolders
     }
 
