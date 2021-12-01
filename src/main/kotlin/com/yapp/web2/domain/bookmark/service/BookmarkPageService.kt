@@ -21,6 +21,10 @@ class BookmarkPageService(
         }
     }
 
+    fun getAllPageByUserId(userId: Long, pageable: Pageable, remind: Boolean): Page<Bookmark> {
+        return bookmarkRepository.findAllByUserIdAndDeleteTimeIsNotNull(userId, pageable)
+    }
+
     private fun checkFolderAbsence(folderId: Long) {
         val folder = folderRepository.findById(folderId)
         if (folder.isEmpty) throw ObjectNotFoundException("해당 폴더가 존재하지 않습니다.")
