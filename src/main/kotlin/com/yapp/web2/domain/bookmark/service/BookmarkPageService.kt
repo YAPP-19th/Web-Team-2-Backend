@@ -23,6 +23,7 @@ class BookmarkPageService(
         }
     }
 
+
     fun getAllPageByUserId(token:String, pageable: Pageable, remind: Boolean): Page<Bookmark> {
         val idFromToken = jwtProvider.getIdFromToken(token)
         return when (remind) {

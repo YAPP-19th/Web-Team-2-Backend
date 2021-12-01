@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import javax.servlet.http.HttpServletRequest
 
 @RestController
 @RequestMapping("/api/v1/bookmark")
@@ -21,8 +22,8 @@ class BookmarkController(
     fun getBookmarkPage(
         @PathVariable folderId: Long,
         pageable: Pageable,
-        @RequestParam remind: Boolean): Page<Bookmark> {
-        return bookmarkPageService.getAllPageByFolderId(folderId, pageable, remind)
+        @RequestParam remind: Boolean): ResponseEntity<Page<Bookmark>> {
+        return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByFolderId(folderId, pageable, remind))
     }
 
     @PostMapping("/{folderId}")
@@ -60,10 +61,13 @@ class BookmarkController(
 
     @GetMapping("/{userId}/{keyWord}")
     fun searchBookmarkList(
+        request: HttpServletRequest,
         @PathVariable userId: Long,
         @PathVariable keyWord: String,
         pageable: Pageable,
     ): ResponseEntity<Page<Bookmark>> {
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkSearchService.searchKeywordOwnUserId(userId, keyWord, pageable))
+        val token = request.getHeader("AccessToken")
+        return ResponseEntity.status(HttpStatus.OK).body(bookmarkSearchService.searchKeywordOwnUserId(token, keyWord, pageable))
+
     }
 }

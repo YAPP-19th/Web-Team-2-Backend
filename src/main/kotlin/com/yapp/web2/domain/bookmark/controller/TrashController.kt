@@ -30,7 +30,7 @@ class TrashController(
     }
 
     @GetMapping
-    fun getTrashBookmark(
+    fun getTrashBookmarkPage(
         request: HttpServletRequest,
         pageable: Pageable,
         @RequestParam remind: Boolean
