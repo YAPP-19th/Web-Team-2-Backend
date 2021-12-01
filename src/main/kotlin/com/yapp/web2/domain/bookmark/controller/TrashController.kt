@@ -23,7 +23,7 @@ class TrashController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
-    @DeleteMapping("/truncate")
+    @PostMapping("/truncate")
     fun permanentDelete(@RequestBody request: Bookmark.TruncateBookmarkRequest): ResponseEntity<String> {
         bookmarkService.permanentDelete(request.bookmarkIdList)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
@@ -35,7 +35,7 @@ class TrashController(
         pageable: Pageable,
         @RequestParam remind: Boolean
     ): ResponseEntity<Page<Bookmark>> {
-        val token = request.getHeader("Access-Token")
+        val token = request.getHeader("AccessToken")
         return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByUserId(token, pageable, remind))
     }
 }

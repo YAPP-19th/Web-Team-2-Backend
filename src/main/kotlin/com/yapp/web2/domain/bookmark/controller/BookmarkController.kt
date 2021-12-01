@@ -66,7 +66,8 @@ class BookmarkController(
         @PathVariable keyWord: String,
         pageable: Pageable,
     ): ResponseEntity<Page<Bookmark>> {
-        val token = request.getHeader("Access-Token")
+        val token = request.getHeader("AccessToken")
         return ResponseEntity.status(HttpStatus.OK).body(bookmarkSearchService.searchKeywordOwnUserId(token, keyWord, pageable))
+
     }
 }
