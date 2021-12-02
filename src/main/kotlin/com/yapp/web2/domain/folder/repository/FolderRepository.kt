@@ -11,7 +11,10 @@ import org.springframework.stereotype.Repository
 interface FolderRepository : JpaRepository<Folder, Long> {
 
     @Query("SELECT f FROM Folder f WHERE f.parentFolder = ?1 and f.index > ?2")
-    fun findByIndexGreaterThan(parent: Folder, index: Int): MutableList<Folder>?
+    fun findByIndexGreaterThanPrevFolder(parent: Folder, index: Int): MutableList<Folder>?
+
+    @Query("SELECT f FROM Folder f WHERE f.parentFolder = ?1 and f.index >= ?2")
+    fun findByIndexGreaterThanNextFolder(parent: Folder, index: Int): MutableList<Folder>?
 
     //@Query("SELECT f FROM Folder f join fetch f.children WHERE f.parentFolder is null ")
     @EntityGraph(attributePaths = ["children"])

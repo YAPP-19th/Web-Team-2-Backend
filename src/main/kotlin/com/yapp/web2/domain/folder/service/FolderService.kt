@@ -75,16 +75,19 @@ class FolderService(
         val moveFolder = folderRepository.findByIdOrNull(id)
 
         // 2)
-        folderRepository.findByIndexGreaterThan(prevParentFolder!!, request.prevIndex)
+        folderRepository.findByIndexGreaterThanPrevFolder(prevParentFolder!!, request.prevIndex)
             ?.let {
                 it.forEach { folder -> folder.index-- }
             }
 
         // 3)
-        folderRepository.findByIndexGreaterThan(nextParentFolder!!, request.nextIndex)
+        folderRepository.findByIndexGreaterThanNextFolder(nextParentFolder!!, request.nextIndex)
             ?.let {
                 it.forEach { folder -> folder.index++ }
             }
+
+        // TODO: 2021/12/02 예외 생각
+        moveFolder?.updateIndexAndParentFolder(request.nextIndex, nextParentFolder)
 
         // 4)
         prevChildFolderList?.removeAt(request.prevIndex)

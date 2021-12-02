@@ -113,7 +113,9 @@ class BookmarkService(
     fun restore(bookmarkIdList: MutableList<String>?) {
         bookmarkIdList?.let {
             bookmarkIdList.forEach {
-                bookmarkRepository.findByIdOrNull(it)?.restore()
+                // TODO: 2021/12/02  Bookmark 예외처리
+                val restoreBookmark = bookmarkRepository.findByIdOrNull(it)?.restore()
+                bookmarkRepository.save(restoreBookmark!!)
             }
         }
     }
