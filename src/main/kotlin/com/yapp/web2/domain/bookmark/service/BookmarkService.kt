@@ -87,7 +87,7 @@ class BookmarkService(
     fun increaseBookmarkClickCount(bookmarkId: String): Bookmark {
         val bookmark = getBookmarkIfPresent(bookmarkId)
         bookmark.clickCount++
-        return bookmark
+        return bookmarkRepository.save(bookmark)
     }
 
     @Transactional

@@ -26,6 +26,12 @@ class BookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByFolderId(folderId, pageable, remind))
     }
 
+    @GetMapping("/click/{bookmarkId}")
+    fun increaseBookmarkClickCount(@PathVariable bookmarkId: String): ResponseEntity<String> {
+        bookmarkService.increaseBookmarkClickCount(bookmarkId)
+        return ResponseEntity.status(HttpStatus.OK).body("올라감")
+    }
+
     @PostMapping("/{folderId}")
     fun createBookmark(
         request: HttpServletRequest,
