@@ -76,7 +76,7 @@ class GlobalExceptionHandler {
         log.error("methodArgumentNotValidException", e)
         val errors = mutableListOf<Error>()
         // TODO: message 수정
-        val response = ErrorResponse.of(e.message, errors)
+        val response = ErrorResponse.of("이름을 정합시다", errors)
 
         e.bindingResult.allErrors.forEach { errorObject ->
             val error = Error().apply {
