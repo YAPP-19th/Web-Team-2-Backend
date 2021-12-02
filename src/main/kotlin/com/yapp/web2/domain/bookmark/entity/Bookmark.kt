@@ -70,14 +70,16 @@ class Bookmark(
         val bookmarkIdList: MutableList<String>?
     )
 
-    fun restore() {
+    fun restore(): Bookmark {
         this.deleted = false
         this.deleteTime = null
+        return this
     }
 
     fun deletedByFolder() {
         this.folderId = null
         this.deleted = true
+        this.deleteTime = LocalDateTime.now()
     }
 
 }
