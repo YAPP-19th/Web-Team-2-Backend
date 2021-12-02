@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletRequest
+import javax.validation.Valid
 
 @RestController
 @RequestMapping("/api/v1/folder")
@@ -45,21 +46,21 @@ class FolderController(
     @PatchMapping("/{folderId}/move")
     fun moveFolder(
         @PathVariable folderId: Long,
-        @RequestBody request: Folder.FolderMoveRequest
+        @RequestBody @Valid request: Folder.FolderMoveRequest
     ): ResponseEntity<String> {
         folderService.moveFolder(folderId, request)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
     @PostMapping("/{folderId}")
-    fun deleteAllBookmarkAndFolder(@PathVariable folderId: Long): ResponseEntity<Any> {
+    fun deleteAllBookmarkAndFolder(@PathVariable folderId: Long): ResponseEntity<String> {
         folderService.deleteAllBookmark(folderId)
         folderService.deleteFolder(folderId)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
     @GetMapping
-    fun findAll(servletRequest: HttpServletRequest): ResponseEntity<Folder.FolderReadResponse> {
+    fun findAll(servletRequest: HttpServletRequest): ResponseEntity<Map<String, Any>> {
         val accessToken = servletRequest.getHeader("AccessToken")
         val response = folderService.findAll(accessToken)
         return ResponseEntity.status(HttpStatus.OK).body(response)
