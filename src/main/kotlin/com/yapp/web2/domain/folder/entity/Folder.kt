@@ -56,6 +56,11 @@ class Folder(
         return "Folder(name='$name', index=$index, bookmarkCount=$bookmarkCount, parentFolder=$parentFolder, emoji=$emoji)"
     }
 
+    fun updateIndexAndParentFolder(nextIndex: Int, nextParentFolder: Folder) {
+        this.index = nextIndex
+        this.parentFolder = nextParentFolder
+    }
+
     class FolderCreateRequest(
         @field: PositiveOrZero
         val parentId: Long = 0,
