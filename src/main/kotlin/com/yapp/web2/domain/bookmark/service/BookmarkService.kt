@@ -6,6 +6,7 @@ import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.ObjectNotFoundException
+import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,13 +15,14 @@ import java.time.LocalDateTime
 @Service
 class BookmarkService(
     private val bookmarkRepository: BookmarkRepository,
-    private val folderRepository: FolderRepository
+    private val folderRepository: FolderRepository,
+    private val jwtProvider: JwtProvider
 ) {
     @Transactional
-    fun addBookmark(folderId: Long, bookmarkDto: Bookmark.AddBookmarkDto): Bookmark {
-        // TODO: 토큰을 통해 userId 가져오기.
+    fun addBookmark(token: String, folderId: Long, bookmarkDto: Bookmark.AddBookmarkDto): Bookmark {
+        val idFromToken = jwtProvider.getIdFromToken(token)
         val folder = checkFolderAbsence(folderId)
-        val toSaveBookmark = bookmarkAddDtoToBookmark(bookmarkDto, folderId, userId = 1)
+        val toSaveBookmark = bookmarkAddDtoToBookmark(bookmarkDto, folderId, idFromToken)
         checkSameBookmark(toSaveBookmark, folderId)
 
         folder.bookmarkCount++
@@ -41,10 +43,12 @@ class BookmarkService(
     }
 
     private fun bookmarkAddDtoToBookmark(bookmarkDto: Bookmark.AddBookmarkDto, folderId: Long, userId: Long): Bookmark {
-        var bookmark = Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, null)
+        var bookmark: Bookmark
         when (bookmarkDto.remind) {
             true -> bookmark =
-                Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDateTime.now())
+                Bookmark(userId, folderId, bookmarkDto.description, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDateTime.now())
+            false -> bookmark =
+                Bookmark(userId, folderId, bookmarkDto.description, bookmarkDto.url, bookmarkDto.title, null)
         }
         return bookmark
     }
@@ -83,7 +87,7 @@ class BookmarkService(
     fun increaseBookmarkClickCount(bookmarkId: String): Bookmark {
         val bookmark = getBookmarkIfPresent(bookmarkId)
         bookmark.clickCount++
-        return bookmark
+        return bookmarkRepository.save(bookmark)
     }
 
     @Transactional
