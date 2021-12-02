@@ -51,7 +51,7 @@ internal class BookmarkServiceTest {
             folderId = 1
             token = "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNjM4MzU3ODEyLCJleHAiOjE2Mzg0NDQyMTJ9.pJcjPqHFudkT5YAblaSFZue455YAndRtxO9y7bf5f0zVM6iiTWs-qP2YmIeKhZIeqsOsa6X3wdN0cm7o3MScrA"
             folder.id = folderId
-            bookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", null, "test",false)
+            bookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", null, "test", false)
             bookmark = Bookmark(1, 1, "www.naver.com")
         }
 
@@ -179,7 +179,7 @@ internal class BookmarkServiceTest {
         fun `북마크의 title을 변경한다`() {
             //given
             val predictBookmark = Bookmark(1, 1, "www.naver.com", "test2")
-            val updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", null)
+            val updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", false)
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
             every { bookmarkRepository.save(any()) } returns bookmark
 
@@ -194,7 +194,7 @@ internal class BookmarkServiceTest {
         fun `북마크의 remind를 변경한다`() {
             //given
             val predictBookmark = Bookmark(1, 1, "www.naver.com")
-            val updateBookmarkDto = Bookmark.UpdateBookmarkDto(null, false)
+            val updateBookmarkDto = Bookmark.UpdateBookmarkDto("test", false)
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
             every { bookmarkRepository.save(any()) } returns bookmark
 
@@ -209,6 +209,7 @@ internal class BookmarkServiceTest {
         fun `북마크의 clickCount를 올린다`() {
             //given
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
+            every { bookmarkRepository.save(any()) } returns bookmark
             val predictClickCount = 1
 
             //when

@@ -3,6 +3,9 @@ package com.yapp.web2.domain.bookmark.entity
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 import javax.persistence.Id
+import javax.validation.Valid
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.NotNull
 
 @Document(collection = "Bookmark")
 class Bookmark(
@@ -39,9 +42,11 @@ class Bookmark(
         this.description = description
     }
 
-    class UpdateBookmarkDto(
-        var title: String?,
-        var remind: Boolean?
+    data class UpdateBookmarkDto(
+        @field:NotEmpty(message = "제목을 입력해주세요")
+        var title: String,
+        @field:NotNull(message = "리마인드 여부를 입력해주세요")
+        var remind: Boolean
     )
 
     class AddBookmarkDto(
