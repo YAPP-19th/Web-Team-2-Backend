@@ -28,10 +28,12 @@ class BookmarkController(
 
     @PostMapping("/{folderId}")
     fun createBookmark(
+        request: HttpServletRequest,
         @PathVariable folderId: Long,
         @RequestBody bookmark: Bookmark.AddBookmarkDto
     ): ResponseEntity<String> {
-        bookmarkService.addBookmark(folderId, bookmark)
+        val token = request.getHeader("AccessToken")
+        bookmarkService.addBookmark(token, folderId, bookmark)
         return ResponseEntity.status(HttpStatus.OK).body("저장됨")
     }
 

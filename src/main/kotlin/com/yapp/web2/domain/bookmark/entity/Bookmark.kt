@@ -19,6 +19,7 @@ class Bookmark(
     var clickCount: Int = 0
     var deleteTime: LocalDateTime? = null
     var deleted: Boolean = false
+    var description: String? = null
 
     var saveTime: LocalDateTime = LocalDateTime.now()
 
@@ -26,12 +27,16 @@ class Bookmark(
         this.title = title
     }
 
+    constructor(userId: Long, folderId: Long, link: String, remindTime: LocalDateTime) : this(userId, folderId, link) {
+        this.remindTime = remindTime
+    }
+
     constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDateTime?) : this(userId, folderId, link, title) {
         this.remindTime = remindTime
     }
 
-    constructor(userId: Long, folderId: Long, link: String, remindTime: LocalDateTime) : this(userId, folderId, link) {
-        this.remindTime = remindTime
+    constructor(userId: Long, folderId: Long, description: String?, link: String, title: String?, remindTime: LocalDateTime?) : this(userId, folderId, link, title, remindTime) {
+        this.description = description
     }
 
     class UpdateBookmarkDto(
@@ -42,6 +47,7 @@ class Bookmark(
     class AddBookmarkDto(
         var url: String,
         var title: String?,
+        var description: String?,
         var remind: Boolean
     )
 
@@ -49,6 +55,7 @@ class Bookmark(
         val prevFolderId: Long,
         val nextFolderId: Long
     )
+
 
     class RestoreBookmarkRequest(
         val bookmarkIdList: MutableList<String>?
