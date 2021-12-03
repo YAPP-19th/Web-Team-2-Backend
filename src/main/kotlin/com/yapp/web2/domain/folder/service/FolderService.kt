@@ -153,8 +153,8 @@ class FolderService(
             .filter { it.children != null }
             .forEach { rootFolder ->
                 val id = rootFolder.id
-                val children: MutableList<Int> = mutableListOf()
-                rootFolder.children?.forEach { children.add(it.index) }
+                val children: MutableList<Long> = mutableListOf()
+                rootFolder.children?.forEach { children.add(it.id!!) }
                 val emoji = rootFolder.emoji ?: ""
                 val data = Folder.FolderReadResponse.RootFolderData(rootFolder.name, emoji)
                 val folderValue = Folder.FolderReadResponse.RootFolder(id!!, children, data)
