@@ -136,12 +136,12 @@ class FolderService(
     fun findAll(accessToken: String): Map<String, Any> {
         val rootId = jwtProvider.getIdFromToken(accessToken)
         val user = userRepository.findById(rootId).get()
-        val folderList: MutableList<Folder> = folderRepository.findAllByParentFolderIsNull(user)
         val itemsValue = mutableMapOf<String, Any>()
 
         /* "root" 하위 데이터 */
+        val rootFolderList: MutableList<Folder> = folderRepository.findAllByParentFolderIsNull(user)
         val rootFolders: MutableList<Long> = mutableListOf()
-        folderList.stream()
+        rootFolderList.stream()
             .filter { it.parentFolder == null }
             .forEach { it.id?.let { folderId -> rootFolders.add(folderId) } }
 
@@ -149,8 +149,9 @@ class FolderService(
         itemsValue["root"] = root
 
         /* "folder" 하위 데이터 */
-        folderList.stream()
-            .filter { it.children != null }
+        val allFolderList: MutableList<Folder> = folderRepository.findAll()
+        allFolderList.stream()
+            //filter { it.children != null }
             .forEach { rootFolder ->
                 val id = rootFolder.id
                 val children: MutableList<Long> = mutableListOf()
