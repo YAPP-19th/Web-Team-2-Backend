@@ -228,7 +228,7 @@ internal open class FolderServiceTest {
         printAllFolderToJson(actual)
     }
 
-    private fun printAllFolderToJson(actual: Folder.FolderReadResponse) {
+    private fun printAllFolderToJson(actual: Map<String, Any>) {
         val mapper = ObjectMapper()
         val json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actual)
         println(json)
