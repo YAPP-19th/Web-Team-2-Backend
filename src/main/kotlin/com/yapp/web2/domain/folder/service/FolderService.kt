@@ -146,7 +146,7 @@ class FolderService(
             .forEach { it.id?.let { folderId -> rootFolders.add(folderId) } }
 
         val root = Folder.FolderReadResponse.Root(rootId, rootFolders)
-        itemsValue["root"] = root
+        itemsValue[rootId.toString()] = root
 
         /* "folder" 하위 데이터 */
         val allFolderList: MutableList<Folder> = folderRepository.findAll()
