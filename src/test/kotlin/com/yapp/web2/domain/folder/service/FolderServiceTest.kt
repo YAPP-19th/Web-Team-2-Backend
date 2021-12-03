@@ -152,8 +152,8 @@ internal open class FolderServiceTest {
         every { folderRepository.findById(1L).orElse(null) } returns prevParentFolder
         every { folderRepository.findById(2L).orElse(null) } returns nextParentFolder
         every { folderRepository.findById(10L).orElse(null) } returns prevMoveFolder
-        every { folderRepository.findByIndexGreaterThan(prevParentFolder, 2) } returns stubPrevChildFolders
-        every { folderRepository.findByIndexGreaterThan(nextParentFolder, 3) } returns stubNextChildFolders
+        every { folderRepository.findByIndexGreaterThanPrevFolder(prevParentFolder, 2) } returns stubPrevChildFolders
+        every { folderRepository.findByIndexGreaterThanNextFolder(nextParentFolder, 3) } returns stubNextChildFolders
 
         // then
         assertAll(

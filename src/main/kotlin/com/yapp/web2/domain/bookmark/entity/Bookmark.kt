@@ -42,13 +42,12 @@ class Bookmark(
         this.description = description
     }
 
-    class UpdateBookmarkDto {
+    class UpdateBookmarkDto(
         @field:NotEmpty(message = "제목을 입력해주세요")
-        lateinit var title: String
-
+        var title: String,
         @field:NotNull(message = "리마인드 여부를 입력해주세요")
         var remind: Boolean = false
-    }
+    )
 
     class AddBookmarkDto(
         var url: String,

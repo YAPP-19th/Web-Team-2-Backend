@@ -299,6 +299,7 @@ internal class BookmarkServiceTest {
 
             every { bookmarkRepository.findByIdOrNull("1") } returns bookmark1
             every { bookmarkRepository.findByIdOrNull("2") } returns bookmark2
+            every { bookmarkRepository.save(any()) } returns bookmark1
 
             // when
             bookmarkService.restore(list)
