@@ -1,7 +1,7 @@
 package com.yapp.web2.domain.account.controller
 
 import com.yapp.web2.domain.account.entity.Account
-import com.yapp.web2.domain.account.service.UserService
+import com.yapp.web2.domain.account.service.AccountService
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.util.Message
 import org.springframework.http.HttpStatus
@@ -11,27 +11,24 @@ import javax.servlet.http.HttpServletRequest
 
 @RestController
 @RequestMapping("/api/v1/user")
-class UserController(
-    private val userService: UserService
+class AccountController(
+    private val accountService: AccountService
 ) {
     @PostMapping("/oauth2Login")
     fun oauth2Login(
         @RequestBody request: Account.AccountLoginRequest
     ): ResponseEntity<TokenDto> {
-        val tokenDto = userService.oauth2LoginUser(request)
+        val tokenDto = accountService.oauth2LoginUser(request)
         return ResponseEntity.status(HttpStatus.OK).body(tokenDto)
-    }
-
-    @GetMapping("/test")
-    fun test(): ResponseEntity<String> {
-        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
     @GetMapping("/reIssuanceAccessToken")
     fun reIssuanceAccessToken(request: HttpServletRequest): ResponseEntity<TokenDto> {
         val accessToken = request.getHeader("AccessToken")
         val refreshToken = request.getHeader("RefreshToken")
-        val tokenDto = userService.reIssuedAccessToken(accessToken, refreshToken)
+        val tokenDto = accountService.reIssuedAccessToken(accessToken, refreshToken)
         return ResponseEntity.status(HttpStatus.OK).body(tokenDto)
     }
+
+
 }

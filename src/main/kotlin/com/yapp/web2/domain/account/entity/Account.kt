@@ -5,6 +5,7 @@ import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.notification.entity.Notification
 import javax.persistence.*
 import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.Size
 
 @Entity
 class Account(
@@ -50,5 +51,10 @@ class Account(
         val imageUrl: String,
         @field: NotEmpty(message = "소셜타입을 입력해주세요")
         val socialType: String
+    )
+
+    class nextNickName(
+        @field: Size(max = 20)
+        val nickName: String
     )
 }

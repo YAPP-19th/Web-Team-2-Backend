@@ -4,7 +4,7 @@ import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
-import com.yapp.web2.domain.account.repository.UserRepository
+import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.repository.findByIdOrNull
@@ -15,7 +15,7 @@ import javax.transaction.Transactional
 class FolderService(
     private val folderRepository: FolderRepository,
     private val bookmarkRepository: BookmarkRepository,
-    private val userRepository: UserRepository,
+    private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider
 ) {
     companion object {
@@ -27,7 +27,7 @@ class FolderService(
         return when (isParentFolder(request.parentId)) {
             true -> {
                 val userId = jwtProvider.getIdFromToken(accessToken)
-                val user = userRepository.findByIdOrNull(userId)
+                val user = accountRepository.findByIdOrNull(userId)
                 val rootFolder = Folder.dtoToEntity(request)
                 val accountFolder = user?.let { AccountFolder(it, rootFolder) }
                 rootFolder.folders?.add(accountFolder!!)
@@ -132,7 +132,7 @@ class FolderService(
     @Transactional
     fun findAll(accessToken: String): Folder.FolderReadResponse {
         val rootId = jwtProvider.getIdFromToken(accessToken)
-        val user = userRepository.findById(rootId).get()
+        val user = accountRepository.findById(rootId).get()
         val allFolder = folderRepository.findAllByParentFolderIsNull(user)
 
         /* "folder" 하위 부분 */
