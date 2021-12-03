@@ -46,9 +46,9 @@ class BookmarkService(
         var bookmark: Bookmark
         when (bookmarkDto.remind) {
             true -> bookmark =
-                Bookmark(userId, folderId, bookmarkDto.description, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDateTime.now())
+                Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDateTime.now())
             false -> bookmark =
-                Bookmark(userId, folderId, bookmarkDto.description, bookmarkDto.url, bookmarkDto.title, null)
+                Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, null)
         }
         return bookmark
     }

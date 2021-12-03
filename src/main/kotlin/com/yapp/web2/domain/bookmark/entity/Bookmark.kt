@@ -38,21 +38,16 @@ class Bookmark(
         this.remindTime = remindTime
     }
 
-    constructor(userId: Long, folderId: Long, description: String?, link: String, title: String?, remindTime: LocalDateTime?) : this(userId, folderId, link, title, remindTime) {
-        this.description = description
-    }
-
-    data class UpdateBookmarkDto(
+    class UpdateBookmarkDto(
         @field:NotEmpty(message = "제목을 입력해주세요")
         var title: String,
         @field:NotNull(message = "리마인드 여부를 입력해주세요")
-        var remind: Boolean
+        var remind: Boolean = false
     )
 
     class AddBookmarkDto(
         var url: String,
         var title: String?,
-        var description: String?,
         var remind: Boolean
     )
 

@@ -101,7 +101,7 @@ class Folder(
 
         class FolderItem(
             var root: Root,
-            var folder: MutableList<RootFolder> = mutableListOf()
+            var folder: MutableMap<String, Any> = mutableMapOf()
         )
 
         class Root(
