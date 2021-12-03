@@ -36,7 +36,7 @@ class Folder(
     @JsonManagedReference
     var children: MutableList<Folder>? = mutableListOf()
 
-    @OneToMany(mappedBy = "folder")
+    @OneToMany(mappedBy = "folder", cascade = [CascadeType.PERSIST])
     var folders: MutableList<AccountFolder>? = mutableListOf()
 
     override fun equals(other: Any?): Boolean {
