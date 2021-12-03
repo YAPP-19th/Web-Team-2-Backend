@@ -51,7 +51,7 @@ internal class BookmarkServiceTest {
             folderId = 1
             token = "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNjM4MzU3ODEyLCJleHAiOjE2Mzg0NDQyMTJ9.pJcjPqHFudkT5YAblaSFZue455YAndRtxO9y7bf5f0zVM6iiTWs-qP2YmIeKhZIeqsOsa6X3wdN0cm7o3MScrA"
             folder.id = folderId
-            bookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", null, "test", false)
+            bookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", null, false)
             bookmark = Bookmark(1, 1, "www.naver.com")
         }
 
@@ -89,7 +89,7 @@ internal class BookmarkServiceTest {
         @Test
         fun `같은 폴더에 같은 북마크가 존재한다면, 예외를 던진다`() {
             //given
-            val sameBookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", null, "test", false)
+            val sameBookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", null, false)
             val predictException = BusinessException("똑같은 게 있어요.")
             every { folderRepository.findById(folderId) } returns Optional.of(folder)
             every { bookmarkRepository.findAllByFolderId(folderId) } returns listOf(bookmark)
