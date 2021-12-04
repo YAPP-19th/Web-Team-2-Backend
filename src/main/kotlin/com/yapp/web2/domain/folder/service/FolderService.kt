@@ -144,7 +144,7 @@ class FolderService(
         rootFolderList.stream()
             .filter { it.parentFolder == null }
             .forEach { it.id?.let { folderId -> rootFolders.add(folderId) } }
-
+        
         val root = Folder.FolderReadResponse.Root(rootFolders = rootFolders)
         itemsValue["root"] = root
 
