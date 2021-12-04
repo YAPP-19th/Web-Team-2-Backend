@@ -114,10 +114,10 @@ class FolderService(
 
     /* API
     {
-	"rootId": "유저 고유 아이디",
+	"rootId": "root",
 	"items": {
 		"root": {
-			"id": "유저 고유 아이디",
+			"id": "root",
 			"rootFolders": [최상위 폴더 애들],
 		},
 		"1": { // folderId
@@ -145,11 +145,11 @@ class FolderService(
             .filter { it.parentFolder == null }
             .forEach { it.id?.let { folderId -> rootFolders.add(folderId) } }
 
-        val root = Folder.FolderReadResponse.Root(rootId, rootFolders)
+        val root = Folder.FolderReadResponse.Root(rootFolders = rootFolders)
         itemsValue["root"] = root
 
         /* "folder" 하위 데이터 */
-        val allFolderList: MutableList<Folder> = folderRepository.findAll()
+        val allFolderList: MutableList<Folder> = folderRepository.findAllByAccount(user)
         allFolderList.stream()
             //filter { it.children != null }
             .forEach { rootFolder ->
@@ -163,7 +163,7 @@ class FolderService(
             }
 
         val responseMap = mutableMapOf<String, Any>()
-        responseMap["rootId"] = rootId
+        responseMap["rootId"] = "root"
         responseMap["items"] = itemsValue
 
         return responseMap
