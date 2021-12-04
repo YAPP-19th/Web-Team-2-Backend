@@ -243,6 +243,7 @@ internal open class FolderServiceTest {
 
         (start..end).forEach {
             val folder = Folder("${parentFolder.name}-$it", it, 0, parentFolder)
+            folder.id = start.toLong()
             childFolders.add(folder)
         }
 

@@ -114,10 +114,10 @@ class FolderService(
 
     /* API
     {
-	"rootId": "유저 고유 아이디",
+	"rootId": "root",
 	"items": {
 		"root": {
-			"id": "유저 고유 아이디",
+			"id": "root",
 			"rootFolders": [최상위 폴더 애들],
 		},
 		"1": { // folderId
@@ -136,25 +136,26 @@ class FolderService(
     fun findAll(accessToken: String): Map<String, Any> {
         val rootId = jwtProvider.getIdFromToken(accessToken)
         val user = userRepository.findById(rootId).get()
-        val folderList: MutableList<Folder> = folderRepository.findAllByParentFolderIsNull(user)
         val itemsValue = mutableMapOf<String, Any>()
 
         /* "root" 하위 데이터 */
+        val rootFolderList: MutableList<Folder> = folderRepository.findAllByParentFolderIsNull(user)
         val rootFolders: MutableList<Long> = mutableListOf()
-        folderList.stream()
+        rootFolderList.stream()
             .filter { it.parentFolder == null }
             .forEach { it.id?.let { folderId -> rootFolders.add(folderId) } }
 
-        val root = Folder.FolderReadResponse.Root(rootId, rootFolders)
+        val root = Folder.FolderReadResponse.Root(rootFolders = rootFolders)
         itemsValue["root"] = root
 
         /* "folder" 하위 데이터 */
-        folderList.stream()
-            .filter { it.children != null }
+        val allFolderList: MutableList<Folder> = folderRepository.findAllByAccount(user)
+        allFolderList.stream()
+            //filter { it.children != null }
             .forEach { rootFolder ->
                 val id = rootFolder.id
-                val children: MutableList<Int> = mutableListOf()
-                rootFolder.children?.forEach { children.add(it.index) }
+                val children: MutableList<Long> = mutableListOf()
+                rootFolder.children?.forEach { children.add(it.id!!) }
                 val emoji = rootFolder.emoji ?: ""
                 val data = Folder.FolderReadResponse.RootFolderData(rootFolder.name, emoji)
                 val folderValue = Folder.FolderReadResponse.RootFolder(id!!, children, data)
@@ -162,7 +163,7 @@ class FolderService(
             }
 
         val responseMap = mutableMapOf<String, Any>()
-        responseMap["rootId"] = rootId
+        responseMap["rootId"] = "root"
         responseMap["items"] = itemsValue
 
         return responseMap
