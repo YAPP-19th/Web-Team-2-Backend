@@ -22,26 +22,29 @@ class FolderService(
         private val folderNotFoundException = FolderNotFoundException()
     }
 
+    // TODO: 리팩토링
     @Transactional
     fun createFolder(request: Folder.FolderCreateRequest, accessToken: String): Folder {
-        return when (isParentFolder(request.parentId)) {
+        val userId = jwtProvider.getIdFromToken(accessToken)
+        val user = userRepository.findByIdOrNull(userId)
+        val folder: Folder
+
+        when (isParentFolder(request.parentId)) {
             true -> {
-                val userId = jwtProvider.getIdFromToken(accessToken)
-                val user = userRepository.findByIdOrNull(userId)
-                val rootFolder = Folder.dtoToEntity(request)
-                val accountFolder = user?.let { AccountFolder(it, rootFolder) }
-                rootFolder.folders?.add(accountFolder!!)
-                folderRepository.save(rootFolder)
+                folder = Folder.dtoToEntity(request)
+                val accountFolder = user?.let { AccountFolder(it, folder) }
+                folder.folders?.add(accountFolder!!)
             }
             false -> {
-                val parentFolder = folderRepository.findById(request.parentId).get()
-                val childrenFolderList = parentFolder.children
-                val folder = Folder.dtoToEntity(request, parentFolder)
+                val parentFolder: Folder = folderRepository.findById(request.parentId).get()
+                val childrenFolderList: MutableList<Folder>? = parentFolder.children
+                folder = Folder.dtoToEntity(request, parentFolder)
+                val accountFolder = user?.let { AccountFolder(it, folder) }
+                parentFolder.folders?.add(accountFolder!!)
                 childrenFolderList?.add(folder)
-
-                return folder
             }
         }
+        return folderRepository.save(folder)
     }
 
     private fun isParentFolder(parentId: Long) = parentId == 0L
@@ -114,11 +117,11 @@ class FolderService(
 
     /* API
     {
-	"rootId": "유저 고유 아이디",
+	"rootId": "root",
 	"items": {
 		"root": {
-			"id": "유저 고유 아이디",
-			"rootFolders": [최상위 폴더 애들],
+			"id": "root",
+			"children": [최상위 폴더 애들],
 		},
 		"1": { // folderId
 			"id": "폴더 고유 아이디",
@@ -145,11 +148,11 @@ class FolderService(
             .filter { it.parentFolder == null }
             .forEach { it.id?.let { folderId -> rootFolders.add(folderId) } }
 
-        val root = Folder.FolderReadResponse.Root(rootId, rootFolders)
-        itemsValue[rootId.toString()] = root
+        val root = Folder.FolderReadResponse.Root(children = rootFolders)
+        itemsValue["root"] = root
 
         /* "folder" 하위 데이터 */
-        val allFolderList: MutableList<Folder> = folderRepository.findAll()
+        val allFolderList: MutableList<Folder> = folderRepository.findAllByAccount(user)
         allFolderList.stream()
             //filter { it.children != null }
             .forEach { rootFolder ->
@@ -163,7 +166,7 @@ class FolderService(
             }
 
         val responseMap = mutableMapOf<String, Any>()
-        responseMap["rootId"] = rootId
+        responseMap["rootId"] = "root"
         responseMap["items"] = itemsValue
 
         return responseMap
