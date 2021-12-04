@@ -39,15 +39,15 @@ class TokenAuthenticationFilter(
             httpServletResponse.writer.println(Message.ACCESS_TOKEN_EXPIRED)
         } catch (e: PrefixMisMatchException) {
             httpServletResponse.contentType = "application/json;charset=UTF-8"
-            httpServletResponse.status = HttpStatus.BAD_REQUEST.value()
+            httpServletResponse.status = HttpStatus.UNAUTHORIZED.value()
             httpServletResponse.writer.println(Message.PREFIX_MISMATCH)
         } catch (e: MalformedJwtException) {
             httpServletResponse.contentType = "application/json;charset=UTF-8"
-            httpServletResponse.status = HttpStatus.BAD_REQUEST.value()
+            httpServletResponse.status = HttpStatus.UNAUTHORIZED.value()
             httpServletResponse.writer.println(Message.WRONG_TOKEN_FORM)
         } catch (e: NullPointerException) {
             httpServletResponse.contentType = "application/json;charset=UTF-8"
-            httpServletResponse.status = HttpStatus.BAD_REQUEST.value()
+            httpServletResponse.status = HttpStatus.UNAUTHORIZED.value()
             httpServletResponse.writer.println(Message.NULL_TOKEN)
         }
     }

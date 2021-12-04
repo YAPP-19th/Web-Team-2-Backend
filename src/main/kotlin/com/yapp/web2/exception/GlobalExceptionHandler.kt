@@ -6,6 +6,7 @@ import com.yapp.web2.exception.custom.TokenMisMatchException
 import com.yapp.web2.util.CustomStatusCode
 import com.yapp.web2.util.Message
 import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.SignatureException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
@@ -23,6 +24,14 @@ class GlobalExceptionHandler {
 
     private val log: Logger get() = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 
+    @ExceptionHandler(SignatureException::class)
+    fun handleSignatureException(e: Exception): ResponseEntity<ErrorResponse> {
+        log.error("handleSignatureException", e)
+        val response = ErrorResponse.of(e.message)
+
+        return getResponse(response, HttpStatus.UNAUTHORIZED.value())
+    }
+
     @ExceptionHandler(value = [Exception::class, RuntimeException::class])
     fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
         log.error("handleException", e)
@@ -36,7 +45,7 @@ class GlobalExceptionHandler {
         log.error("ExpiredJwtException", e)
         val response = ErrorResponse.of(Message.NO_REFRESH_TOKEN)
 
-        return getResponse(response, CustomStatusCode.NO_REFRESH_TOKEN.code)
+        return getResponse(response, HttpStatus.UNAUTHORIZED.value())
     }
 
     @ExceptionHandler(BusinessException::class)
@@ -52,7 +61,7 @@ class GlobalExceptionHandler {
         log.error("handleTPrefixMisMatchException", e)
         val response = ErrorResponse.of(e.message)
 
-        return getResponse(response, HttpStatus.INTERNAL_SERVER_ERROR.value())
+        return getResponse(response, HttpStatus.UNAUTHORIZED.value())
     }
 
     @ExceptionHandler(TokenMisMatchException::class)
@@ -68,7 +77,7 @@ class GlobalExceptionHandler {
         log.error("handleNoRefreshTokenException", e)
         val response = ErrorResponse.of(e.message)
 
-        return getResponse(response, CustomStatusCode.NO_REFRESH_TOKEN.code)
+        return getResponse(response, HttpStatus.UNAUTHORIZED.value())
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
