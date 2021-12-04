@@ -1,8 +1,10 @@
 package com.yapp.web2.security.jwt
 
+import com.yapp.web2.exception.ErrorResponse
 import com.yapp.web2.exception.custom.PrefixMisMatchException
 import com.yapp.web2.util.Message
 import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.MalformedJwtException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -25,19 +27,28 @@ class TokenAuthenticationFilter(
     }
 
     override fun doFilter(request: ServletRequest?, response: ServletResponse?, chain: FilterChain?) {
+        val httpServletResponse = response as HttpServletResponse
         try {
             val token = resolveToken(request as HttpServletRequest)
-            response as HttpServletResponse
-
             if (!jwtProvider.validateToken(token))
                 SecurityContextHolder.getContext().authentication = jwtProvider.getAuthentication(token)
             chain!!.doFilter(request, response)
         } catch (e: ExpiredJwtException) {
-            response!!.contentType = "application/json;charset=UTF-8"
-            response.writer.println(Message.ACCESS_TOKEN_EXPIRED)
+            httpServletResponse.contentType = "application/json;charset=UTF-8"
+            httpServletResponse.status = HttpStatus.UNAUTHORIZED.value()
+            httpServletResponse.writer.println(Message.ACCESS_TOKEN_EXPIRED)
         } catch (e: PrefixMisMatchException) {
-            response!!.contentType = "application/json;charset=UTF-8"
-            response.writer.println("prefix_mismatch")
+            httpServletResponse.contentType = "application/json;charset=UTF-8"
+            httpServletResponse.status = HttpStatus.BAD_REQUEST.value()
+            httpServletResponse.writer.println(Message.PREFIX_MISMATCH)
+        } catch (e: MalformedJwtException) {
+            httpServletResponse.contentType = "application/json;charset=UTF-8"
+            httpServletResponse.status = HttpStatus.BAD_REQUEST.value()
+            httpServletResponse.writer.println(Message.WRONG_TOKEN_FORM)
+        } catch (e: NullPointerException) {
+            httpServletResponse.contentType = "application/json;charset=UTF-8"
+            httpServletResponse.status = HttpStatus.BAD_REQUEST.value()
+            httpServletResponse.writer.println(Message.NULL_TOKEN)
         }
     }
 
