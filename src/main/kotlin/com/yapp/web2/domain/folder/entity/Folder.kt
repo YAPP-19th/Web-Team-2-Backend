@@ -3,6 +3,8 @@ package com.yapp.web2.domain.folder.entity
 import com.fasterxml.jackson.annotation.JsonBackReference
 import com.fasterxml.jackson.annotation.JsonManagedReference
 import com.yapp.web2.domain.BaseTimeEntity
+import io.swagger.annotations.ApiModel
+import io.swagger.annotations.ApiModelProperty
 import javax.persistence.*
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.PositiveOrZero
@@ -61,40 +63,55 @@ class Folder(
         this.parentFolder = nextParentFolder
     }
 
+    @ApiModel(description = "폴더 생성 DTO")
     class FolderCreateRequest(
+        @ApiModelProperty(value = "부모 폴더 ID(0일경우 부모폴더)", example = "0")
         @field: PositiveOrZero
         val parentId: Long = 0,
 
+        @ApiModelProperty(value = "폴더 이름", required = true, example = "부모 폴더")
         @field: NotEmpty(message = "폴더명을 입력해주세요")
         val name: String,
 
+        @ApiModelProperty(value = "폴더 순서", required = true, example = "2")
         @field: PositiveOrZero
         val index: Int = 1
     )
 
+    @ApiModel(description = "폴더 이름 수정 DTO")
     class FolderNameChangeRequest(
+        @ApiModelProperty(value = "수정할 폴더 이름", required = true, example = "Change Folder")
+        @field: NotEmpty(message = "변경할 폴더 명을 입력해주세요")
         val name: String
     )
 
+    @ApiModel(description = "폴더 이모지 수정 DTO")
     class FolderEmojiChangeRequest(
+        @ApiModelProperty(value = "수정할 이모지 이름", required = true, example = "U+1F604")
+        @field: NotEmpty(message = "변경할 이모지를 입력해주세요")
         val emoji: String
     )
 
+    @ApiModel(description = "폴더 이동(드래그 & 드랍) DTO")
     class FolderMoveRequest(
+        @ApiModelProperty(value = "이동 전 부모폴더 ID", required = true, example = "1")
         @field: PositiveOrZero
         val prevParentId: Long,
 
+        @ApiModelProperty(value = "이동 후 부모폴더 ID", required = true, example = "2")
         @field: PositiveOrZero
         val nextParentId: Long,
 
+        @ApiModelProperty(value = "이동 전 폴더 Index", required = true, example = "0")
         @field: PositiveOrZero
         val prevIndex: Int,
 
+        @ApiModelProperty(value = "이동 후 폴더 Index", required = true, example = "2")
         @field: PositiveOrZero
         val nextIndex: Int
     )
 
-    class FolderReadResponse(
+    class FolderFindAllResponse(
         var rootId: Long,
         var items: FolderItem
     ) {
