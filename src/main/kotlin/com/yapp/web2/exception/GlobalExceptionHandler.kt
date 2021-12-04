@@ -60,7 +60,7 @@ class GlobalExceptionHandler {
         log.error("handleTokenMisMatchException", e)
         val response = ErrorResponse.of(e.message)
 
-        return getResponse(response, HttpStatus.INTERNAL_SERVER_ERROR.value())
+        return getResponse(response, HttpStatus.UNAUTHORIZED.value())
     }
 
     @ExceptionHandler(NoRefreshTokenException::class)

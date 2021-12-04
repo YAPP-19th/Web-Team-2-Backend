@@ -67,9 +67,8 @@ internal open class BookmarkRepositoryTest {
 
             //then
             for (page in actualPages) {
-                assertTrue(page.link.contains(testKeyword))
                 when (page.title.isNullOrEmpty()) {
-                    false -> assertTrue(page.title!!.contains(testKeyword))
+                    false -> assertTrue(page.title!!.contains(testKeyword) || page.link.contains(testKeyword))
                 }
             }
         }

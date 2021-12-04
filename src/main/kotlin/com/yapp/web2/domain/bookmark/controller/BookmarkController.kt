@@ -68,10 +68,9 @@ class BookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body("폴더가 이동됨")
     }
 
-    @GetMapping("/{userId}/{keyWord}")
+    @GetMapping("/search/{keyWord}")
     fun searchBookmarkList(
         request: HttpServletRequest,
-        @PathVariable userId: Long,
         @PathVariable keyWord: String,
         pageable: Pageable,
     ): ResponseEntity<Page<Bookmark>> {

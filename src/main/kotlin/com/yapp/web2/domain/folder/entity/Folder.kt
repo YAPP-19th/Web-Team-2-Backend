@@ -105,8 +105,9 @@ class Folder(
         )
 
         class Root(
-            var id: Long, // 유저 ID
-            var rootFolders: MutableList<Long> = mutableListOf()
+            //var id: Long, // 유저 ID
+            val id: String = "root",
+            var children: MutableList<Long> = mutableListOf()
         )
 
         class RootFolder(
