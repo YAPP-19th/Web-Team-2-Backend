@@ -7,6 +7,7 @@ import com.yapp.web2.util.Message
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import javax.servlet.http.HttpServletRequest
 
 @RestController
@@ -30,5 +31,10 @@ class AccountController(
         return ResponseEntity.status(HttpStatus.OK).body(tokenDto)
     }
 
-
+    @PostMapping("/changeProfileImage")
+    fun upload(request: HttpServletRequest, @RequestParam("images") multipartFile: MultipartFile): ResponseEntity<String> {
+        val token = request.getHeader("AccessToken")
+        val image = accountService.changeProfileImage(token, multipartFile)
+        return ResponseEntity.status(HttpStatus.OK).body(image)
+    }
 }
