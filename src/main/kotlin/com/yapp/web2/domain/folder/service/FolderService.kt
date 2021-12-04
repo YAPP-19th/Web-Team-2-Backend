@@ -121,7 +121,7 @@ class FolderService(
 	"items": {
 		"root": {
 			"id": "root",
-			"rootFolders": [최상위 폴더 애들],
+			"children": [최상위 폴더 애들],
 		},
 		"1": { // folderId
 			"id": "폴더 고유 아이디",
