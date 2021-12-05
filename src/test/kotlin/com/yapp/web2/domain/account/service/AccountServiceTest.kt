@@ -82,17 +82,6 @@ internal class AccountServiceTest {
             assertEquals(expectedException.message, actualException.message)
         }
 
-        //controller 쪽에서 검사하자
-//        @Test
-//        fun `닉네임의 길이가 넘어가면 예외를 던진다`() {
-//
-//        }
-//
-//        @Test
-//        fun `변경 이름이 존재하지 않는다면 예외를 던진다`() {
-//
-//        }
-
         @Test
         fun `닉네임이 변경된다`() {
             //given
