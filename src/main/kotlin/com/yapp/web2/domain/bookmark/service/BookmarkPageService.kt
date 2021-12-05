@@ -23,11 +23,20 @@ class BookmarkPageService(
         }
     }
 
-    fun getAllPageByUserId(token: String, pageable: Pageable, remind: Boolean): Page<Bookmark> {
+    fun getTrashPageByUserId(token: String, pageable: Pageable, remind: Boolean): Page<Bookmark> {
         val idFromToken = jwtProvider.getIdFromToken(token)
         return when (remind) {
             true -> bookmarkRepository.findAllByUserIdAndDeleteTimeIsNotNullAndRemindTimeIsNotNull(idFromToken, pageable)
             false -> bookmarkRepository.findAllByUserIdAndDeleteTimeIsNotNull(idFromToken, pageable)
+        }
+    }
+
+    fun getAllPageByUserId(token: String, pageable: Pageable, remind: Boolean): Page<Bookmark> {
+        val idFromToken = jwtProvider.getIdFromToken(token)
+
+        return when (remind) {
+            true -> bookmarkRepository.findAllByUserIdAndRemindTimeIsNotNull(idFromToken, pageable)
+            false -> bookmarkRepository.findAllByUserId(idFromToken, pageable)
         }
     }
 

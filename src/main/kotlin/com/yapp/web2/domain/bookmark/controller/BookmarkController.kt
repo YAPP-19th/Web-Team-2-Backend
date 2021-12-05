@@ -76,6 +76,15 @@ class BookmarkController(
     ): ResponseEntity<Page<Bookmark>> {
         val token = request.getHeader("AccessToken")
         return ResponseEntity.status(HttpStatus.OK).body(bookmarkSearchService.searchKeywordOwnUserId(token, keyWord, pageable))
+    }
 
+    @GetMapping("/main")
+    fun getAllBookmarkPage(
+        request: HttpServletRequest,
+        pageable: Pageable,
+        @RequestParam remind: Boolean
+    ): ResponseEntity<Page<Bookmark>> {
+        val token = request.getHeader("AccessToken")
+        return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByUserId(token, pageable, remind))
     }
 }

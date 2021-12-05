@@ -36,6 +36,6 @@ class TrashController(
         @RequestParam remind: Boolean
     ): ResponseEntity<Page<Bookmark>> {
         val token = request.getHeader("AccessToken")
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByUserId(token, pageable, remind))
+        return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getTrashPageByUserId(token, pageable, remind))
     }
 }
