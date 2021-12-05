@@ -36,6 +36,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation ("org.springframework.boot:spring-boot-starter-batch")
     implementation ("io.jsonwebtoken:jjwt:0.9.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -45,6 +46,7 @@ dependencies {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
         exclude(group = "org.mockito")
     }
+    testImplementation ("org.springframework.batch:spring-batch-test")
     testImplementation("com.ninja-squad:springmockk:2.0.3")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
 }
