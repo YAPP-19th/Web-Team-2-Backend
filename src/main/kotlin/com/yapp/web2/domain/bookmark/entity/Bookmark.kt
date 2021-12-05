@@ -1,9 +1,10 @@
 package com.yapp.web2.domain.bookmark.entity
 
+import io.swagger.annotations.ApiModel
+import io.swagger.annotations.ApiModelProperty
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 import javax.persistence.Id
-import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 
@@ -38,30 +39,53 @@ class Bookmark(
         this.remindTime = remindTime
     }
 
+    @ApiModel(description = "북마크 수정 DTO")
     class UpdateBookmarkDto(
+        @ApiModelProperty(value = "북마크 이름", required = true, example = "Change Bookmark")
         @field:NotEmpty(message = "제목을 입력해주세요")
         var title: String,
+
+        @ApiModelProperty(value = "리마인드 여부", example = "true")
         @field:NotNull(message = "리마인드 여부를 입력해주세요")
         var remind: Boolean = false
     )
 
+    @ApiModel(description = "북마크 생성 DTO")
     class AddBookmarkDto(
+
+        // TODO: 2021/12/04 RequestParam 데이터 검증
+        @ApiModelProperty(value = "북마크 url", required = true, example = "https://www.naver.com")
         var url: String,
+
+        @ApiModelProperty(value = "북마크 제목", example = "Bookmark Title")
         var title: String?,
+
+        @ApiModelProperty(value = "북마크 리마인드 여부", required = true, example = "true")
         var remind: Boolean
     )
 
+    @ApiModel(description = "북마크 이동 API(폴더별 이동)")
     class MoveBookmarkDto(
+
+        // TODO: 2021/12/04 RequestParam 데이터 검증
+        @ApiModelProperty(value = "이동 전 폴더 ID", required = true, example = "1")
         val prevFolderId: Long,
+
+        @ApiModelProperty(value = "이동 후 폴더 ID", required = true, example = "2")
         val nextFolderId: Long
     )
 
-
+    @ApiModel(description = "휴지통 복원 API")
     class RestoreBookmarkRequest(
+
+        @ApiModelProperty(value = "복원할 북마크 ID 리스트")
         val bookmarkIdList: MutableList<String>?
     )
 
+    @ApiModel(description = "휴지통 영구삭제 API")
     class TruncateBookmarkRequest(
+
+        @ApiModelProperty(value = "영구삭제할 북마크 ID 리스트")
         val bookmarkIdList: MutableList<String>?
     )
 

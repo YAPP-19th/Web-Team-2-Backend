@@ -148,7 +148,7 @@ class FolderService(
             .filter { it.parentFolder == null }
             .forEach { it.id?.let { folderId -> rootFolders.add(folderId) } }
 
-        val root = Folder.FolderReadResponse.Root(children = rootFolders)
+        val root = Folder.FolderFindAllResponse.Root(children = rootFolders)
         itemsValue["root"] = root
 
         /* "folder" 하위 데이터 */
@@ -160,8 +160,8 @@ class FolderService(
                 val children: MutableList<Long> = mutableListOf()
                 rootFolder.children?.forEach { children.add(it.id!!) }
                 val emoji = rootFolder.emoji ?: ""
-                val data = Folder.FolderReadResponse.RootFolderData(rootFolder.name, emoji)
-                val folderValue = Folder.FolderReadResponse.RootFolder(id!!, children, data)
+                val data = Folder.FolderFindAllResponse.RootFolderData(rootFolder.name, emoji)
+                val folderValue = Folder.FolderFindAllResponse.RootFolder(id!!, children, data)
                 itemsValue[id.toString()] = folderValue
             }
 
