@@ -63,4 +63,12 @@ class AccountService(
         }
         return account.get().image
     }
+
+    @Transactional
+    fun changeBackgroundColor(token: String, changeUrl: String): Account {
+        val idFromToken = jwtProvider.getIdFromToken(token)
+        val account = accountRepository.findById(idFromToken).get()
+        account.image = changeUrl
+        return account
+    }
 }

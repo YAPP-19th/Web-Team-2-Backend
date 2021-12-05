@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.assertj.core.api.Assertions.assertThat
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
@@ -143,6 +144,28 @@ internal class AccountServiceTest {
 
     @Nested
     inner class BackgroundColorSetting {
+        private lateinit var testToken: String
+        private lateinit var testBackgroundColorUrl: String
+        private lateinit var account: Account
 
+        @BeforeEach
+        internal fun setUp() {
+            testToken = "testToken"
+            testBackgroundColorUrl = "http://yapp-bucket-test/test/image"
+            account = Account("testAccount")
+        }
+
+        @Test
+        fun `배경색이 변경된다`() {
+            //given
+            every { jwtProvider.getIdFromToken(testToken) } returns 1
+            every { accountRepository.findById(1) } returns Optional.of(account)
+
+            //when
+            account = accountService.changeBackgroundColor(testToken, testBackgroundColorUrl)
+
+            //then
+            assertThat(account.backgroundColor).isEqualTo(testBackgroundColorUrl)
+        }
     }
 }
