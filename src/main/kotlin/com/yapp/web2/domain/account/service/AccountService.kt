@@ -46,7 +46,7 @@ class AccountService(
     fun checkNickNameDuplication(nickNameDto: Account.nextNickName) {
         val account = accountRepository.findByNickname(nickNameDto.nickName)
         // 존재하면 안되고 없으면 괜찮음
-        when(val account = accountRepository.findByNickname(nickNameDto.nickName)) {
+        when (val account = accountRepository.findByNickname(nickNameDto.nickName)) {
             null -> return
             else -> throw BusinessException("이미 존재하는 닉네임입니다")
         }
@@ -74,9 +74,21 @@ class AccountService(
     }
 
     @Transactional
+    fun deleteProfileImage(token: String) {
+        val idFromToken = jwtProvider.getIdFromToken(token)
+        accountRepository.findById(idFromToken).let {
+            if (it.isEmpty) throw BusinessException("계정이 존재하지 않습니다.")
+            if (it.get().image == Account.BASIC_IMAGE_URL) throw BusinessException("사진이 이미 존재하지 않습니다")
+            it.get().image = Account.BASIC_IMAGE_URL
+        }
+    }
+
+    @Transactional
     fun changeBackgroundColor(token: String, changeUrl: String) {
         val idFromToken = jwtProvider.getIdFromToken(token)
         val account = accountRepository.findById(idFromToken).get()
         account.backgroundColor = changeUrl
     }
+
+
 }

@@ -49,6 +49,7 @@ internal class AccountServiceTest {
             testToken = "testToken"
             testNickName = Account.nextNickName("testNickName")
             account = Account("test")
+            account.image = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png"
         }
 
         @Test
@@ -135,6 +136,36 @@ internal class AccountServiceTest {
             }
             //then
             assertEquals(expectedException.message, actualException.message)
+        }
+
+        @Test
+        fun `이미 사진이 존재하지 않을 때(== 기본 이미지 일 때,) 예외를 던진다`() {
+            //given
+            every { jwtProvider.getIdFromToken(testToken) } returns 1
+            every { accountRepository.findById(1) } returns Optional.of(account)
+            val expectedException = BusinessException("사진이 이미 존재하지 않습니다")
+
+            //when
+            val actualException = assertThrows(BusinessException::class.java) {
+                accountService.deleteProfileImage(testToken)
+            }
+
+            //then
+            assertEquals(expectedException.message, actualException.message)
+        }
+
+        @Test
+        fun `이미지가 삭제 되고, 기본 이미지로 변경된다`() {
+            //given
+            every { jwtProvider.getIdFromToken(testToken) } returns 1
+            every { accountRepository.findById(1) } returns Optional.of(account)
+            account.image = "testImageURL"
+
+            //when
+            accountService.deleteProfileImage(testToken)
+
+            //then
+            assertEquals(account.image, Account.BASIC_IMAGE_URL)
         }
 
         // S3 test로 진행

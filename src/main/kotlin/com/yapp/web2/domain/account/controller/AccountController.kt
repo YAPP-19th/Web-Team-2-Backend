@@ -41,6 +41,8 @@ class AccountController(
 
     @GetMapping("deleteProfileImage")
     fun deleteProfileImage(request: HttpServletRequest): ResponseEntity<String> {
+        val token = request.getHeader("AccessToken")
+        accountService.deleteProfileImage(token)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 

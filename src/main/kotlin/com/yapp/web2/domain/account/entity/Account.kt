@@ -16,6 +16,8 @@ class Account(
         fun requestToAccount(dto: AccountLoginRequest): Account {
             return Account(dto.email, dto.imageUrl, dto.name, dto.socialType)
         }
+
+        const val BASIC_IMAGE_URL: String = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png"
     }
 
     constructor(email: String, image: String, nickname: String, socialType: String) : this(email) {
@@ -31,7 +33,7 @@ class Account(
     var socialType: String = "none"
 
     // TODO: 디폴트 사진 url 추가하기
-    var image: String = ""
+    var image: String = BASIC_IMAGE_URL
 
     var backgroundColor: String = "black"
     var remindToggle: Boolean = true
