@@ -43,6 +43,15 @@ class AccountService(
         return jwtProvider.reIssuedAccessToken(accessToken, refreshToken)
     }
 
+    fun checkNickNameDuplication(nickNameDto: Account.nextNickName) {
+        val account = accountRepository.findByNickname(nickNameDto.nickName)
+        // 존재하면 안되고 없으면 괜찮음
+        when(val account = accountRepository.findByNickname(nickNameDto.nickName)) {
+            null -> return
+            else -> throw BusinessException("이미 존재하는 닉네임입니다")
+        }
+    }
+
     @Transactional
     fun changeNickName(token: String, nextNickName: Account.nextNickName): Unit {
         val idFromToken = jwtProvider.getIdFromToken(token)
@@ -65,10 +74,9 @@ class AccountService(
     }
 
     @Transactional
-    fun changeBackgroundColor(token: String, changeUrl: String): Account {
+    fun changeBackgroundColor(token: String, changeUrl: String) {
         val idFromToken = jwtProvider.getIdFromToken(token)
         val account = accountRepository.findById(idFromToken).get()
-        account.image = changeUrl
-        return account
+        account.backgroundColor = changeUrl
     }
 }

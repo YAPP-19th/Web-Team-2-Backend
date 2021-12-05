@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import javax.servlet.http.HttpServletRequest
+import javax.validation.Valid
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -32,9 +33,22 @@ class AccountController(
     }
 
     @PostMapping("/changeProfileImage")
-    fun upload(request: HttpServletRequest, @RequestParam("images") multipartFile: MultipartFile): ResponseEntity<String> {
+    fun changeProfileImage(request: HttpServletRequest, @RequestParam("images") multipartFile: MultipartFile): ResponseEntity<String> {
         val token = request.getHeader("AccessToken")
         val image = accountService.changeProfileImage(token, multipartFile)
         return ResponseEntity.status(HttpStatus.OK).body(image)
     }
+
+    @GetMapping("deleteProfileImage")
+    fun deleteProfileImage(request: HttpServletRequest): ResponseEntity<String> {
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
+    }
+
+    @PostMapping("/nickNameCheck")
+    fun nickNameCheck(@RequestParam("nickName") @Valid nickName: Account.nextNickName): ResponseEntity<String> {
+        accountService.checkNickNameDuplication(nickName)
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
+    }
+
+
 }

@@ -52,6 +52,21 @@ internal class AccountServiceTest {
         }
 
         @Test
+        fun `해당 닉네임을 다른 유저가 사용하고 있다면 예외를 던진다`() {
+            //given
+            every { accountRepository.findByNickname(testNickName.nickName) } returns account
+            val expectedException = BusinessException("이미 존재하는 닉네임입니다")
+
+            //when
+            val actualException = assertThrows(BusinessException::class.java) {
+                accountService.checkNickNameDuplication(testNickName)
+            }
+
+            //then
+            assertEquals(expectedException.message, actualException.message)
+        }
+
+        @Test
         fun `Account가 존재하지 않으면 예외를 던진다`() {
             //given
             every { jwtProvider.getIdFromToken(testToken) } returns 1
@@ -162,7 +177,7 @@ internal class AccountServiceTest {
             every { accountRepository.findById(1) } returns Optional.of(account)
 
             //when
-            account = accountService.changeBackgroundColor(testToken, testBackgroundColorUrl)
+            accountService.changeBackgroundColor(testToken, testBackgroundColorUrl)
 
             //then
             assertThat(account.backgroundColor).isEqualTo(testBackgroundColorUrl)
