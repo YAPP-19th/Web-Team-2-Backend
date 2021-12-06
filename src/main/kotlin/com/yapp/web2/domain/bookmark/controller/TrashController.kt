@@ -28,14 +28,4 @@ class TrashController(
         bookmarkService.permanentDelete(request.bookmarkIdList)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
-
-    @GetMapping
-    fun getTrashBookmarkPage(
-        request: HttpServletRequest,
-        pageable: Pageable,
-        @RequestParam remind: Boolean
-    ): ResponseEntity<Page<Bookmark>> {
-        val token = request.getHeader("AccessToken")
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getTrashPageByUserId(token, pageable, remind))
-    }
 }

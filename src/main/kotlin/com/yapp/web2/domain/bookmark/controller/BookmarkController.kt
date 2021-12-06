@@ -15,17 +15,9 @@ import javax.validation.Valid
 @RestController
 @RequestMapping("/api/v1/bookmark")
 class BookmarkController(
-    private val bookmarkPageService: BookmarkPageService,
-    private val bookmarkService: BookmarkService,
-    private val bookmarkSearchService: BookmarkSearchService
+    private val bookmarkService: BookmarkService
 ) {
-    @GetMapping("/{folderId}")
-    fun getBookmarkPage(
-        @PathVariable folderId: Long,
-        pageable: Pageable,
-        @RequestParam remind: Boolean): ResponseEntity<Page<Bookmark>> {
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByFolderId(folderId, pageable, remind))
-    }
+
 
     @GetMapping("/click/{bookmarkId}")
     fun increaseBookmarkClickCount(@PathVariable bookmarkId: String): ResponseEntity<String> {
@@ -66,25 +58,5 @@ class BookmarkController(
     ): ResponseEntity<String> {
         bookmarkService.moveBookmark(bookmarkId, bookmark)
         return ResponseEntity.status(HttpStatus.OK).body("폴더가 이동됨")
-    }
-
-    @GetMapping("/search/{keyWord}")
-    fun searchBookmarkList(
-        request: HttpServletRequest,
-        @PathVariable keyWord: String,
-        pageable: Pageable,
-    ): ResponseEntity<Page<Bookmark>> {
-        val token = request.getHeader("AccessToken")
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkSearchService.searchKeywordOwnUserId(token, keyWord, pageable))
-    }
-
-    @GetMapping("/main")
-    fun getAllBookmarkPage(
-        request: HttpServletRequest,
-        pageable: Pageable,
-        @RequestParam remind: Boolean
-    ): ResponseEntity<Page<Bookmark>> {
-        val token = request.getHeader("AccessToken")
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByUserId(token, pageable, remind))
     }
 }
