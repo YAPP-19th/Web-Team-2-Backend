@@ -58,6 +58,15 @@ class Folder(
         return "Folder(name='$name', index=$index, bookmarkCount=$bookmarkCount, parentFolder=$parentFolder, emoji=$emoji)"
     }
 
+    fun updateFolderToParent(index: Int) {
+        this.parentFolder = null
+        this.index = index
+    }
+
+    fun updateIndex(nextIndex: Int) {
+        this.index = nextIndex
+    }
+
     fun updateIndexAndParentFolder(nextIndex: Int, nextParentFolder: Folder) {
         this.index = nextIndex
         this.parentFolder = nextParentFolder
@@ -78,6 +87,12 @@ class Folder(
         val index: Int = 1
     )
 
+    @ApiModel(description = "폴더 생성 Response")
+    class FolderCreateResponse(
+        @ApiModelProperty(value = "폴더 ID", example = "3")
+        val folderId: Long
+    )
+
     @ApiModel(description = "폴더 이름 수정 DTO")
     class FolderNameChangeRequest(
         @ApiModelProperty(value = "수정할 폴더 이름", required = true, example = "Change Folder")
@@ -94,13 +109,13 @@ class Folder(
 
     @ApiModel(description = "폴더 이동(드래그 & 드랍) DTO")
     class FolderMoveRequest(
-        @ApiModelProperty(value = "이동 전 부모폴더 ID", required = true, example = "1")
+        @ApiModelProperty(value = "이동 전 부모폴더 ID(\"root\" => 최상위 부모폴더)", required = true, example = "1")
         @field: PositiveOrZero
-        val prevParentId: Long,
+        var prevParentId: Long,
 
-        @ApiModelProperty(value = "이동 후 부모폴더 ID", required = true, example = "2")
+        @ApiModelProperty(value = "이동 후 부모폴더 ID(\"root\" => 최상위 부모폴더)", required = true, example = "2")
         @field: PositiveOrZero
-        val nextParentId: Long,
+        var nextParentId: Long,
 
         @ApiModelProperty(value = "이동 전 폴더 Index", required = true, example = "0")
         @field: PositiveOrZero
@@ -109,6 +124,12 @@ class Folder(
         @ApiModelProperty(value = "이동 후 폴더 Index", required = true, example = "2")
         @field: PositiveOrZero
         val nextIndex: Int
+    )
+
+    @ApiModel(description = "폴더 리스트 삭제 DTO")
+    class FolderListDeleteRequest(
+        @ApiModelProperty(value = "삭제할 폴더들의 ID 리스트", required = true, example = "[1,4,5]")
+        val deleteFolderIdList: MutableList<Long> = mutableListOf()
     )
 
     class FolderFindAllResponse(

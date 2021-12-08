@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 
+// TODO: 2021/12/07 AccessToken -> Custom HandlerMethodArgumentResolver
 @RestController
 @RequestMapping("/api/v1/folder")
 class FolderController(
@@ -22,10 +23,10 @@ class FolderController(
     fun createFolder(
         servletRequest: HttpServletRequest,
         @RequestBody @ApiParam(value = "폴더 생성 정보", required = true) request: Folder.FolderCreateRequest
-    ): ResponseEntity<String> {
+    ): ResponseEntity<Folder.FolderCreateResponse> {
         val accessToken = servletRequest.getHeader("AccessToken")
-        folderService.createFolder(request, accessToken)
-        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
+        val folderId = folderService.createFolder(request, accessToken).id
+        return ResponseEntity.status(HttpStatus.OK).body(folderId?.let { Folder.FolderCreateResponse(it) })
     }
 
     @ApiOperation("폴더 이름 수정 API")
@@ -51,15 +52,17 @@ class FolderController(
     @ApiOperation(value = "폴더 이동(드래그 & 드랍) API")
     @PatchMapping("/{folderId}/move")
     fun moveFolder(
+        servletRequest: HttpServletRequest,
         @PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long,
         @RequestBody @Valid @ApiParam(value = "이동할 폴더의 정보", required = true) request: Folder.FolderMoveRequest
     ): ResponseEntity<String> {
+        val accessToken = servletRequest.getHeader("AccessToken")
         folderService.moveFolder(folderId, request)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
     @ApiOperation(value = "폴더 삭제 API")
-    @PostMapping("/{folderId}")
+    @DeleteMapping("/{folderId}")
     fun deleteAllBookmarkAndFolder(
         @PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long): ResponseEntity<String> {
         folderService.deleteAllBookmark(folderId)
@@ -73,6 +76,15 @@ class FolderController(
         val accessToken = servletRequest.getHeader("AccessToken")
         val response = folderService.findAll(accessToken)
         return ResponseEntity.status(HttpStatus.OK).body(response)
+    }
+
+    @ApiOperation(value = "폴더 리스트 영구 삭제 API")
+    @PostMapping("/deletes")
+    fun deletePermanentFolderList(
+        @RequestBody @ApiParam(value = "삭제할 폴더들의 ID 리스트", required = true) request: Folder.FolderListDeleteRequest
+    ): ResponseEntity<String> {
+        folderService.deleteFolderList(request)
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
 }
