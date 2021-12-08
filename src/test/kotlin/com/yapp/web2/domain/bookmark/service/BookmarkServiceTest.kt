@@ -5,27 +5,35 @@ import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.*
+import com.yapp.web2.security.jwt.JwtProvider
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import java.time.LocalDateTime
 import java.util.*
+
 
 internal class BookmarkServiceTest {
     @MockK
     private lateinit var bookmarkRepository: BookmarkRepository
 
     @MockK
+    private lateinit var jwtProvider: JwtProvider
+
+    @MockK
     private lateinit var folderRepository: FolderRepository
     private lateinit var bookmarkService: BookmarkService
+
 
     @BeforeEach
     internal fun init() {
         MockKAnnotations.init(this)
-        bookmarkService = BookmarkService(bookmarkRepository, folderRepository)
+        bookmarkService = BookmarkService(bookmarkRepository, folderRepository, jwtProvider)
     }
 
     @Nested
@@ -35,11 +43,13 @@ internal class BookmarkServiceTest {
         private lateinit var folder: Folder
         private var folderId: Long = 0
         private lateinit var bookmarkDto: Bookmark.AddBookmarkDto
+        private lateinit var token: String
 
         @BeforeEach
         internal fun setUp() {
             folder = Folder("Folder", 0, parentFolder = null)
             folderId = 1
+            token = "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNjM4MzU3ODEyLCJleHAiOjE2Mzg0NDQyMTJ9.pJcjPqHFudkT5YAblaSFZue455YAndRtxO9y7bf5f0zVM6iiTWs-qP2YmIeKhZIeqsOsa6X3wdN0cm7o3MScrA"
             folder.id = folderId
             bookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", null, false)
             bookmark = Bookmark(1, 1, "www.naver.com")
@@ -51,9 +61,10 @@ internal class BookmarkServiceTest {
             every { bookmarkRepository.save(any()) } returns bookmark
             every { folderRepository.findById(folderId) } returns Optional.of(folder)
             every { bookmarkRepository.findAllByFolderId(folderId) } returns emptyList()
+            every { jwtProvider.getIdFromToken(token) } returns 1
 
             // when
-            val addBookmark = bookmarkService.addBookmark(folderId, bookmarkDto)
+            val addBookmark = bookmarkService.addBookmark(token, folderId, bookmarkDto)
 
             // then
             assertThat(addBookmark).isEqualTo(bookmark)
@@ -63,11 +74,12 @@ internal class BookmarkServiceTest {
         fun `북마크를 추가할 때, 폴더가 존재하지 않으면 예외를 던진다`() {
             //given
             every { folderRepository.findById(folderId) } returns Optional.empty()
+            every { jwtProvider.getIdFromToken(token) } returns 1
             val predictException = ObjectNotFoundException("해당 폴더가 존재하지 않습니다.")
 
             //when
             val actualException = Assertions.assertThrows(ObjectNotFoundException::class.java) {
-                bookmarkService.addBookmark(folderId, bookmarkDto)
+                bookmarkService.addBookmark(token, folderId, bookmarkDto)
             }
 
             //then
@@ -81,10 +93,11 @@ internal class BookmarkServiceTest {
             val predictException = BusinessException("똑같은 게 있어요.")
             every { folderRepository.findById(folderId) } returns Optional.of(folder)
             every { bookmarkRepository.findAllByFolderId(folderId) } returns listOf(bookmark)
+            every { jwtProvider.getIdFromToken(token) } returns 1
 
             //when
             val actualException = Assertions.assertThrows(BusinessException::class.java) {
-                bookmarkService.addBookmark(1, sameBookmarkDto)
+                bookmarkService.addBookmark(token, 1, sameBookmarkDto)
             }
 
             //then
@@ -166,7 +179,7 @@ internal class BookmarkServiceTest {
         fun `북마크의 title을 변경한다`() {
             //given
             val predictBookmark = Bookmark(1, 1, "www.naver.com", "test2")
-            val updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", null)
+            val updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", false)
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
             every { bookmarkRepository.save(any()) } returns bookmark
 
@@ -181,7 +194,7 @@ internal class BookmarkServiceTest {
         fun `북마크의 remind를 변경한다`() {
             //given
             val predictBookmark = Bookmark(1, 1, "www.naver.com")
-            val updateBookmarkDto = Bookmark.UpdateBookmarkDto(null, false)
+            val updateBookmarkDto = Bookmark.UpdateBookmarkDto("test", false)
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
             every { bookmarkRepository.save(any()) } returns bookmark
 
@@ -196,6 +209,7 @@ internal class BookmarkServiceTest {
         fun `북마크의 clickCount를 올린다`() {
             //given
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark)
+            every { bookmarkRepository.save(any()) } returns bookmark
             val predictClickCount = 1
 
             //when
@@ -285,6 +299,7 @@ internal class BookmarkServiceTest {
 
             every { bookmarkRepository.findByIdOrNull("1") } returns bookmark1
             every { bookmarkRepository.findByIdOrNull("2") } returns bookmark2
+            every { bookmarkRepository.save(any()) } returns bookmark1
 
             // when
             bookmarkService.restore(list)

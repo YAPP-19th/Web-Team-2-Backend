@@ -4,6 +4,8 @@ import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.service.BookmarkPageService
 import com.yapp.web2.domain.bookmark.service.BookmarkService
 import com.yapp.web2.util.Message
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -17,23 +19,26 @@ class TrashController(
     private val bookmarkService: BookmarkService,
     private val bookmarkPageService: BookmarkPageService
 ) {
+    @ApiOperation("북마크 복원 API")
     @PatchMapping("/restore")
-    fun restoreBookmarks(@RequestBody request: Bookmark.RestoreBookmarkRequest): ResponseEntity<String> {
+    fun restoreBookmarks(@RequestBody @ApiParam(value = "복원할 북마크 ID 리스트", required = true) request: Bookmark.RestoreBookmarkRequest): ResponseEntity<String> {
         bookmarkService.restore(request.bookmarkIdList)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
+    @ApiOperation("북마크 영구삭제 API")
     @PostMapping("/truncate")
-    fun permanentDelete(@RequestBody request: Bookmark.TruncateBookmarkRequest): ResponseEntity<String> {
+    fun permanentDelete(@RequestBody @ApiParam(value = "영구삭제할 북마크 ID 리스트", required = true) request: Bookmark.TruncateBookmarkRequest): ResponseEntity<String> {
         bookmarkService.permanentDelete(request.bookmarkIdList)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
+    @ApiOperation("휴지통 북마크 조회 API")
     @GetMapping
-    fun getTrashBookmark(
+    fun getTrashBookmarkPage(
         request: HttpServletRequest,
         pageable: Pageable,
-        @RequestParam remind: Boolean
+        @RequestParam @ApiParam(value = "리마인드 필터링 여부", required = true) remind: Boolean
     ): ResponseEntity<Page<Bookmark>> {
         val token = request.getHeader("AccessToken")
         return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByUserId(token, pageable, remind))

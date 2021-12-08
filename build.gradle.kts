@@ -39,6 +39,8 @@ dependencies {
     implementation ("io.jsonwebtoken:jjwt:0.9.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("io.springfox:springfox-boot-starter:3.0.0")
+
     runtimeOnly ("io.jsonwebtoken:jjwt-impl:0.11.2")
     runtimeOnly("org.postgresql:postgresql")
 

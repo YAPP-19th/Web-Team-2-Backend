@@ -152,8 +152,8 @@ internal open class FolderServiceTest {
         every { folderRepository.findById(1L).orElse(null) } returns prevParentFolder
         every { folderRepository.findById(2L).orElse(null) } returns nextParentFolder
         every { folderRepository.findById(10L).orElse(null) } returns prevMoveFolder
-        every { folderRepository.findByIndexGreaterThan(prevParentFolder, 2) } returns stubPrevChildFolders
-        every { folderRepository.findByIndexGreaterThan(nextParentFolder, 3) } returns stubNextChildFolders
+        every { folderRepository.findByIndexGreaterThanPrevFolder(prevParentFolder, 2) } returns stubPrevChildFolders
+        every { folderRepository.findByIndexGreaterThanNextFolder(nextParentFolder, 3) } returns stubNextChildFolders
 
         // then
         assertAll(
@@ -228,7 +228,7 @@ internal open class FolderServiceTest {
         printAllFolderToJson(actual)
     }
 
-    private fun printAllFolderToJson(actual: Folder.FolderReadResponse) {
+    private fun printAllFolderToJson(actual: Map<String, Any>) {
         val mapper = ObjectMapper()
         val json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actual)
         println(json)
@@ -243,6 +243,7 @@ internal open class FolderServiceTest {
 
         (start..end).forEach {
             val folder = Folder("${parentFolder.name}-$it", it, 0, parentFolder)
+            folder.id = start.toLong()
             childFolders.add(folder)
         }
 

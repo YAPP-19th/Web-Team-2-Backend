@@ -4,7 +4,7 @@ import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
-import com.yapp.web2.domain.account.repository.AccountRepository
+import com.yapp.web2.domain.account.repository.UserRepository
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.repository.findByIdOrNull
@@ -32,16 +32,26 @@ class FolderService(
                 val accountFolder = user?.let { AccountFolder(it, rootFolder) }
                 rootFolder.folders?.add(accountFolder!!)
                 folderRepository.save(rootFolder)
+        val userId = jwtProvider.getIdFromToken(accessToken)
+        val user = userRepository.findByIdOrNull(userId)
+        val folder: Folder
+
+        when (isParentFolder(request.parentId)) {
+            true -> {
+                folder = Folder.dtoToEntity(request)
+                val accountFolder = user?.let { AccountFolder(it, folder) }
+                folder.folders?.add(accountFolder!!)
             }
             false -> {
-                val parentFolder = folderRepository.findById(request.parentId).get()
-                val childrenFolderList = parentFolder.children
-                val folder = Folder.dtoToEntity(request, parentFolder)
+                val parentFolder: Folder = folderRepository.findById(request.parentId).get()
+                val childrenFolderList: MutableList<Folder>? = parentFolder.children
+                folder = Folder.dtoToEntity(request, parentFolder)
+                val accountFolder = user?.let { AccountFolder(it, folder) }
+                parentFolder.folders?.add(accountFolder!!)
                 childrenFolderList?.add(folder)
-
-                return folder
             }
         }
+        return folderRepository.save(folder)
     }
 
     private fun isParentFolder(parentId: Long) = parentId == 0L
@@ -75,16 +85,19 @@ class FolderService(
         val moveFolder = folderRepository.findByIdOrNull(id)
 
         // 2)
-        folderRepository.findByIndexGreaterThan(prevParentFolder!!, request.prevIndex)
+        folderRepository.findByIndexGreaterThanPrevFolder(prevParentFolder!!, request.prevIndex)
             ?.let {
                 it.forEach { folder -> folder.index-- }
             }
 
         // 3)
-        folderRepository.findByIndexGreaterThan(nextParentFolder!!, request.nextIndex)
+        folderRepository.findByIndexGreaterThanNextFolder(nextParentFolder!!, request.nextIndex)
             ?.let {
                 it.forEach { folder -> folder.index++ }
             }
+
+        // TODO: 2021/12/02 예외 생각
+        moveFolder?.updateIndexAndParentFolder(request.nextIndex, nextParentFolder)
 
         // 4)
         prevChildFolderList?.removeAt(request.prevIndex)
@@ -111,18 +124,18 @@ class FolderService(
 
     /* API
     {
-	"rootId": "유저 고유 아이디",
+	"rootId": "root",
 	"items": {
 		"root": {
-			"id": "유저 고유 아이디",
-			"rootFolders": [최상위 폴더 애들],
+			"id": "root",
+			"children": [최상위 폴더 애들],
 		},
-		"folder": {
+		"1": { // folderId
 			"id": "폴더 고유 아이디",
 			"children": [자식애들]  // ex) ["1", "4", "3"]
 			"data": { "name": "폴더 이름", "emoji": "f123" }
 		},
-		"folder": {
+		"2": { // folderId
 			"id": "폴더 고유 아이디",
 			"children": [자식애들]  // ex) ["1", "4", "3"]
 			"data": { "name": "폴더 이름", "emoji": "f123" }
@@ -130,35 +143,40 @@ class FolderService(
     }
     */
     @Transactional
-    fun findAll(accessToken: String): Folder.FolderReadResponse {
+    fun findAll(accessToken: String): Map<String, Any> {
         val rootId = jwtProvider.getIdFromToken(accessToken)
-        val user = accountRepository.findById(rootId).get()
-        val allFolder = folderRepository.findAllByParentFolderIsNull(user)
+        val user = userRepository.findById(rootId).get()
+        val itemsValue = mutableMapOf<String, Any>()
 
-        /* "folder" 하위 부분 */
-        val folder: MutableList<Folder.FolderReadResponse.RootFolder> = mutableListOf()
-        allFolder.stream()
-            .filter { it.children != null }
-            .forEach { rootFolder ->
-                val id = rootFolder.id
-                val children: MutableList<Int> = mutableListOf()
-                rootFolder.children?.forEach { children.add(it.index) }
-                val emoji = rootFolder.emoji ?: ""
-                val data = Folder.FolderReadResponse.RootFolderData(rootFolder.name, emoji)
-                val rootFolder = Folder.FolderReadResponse.RootFolder(id!!, children, data)
-                folder.add(rootFolder)
-            }
-
-        /* "root" 하위 부분 */
+        /* "root" 하위 데이터 */
+        val rootFolderList: MutableList<Folder> = folderRepository.findAllByParentFolderIsNull(user)
         val rootFolders: MutableList<Long> = mutableListOf()
-        allFolder.stream()
+        rootFolderList.stream()
             .filter { it.parentFolder == null }
             .forEach { it.id?.let { folderId -> rootFolders.add(folderId) } }
 
-        val root = Folder.FolderReadResponse.Root(rootId, rootFolders)
-        val items = Folder.FolderReadResponse.FolderItem(root, folder)
+        val root = Folder.FolderFindAllResponse.Root(children = rootFolders)
+        itemsValue["root"] = root
 
-        return Folder.FolderReadResponse(rootId, items)
+        /* "folder" 하위 데이터 */
+        val allFolderList: MutableList<Folder> = folderRepository.findAllByAccount(user)
+        allFolderList.stream()
+            //filter { it.children != null }
+            .forEach { rootFolder ->
+                val id = rootFolder.id
+                val children: MutableList<Long> = mutableListOf()
+                rootFolder.children?.forEach { children.add(it.id!!) }
+                val emoji = rootFolder.emoji ?: ""
+                val data = Folder.FolderFindAllResponse.RootFolderData(rootFolder.name, emoji)
+                val folderValue = Folder.FolderFindAllResponse.RootFolder(id!!, children, data)
+                itemsValue[id.toString()] = folderValue
+            }
+
+        val responseMap = mutableMapOf<String, Any>()
+        responseMap["rootId"] = "root"
+        responseMap["items"] = itemsValue
+
+        return responseMap
     }
 
     fun changeEmoji(id: Long, request: Folder.FolderEmojiChangeRequest): String {

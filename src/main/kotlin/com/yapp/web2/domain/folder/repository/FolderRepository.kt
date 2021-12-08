@@ -10,8 +10,12 @@ import org.springframework.stereotype.Repository
 @Repository
 interface FolderRepository : JpaRepository<Folder, Long> {
 
+    // TODO: 2021/12/02 N+1
     @Query("SELECT f FROM Folder f WHERE f.parentFolder = ?1 and f.index > ?2")
-    fun findByIndexGreaterThan(parent: Folder, index: Int): MutableList<Folder>?
+    fun findByIndexGreaterThanPrevFolder(parent: Folder, index: Int): MutableList<Folder>?
+
+    @Query("SELECT f FROM Folder f WHERE f.parentFolder = ?1 and f.index >= ?2")
+    fun findByIndexGreaterThanNextFolder(parent: Folder, index: Int): MutableList<Folder>?
 
     //@Query("SELECT f FROM Folder f join fetch f.children WHERE f.parentFolder is null ")
     @EntityGraph(attributePaths = ["children"])
@@ -21,10 +25,20 @@ interface FolderRepository : JpaRepository<Folder, Long> {
     @EntityGraph(attributePaths = ["children"])
     @Query(
         "SELECT f FROM Folder f WHERE f.id in " +
-                "(  SELECT af.id " +
+                "(  SELECT af.folder " +
                 "   FROM AccountFolder af " +
                 "   WHERE af.account = ?1)" +
-                "AND f.parentFolder IS NULL "
+                " AND f.parentFolder IS NULL " +
+                " ORDER BY f.id"
     )
     fun findAllByParentFolderIsNull(user: Account): MutableList<Folder>
+
+    @EntityGraph(attributePaths = ["children"])
+    @Query(
+        "SELECT f FROM Folder f WHERE f.id in " +
+                "(  SELECT af.folder " +
+                "   FROM AccountFolder af " +
+                "   WHERE af.account = ?1)"
+    )
+    fun findAllByAccount(user: Account): MutableList<Folder>
 }
