@@ -1,7 +1,7 @@
 package com.yapp.web2.domain.notification.service
 
 import com.yapp.web2.domain.account.entity.Account
-import com.yapp.web2.domain.account.repository.UserRepository
+import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import org.springframework.stereotype.Service
@@ -10,7 +10,7 @@ import java.time.LocalDate
 @Service
 class NotificationService(
     private val bookmarkRepository: BookmarkRepository,
-    private val userRepository: UserRepository
+    private val accountRepository: AccountRepository
 ) {
     fun getRemindBookmark(): List<Bookmark> {
         val now = LocalDate.now()
