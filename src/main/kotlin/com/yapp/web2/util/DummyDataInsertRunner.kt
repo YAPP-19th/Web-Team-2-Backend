@@ -1,7 +1,7 @@
 package com.yapp.web2.util
 
 import com.yapp.web2.domain.account.entity.Account
-import com.yapp.web2.domain.account.repository.UserRepository
+import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.AccountFolder
@@ -15,7 +15,7 @@ import javax.transaction.Transactional
 open class DummyDataInsertRunner(
     private val bookmarkRepository: BookmarkRepository,
     private val folderRepository: FolderRepository,
-    private val accountRepository: UserRepository
+    private val accountRepository: AccountRepository
 ) : CommandLineRunner {
     companion object {
         const val dohyun: Long = 8
