@@ -46,14 +46,14 @@ class NotificationConfig(
     @StepScope
     fun remindBookmarkReader(): ListItemReader<Bookmark> {
         val bookmarkOfList = notificationService.getRemindBookmark()
-        //bookmark들에게서 존재하는 userId를 key로 dataBean에 저장함.
+
         return ListItemReader(bookmarkOfList)
     }
 
     @Bean
     fun remindBookmarkProcessor(): ItemProcessor<Bookmark, Bookmark> {
         return ItemProcessor {
-            //저장된 dataBean에서 userId가 존재하는 account를 불러와서 알림을 전송함.
+            // bookmark에 존재하는 userId로 Account를 찾아서 알림이 발송시킴
             notificationService.sendNotification(it.userId)
             it
         }

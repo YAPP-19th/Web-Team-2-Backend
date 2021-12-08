@@ -19,7 +19,7 @@ class RemindNotificationScheduler(
     //초 분 시 일 월 요일
     // 시간을 jobParameter로 하여, 문제가 생겼을 때, 재시도하더라도 키가 다르게 해준다.
     // 배포할 때는 다른 방식의 접근이 필요하다.
-    @Scheduled(cron = "0 30 12 * * *")
+    @Scheduled(cron = "0 0 13 * * *")
     fun remindBookmarkNotificationSchedule() {
         val jobConf = hashMapOf<String, JobParameter>()
         jobConf["time"] = JobParameter(dateFormat.format(System.currentTimeMillis()))
