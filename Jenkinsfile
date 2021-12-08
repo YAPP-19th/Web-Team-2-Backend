@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('build') {
       steps {
-        sh '''cp ../properties/application.properties ./src/main/resources
+        sh '''pwd
 ./gradlew build -x test'''
       }
     }
