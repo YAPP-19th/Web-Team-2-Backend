@@ -230,6 +230,7 @@ internal open class FolderServiceTest {
 //        printAllFolderToJson(actual)
 //    }
 
+    // TODO: 2021/12/08 mock bookmarkRepository.save() 
     @Test
     fun `폴더를 삭제하면 북마크도 함께 삭제된다`() {
         // given
@@ -241,6 +242,7 @@ internal open class FolderServiceTest {
         every { bookmarkRepository.findByFolderId(1) } returns bookmarks1
         every { bookmarkRepository.findByFolderId(2) } returns bookmarks2
         every { folderRepository.deleteById(any()) } returns Unit
+        //every {bookmarkRepository.save(any()) } returns bookmarks1.get(0)
 
         // when
         folderService.deleteFolderList(deleteList)

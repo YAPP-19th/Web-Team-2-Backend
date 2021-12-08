@@ -83,9 +83,7 @@ class FolderController(
     fun deletePermanentFolderList(
         @RequestBody @ApiParam(value = "삭제할 폴더들의 ID 리스트", required = true) request: Folder.FolderListDeleteRequest
     ): ResponseEntity<String> {
-
         folderService.deleteFolderList(request)
-
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 

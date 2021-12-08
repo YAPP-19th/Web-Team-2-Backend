@@ -113,7 +113,10 @@ class FolderService(
     fun deleteAllBookmark(id: Long) {
         bookmarkRepository.findByFolderId(id)
             .let { list ->
-                list.forEach { it.deletedByFolder() }
+                list.forEach {
+                    it.deletedByFolder()
+                    bookmarkRepository.save(it)
+                }
             }
     }
 
@@ -193,7 +196,10 @@ class FolderService(
         request.deleteFolderIdList
             .stream()
             .forEach { folderId -> bookmarkRepository.findByFolderId(folderId)
-                    .let { list -> list.forEach { it.deletedByFolder() } }
+                    .let { list -> list.forEach {
+                        it.deletedByFolder()
+                        bookmarkRepository.save(it)
+                    } }
                 folderRepository.deleteById(folderId)
             }
     }
