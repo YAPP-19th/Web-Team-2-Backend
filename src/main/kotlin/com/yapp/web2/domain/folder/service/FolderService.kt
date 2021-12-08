@@ -15,23 +15,16 @@ import javax.transaction.Transactional
 class FolderService(
     private val folderRepository: FolderRepository,
     private val bookmarkRepository: BookmarkRepository,
-    private val accountRepository: AccountRepository,
+    private val userRepository: UserRepository,
     private val jwtProvider: JwtProvider
 ) {
     companion object {
         private val folderNotFoundException = FolderNotFoundException()
     }
 
+    // TODO: 리팩토링
     @Transactional
     fun createFolder(request: Folder.FolderCreateRequest, accessToken: String): Folder {
-        return when (isParentFolder(request.parentId)) {
-            true -> {
-                val userId = jwtProvider.getIdFromToken(accessToken)
-                val user = accountRepository.findByIdOrNull(userId)
-                val rootFolder = Folder.dtoToEntity(request)
-                val accountFolder = user?.let { AccountFolder(it, rootFolder) }
-                rootFolder.folders?.add(accountFolder!!)
-                folderRepository.save(rootFolder)
         val userId = jwtProvider.getIdFromToken(accessToken)
         val user = userRepository.findByIdOrNull(userId)
         val folder: Folder
