@@ -4,6 +4,8 @@ import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.service.AccountService
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.util.Message
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -18,12 +20,13 @@ class AccountController(
 ) {
     @PostMapping("/oauth2Login")
     fun oauth2Login(
-        @RequestBody request: Account.AccountLoginRequest
+        @RequestBody @ApiParam(value = "회원 정보", required = true) request: Account.AccountLoginRequest
     ): ResponseEntity<TokenDto> {
         val tokenDto = accountService.oauth2LoginUser(request)
         return ResponseEntity.status(HttpStatus.OK).body(tokenDto)
     }
 
+    @ApiOperation(value = "토큰 재발급")
     @GetMapping("/reIssuanceAccessToken")
     fun reIssuanceAccessToken(request: HttpServletRequest): ResponseEntity<TokenDto> {
         val accessToken = request.getHeader("AccessToken")
