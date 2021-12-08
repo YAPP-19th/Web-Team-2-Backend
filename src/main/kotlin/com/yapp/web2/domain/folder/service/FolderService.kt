@@ -15,7 +15,7 @@ import javax.transaction.Transactional
 class FolderService(
     private val folderRepository: FolderRepository,
     private val bookmarkRepository: BookmarkRepository,
-    private val userRepository: UserRepository,
+    private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider
 ) {
     companion object {
