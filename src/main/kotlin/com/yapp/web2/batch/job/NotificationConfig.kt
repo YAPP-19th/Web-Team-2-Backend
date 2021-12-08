@@ -64,13 +64,4 @@ class NotificationConfig(
             println("Complete Bookmark Chunk")
         }
     }
-
-
-    @Bean
-    fun remindListener(): ExecutionContextPromotionListener {
-        val executionContextPromotionListener = ExecutionContextPromotionListener()
-        executionContextPromotionListener.setKeys(arrayOf("userId"))
-
-        return executionContextPromotionListener
-    }
 }
