@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 
 @Repository
 interface BookmarkRepository : MongoRepository<Bookmark, String> {
@@ -15,4 +16,5 @@ interface BookmarkRepository : MongoRepository<Bookmark, String> {
     fun findAllByUserIdAndDeleteTimeIsNotNull(userId: Long, pageable: Pageable): Page<Bookmark>
     fun findByUserIdAndTitleContainingIgnoreCaseOrLinkContainingIgnoreCase(userId: Long, title: String, link: String, pageable: Pageable): Page<Bookmark>
     fun findByFolderId(id: Long): List<Bookmark>
+    fun findAllByRemindTimeAndDeleteTimeIsNull(remindTime: LocalDate): List<Bookmark>
 }
