@@ -5,6 +5,7 @@ import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.domain.account.repository.UserRepository
+import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.repository.findByIdOrNull
@@ -38,6 +39,12 @@ class FolderService(
             false -> {
                 val parentFolder: Folder = folderRepository.findById(request.parentId).get()
                 val childrenFolderList: MutableList<Folder>? = parentFolder.children
+
+                childrenFolderList?.let {
+                    if (it.size >= 8) {
+                        throw BusinessException("하위 폴더는 최대 8개까지 생성을 할 수 있습니다.")
+                    }
+                }
                 folder = Folder.dtoToEntity(request, parentFolder)
                 val accountFolder = user?.let { AccountFolder(it, folder) }
                 parentFolder.folders?.add(accountFolder!!)
@@ -172,12 +179,23 @@ class FolderService(
         return responseMap
     }
 
+    @Transactional
     fun changeEmoji(id: Long, request: Folder.FolderEmojiChangeRequest): String {
         folderRepository.findByIdOrNull(id)?.let { folder ->
             folder.emoji = request.emoji
             folderRepository.save(folder)
             return request.emoji
         } ?: throw folderNotFoundException
+    }
+
+    @Transactional
+    fun deleteFolderList(request: Folder.FolderListDeleteRequest) {
+        request.deleteFolderIdList
+            .stream()
+            .forEach { folderId -> bookmarkRepository.findByFolderId(folderId)
+                    .let { list -> list.forEach { it.deletedByFolder() } }
+                folderRepository.deleteById(folderId)
+            }
     }
 
 }
