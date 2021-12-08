@@ -43,11 +43,11 @@ class AccountService(
         return jwtProvider.reIssuedAccessToken(accessToken, refreshToken)
     }
 
-    fun checkNickNameDuplication(nickNameDto: Account.nextNickName) {
+    fun checkNickNameDuplication(nickNameDto: Account.nextNickName): String {
         val account = accountRepository.findByNickname(nickNameDto.nickName)
-        when (val account = accountRepository.findByNickname(nickNameDto.nickName)) {
-            null -> return
-            else -> throw BusinessException("이미 존재하는 닉네임입니다")
+        return when (val account = accountRepository.findByNickname(nickNameDto.nickName)) {
+            null -> "사용가능한 닉네임입니다."
+            else -> "이미 사용중인 닉네임입니다."
         }
     }
 
