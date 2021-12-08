@@ -1,10 +1,10 @@
 package com.yapp.web2.domain.folder.service
 
+import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
-import com.yapp.web2.domain.account.repository.UserRepository
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
@@ -16,7 +16,7 @@ import javax.transaction.Transactional
 class FolderService(
     private val folderRepository: FolderRepository,
     private val bookmarkRepository: BookmarkRepository,
-    private val userRepository: UserRepository,
+    private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider
 ) {
     companion object {
@@ -27,7 +27,7 @@ class FolderService(
     @Transactional
     fun createFolder(request: Folder.FolderCreateRequest, accessToken: String): Folder {
         val userId = jwtProvider.getIdFromToken(accessToken)
-        val user = userRepository.findByIdOrNull(userId)
+        val user = accountRepository.findByIdOrNull(userId)
         val folder: Folder
 
         when (isParentFolder(request.parentId)) {
@@ -148,7 +148,7 @@ class FolderService(
     @Transactional
     fun findAll(accessToken: String): Map<String, Any> {
         val rootId = jwtProvider.getIdFromToken(accessToken)
-        val user = userRepository.findById(rootId).get()
+        val user = accountRepository.findById(rootId).get()
         val itemsValue = mutableMapOf<String, Any>()
 
         /* "root" 하위 데이터 */

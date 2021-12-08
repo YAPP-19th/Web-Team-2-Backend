@@ -2,7 +2,7 @@ package com.yapp.web2.domain.folder.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.yapp.web2.domain.account.entity.Account
-import com.yapp.web2.domain.account.repository.UserRepository
+import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
@@ -36,7 +36,7 @@ internal open class FolderServiceTest {
     private lateinit var bookmarkRepository: BookmarkRepository
 
     @MockK
-    private lateinit var userRepository: UserRepository
+    private lateinit var accountRepository: AccountRepository
 
     @MockK
     private lateinit var jwtProvider: JwtProvider
@@ -66,7 +66,7 @@ internal open class FolderServiceTest {
 
         // mock
         every { jwtProvider.getIdFromToken(any()) } returns 1L
-        every { userRepository.findByIdOrNull(any()) } returns user
+        every { accountRepository.findByIdOrNull(any()) } returns user
         every { folderRepository.save(expected) } returns expected
 
         // when
@@ -88,7 +88,7 @@ internal open class FolderServiceTest {
 
         // mock
         every { jwtProvider.getIdFromToken(any()) } returns 1L
-        every { userRepository.findByIdOrNull(any()) } returns user
+        every { accountRepository.findByIdOrNull(any()) } returns user
         every { folderRepository.findById(request.parentId).get() } returns parentFolder
         every { folderRepository.save(childFolder) } returns childFolder
 
