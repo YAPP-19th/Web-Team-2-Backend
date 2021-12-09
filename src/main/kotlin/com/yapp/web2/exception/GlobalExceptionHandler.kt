@@ -16,8 +16,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import javax.servlet.http.HttpServletRequest
-import kotlin.RuntimeException
 
+// TODO: 2021/12/09 Http StatusCode 추가 
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
@@ -75,8 +75,6 @@ class GlobalExceptionHandler {
     fun handleMethodArgumentNotValidException(e: MethodArgumentNotValidException, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
         log.error("methodArgumentNotValidException", e)
         val errors = mutableListOf<Error>()
-        // TODO: message 수정
-        val response = ErrorResponse.of("이름을 정합시다", errors)
 
         e.bindingResult.allErrors.forEach { errorObject ->
             val error = Error().apply {
@@ -87,6 +85,7 @@ class GlobalExceptionHandler {
             }
             errors.add(error)
         }
+        val response = ErrorResponse.of(e.message, errors)
         return getResponse(response, HttpStatus.BAD_REQUEST.value())
     }
 
