@@ -17,21 +17,19 @@ pipeline {
       }
     }
     stage('SSH transfer') {
-      steps([$class: 'BapSshPromotionPublisherPlugin']) {
-        sshPublisher(
-          continueOnError: false, failOnError: true,
-          publishers: [
-            configName: "dotoriham",
-            verbose: true,
-            transfers: [
-              sshTransfer(
-                removePrefix: "",
-                remoteDirectory: "",
-                execCommand: "docker-compose up -d"
-              )
-            ]
+      steps {
+        sshPublisher(failOnError: true, publishers: [
+          configName: "dotoriham",
+          verbose: true,
+          transfers: [
+            sshTransfer(
+              sourceFiles: "run.zsh",
+              removePrefix: "",
+              remoteDirectory: "",
+              execCommand: "sh run.zsh"
+            )
           ]
-        )
+        ])
       }
     }
   }
