@@ -1,14 +1,15 @@
 package com.yapp.web2.exception
 
+// TODO: 2021/12/09 Http StatusCode 추가
 data class ErrorResponse(
     val message: String? = null,
-    val errors: MutableList<Error>? = mutableListOf()
+    val errors: MutableList<Error> = mutableListOf()
 ) {
-    private constructor(message: String) : this(message, null)
+    private constructor(message: String) : this(message, mutableListOf())
 
     companion object {
-        fun of(message: String?) = of(message, null)
-        fun of(message: String?, errors: MutableList<Error>?) = ErrorResponse(message, errors)
+        fun of(message: String?) = of(message, mutableListOf())
+        fun of(message: String?, errors: MutableList<Error>) = ErrorResponse(message, errors)
     }
 }
 
