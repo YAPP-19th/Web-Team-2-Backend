@@ -16,6 +16,5 @@ pipeline {
         sh 'docker push xodhkd36/yapp-server-test'
       }
     }
-
   }
 }
