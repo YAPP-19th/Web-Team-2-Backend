@@ -34,11 +34,11 @@ class Folder(
     var emoji: String? = ""
 
     @OrderBy("index asc")
-    @OneToMany(mappedBy = "parentFolder")
+    @OneToMany(mappedBy = "parentFolder", cascade = [CascadeType.ALL])
     @JsonManagedReference
     var children: MutableList<Folder>? = mutableListOf()
 
-    @OneToMany(mappedBy = "folder", cascade = [CascadeType.PERSIST])
+    @OneToMany(mappedBy = "folder", cascade = [CascadeType.ALL])
     var folders: MutableList<AccountFolder>? = mutableListOf()
 
     override fun equals(other: Any?): Boolean {
