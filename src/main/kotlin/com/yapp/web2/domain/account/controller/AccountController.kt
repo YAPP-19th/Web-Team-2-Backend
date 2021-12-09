@@ -36,9 +36,9 @@ class AccountController(
     }
 
     @PostMapping("/changeProfileImage")
-    fun changeProfileImage(request: HttpServletRequest, @RequestParam("images") multipartFile: MultipartFile): ResponseEntity<String> {
+    fun changeProfileImage(request: HttpServletRequest, @RequestBody image: MultipartFile): ResponseEntity<String> {
         val token = request.getHeader("AccessToken")
-        val image = accountService.changeProfileImage(token, multipartFile)
+        val image = accountService.changeProfileImage(token, image)
         return ResponseEntity.status(HttpStatus.OK).body(image)
     }
 
@@ -50,12 +50,12 @@ class AccountController(
     }
 
     @PostMapping("/nickNameCheck")
-    fun nickNameCheck(@RequestParam("nickName") @Valid nickName: Account.nextNickName): ResponseEntity<String> {
+    fun nickNameCheck(@RequestBody @Valid nickName: Account.nextNickName): ResponseEntity<String> {
         val result = accountService.checkNickNameDuplication(nickName)
         return ResponseEntity.status(HttpStatus.OK).body(result)
     }
     @PostMapping("/nickNameChange")
-    fun nickNameChange(request: HttpServletRequest, @RequestParam("nickName") @Valid nickName: Account.nextNickName): ResponseEntity<String> {
+    fun nickNameChange(request: HttpServletRequest, @RequestBody @Valid nickName: Account.nextNickName): ResponseEntity<String> {
         val token = request.getHeader("AccessToken")
         accountService.changeNickName(token, nickName)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
