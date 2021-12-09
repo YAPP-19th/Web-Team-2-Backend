@@ -108,10 +108,9 @@ class FolderService(
         nextParentFolder.children = nextChildFolderList
     }
 
-    // TODO: 2021/11/13 MongoDB ID 타입 변경
     @Transactional
-    fun deleteAllBookmark(id: Long) {
-        bookmarkRepository.findByFolderId(id)
+    fun deleteAllBookmark(folderId: Long) {
+        bookmarkRepository.findByFolderId(folderId)
             .let { list ->
                 list.forEach {
                     it.deletedByFolder()
@@ -122,7 +121,9 @@ class FolderService(
 
     @Transactional
     fun deleteFolder(id: Long) {
-        folderRepository.deleteById(id)
+        folderRepository.findById(id).ifPresent { folder ->
+            folderRepository.deleteByFolder(folder)
+        }
     }
 
     /* API
@@ -195,13 +196,17 @@ class FolderService(
     fun deleteFolderList(request: Folder.FolderListDeleteRequest) {
         request.deleteFolderIdList
             .stream()
-            .forEach { folderId -> bookmarkRepository.findByFolderId(folderId)
-                    .let { list -> list.forEach {
-                        it.deletedByFolder()
-                        bookmarkRepository.save(it)
-                    } }
+            .forEach { folderId ->
+                bookmarkRepository.findByFolderId(folderId)
+                    .let { list ->
+                        list.forEach {
+                            it.deletedByFolder()
+                            bookmarkRepository.save(it)
+                        }
+                    }
                 folderRepository.deleteById(folderId)
             }
     }
+
 
 }
