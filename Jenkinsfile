@@ -16,5 +16,23 @@ pipeline {
         sh 'docker push xodhkd36/yapp-server-test'
       }
     }
+    stage('SSH transfer') {
+      steps([$class: 'BapSshPromotionPublisherPlugin']) {
+        sshPublisher(
+          continueOnError: false, failOnError: true,
+          publishers: [
+            configName: "dotoriham",
+            verbose: true,
+            transfers: [
+              sshTransfer(
+                removePrefix: "",
+                remoteDirectory: "",
+                execCommand: "docker-compose up -d"
+              )
+            ]
+          ]
+        )
+      }
+    }
   }
 }
