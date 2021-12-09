@@ -50,12 +50,12 @@ class AccountController(
     }
 
     @PostMapping("/nickNameCheck")
-    fun nickNameCheck(@RequestBody @Valid nickName: Account.nextNickName): ResponseEntity<String> {
+    fun nickNameCheck(@RequestBody @Valid nickName: String): ResponseEntity<String> {
         val result = accountService.checkNickNameDuplication(nickName)
         return ResponseEntity.status(HttpStatus.OK).body(result)
     }
     @PostMapping("/nickNameChange")
-    fun nickNameChange(request: HttpServletRequest, @RequestBody @Valid nickName: Account.nextNickName): ResponseEntity<String> {
+    fun nickNameChange(request: HttpServletRequest, @RequestBody @Valid nickName: String): ResponseEntity<String> {
         val token = request.getHeader("AccessToken")
         accountService.changeNickName(token, nickName)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
