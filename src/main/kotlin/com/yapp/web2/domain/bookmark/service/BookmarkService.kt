@@ -43,14 +43,10 @@ class BookmarkService(
     }
 
     private fun bookmarkAddDtoToBookmark(bookmarkDto: Bookmark.AddBookmarkDto, folderId: Long, userId: Long): Bookmark {
-        var bookmark: Bookmark
-        when (bookmarkDto.remind) {
-            true -> bookmark =
-                Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDateTime.now())
-            false -> bookmark =
-                Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, null)
+        return when (bookmarkDto.remind) {
+            true -> Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDateTime.now(), bookmarkDto.image)
+            false -> Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, null, bookmarkDto.image)
         }
-        return bookmark
     }
 
     fun deleteBookmark(bookmarkId: String) {

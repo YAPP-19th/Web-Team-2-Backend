@@ -24,6 +24,7 @@ class Bookmark(
     var deleteTime: LocalDateTime? = null
     var deleted: Boolean = false
     var description: String? = null
+    var image: String? = null
 
     var saveTime: LocalDateTime = LocalDateTime.now()
 
@@ -37,6 +38,10 @@ class Bookmark(
 
     constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDateTime?) : this(userId, folderId, link, title) {
         this.remindTime = remindTime
+    }
+
+    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDateTime?, image: String?): this(userId, folderId, link, title, remindTime) {
+        this.image = image
     }
 
     @ApiModel(description = "북마크 수정 DTO")
@@ -61,7 +66,10 @@ class Bookmark(
         var title: String?,
 
         @ApiModelProperty(value = "북마크 리마인드 여부", required = true, example = "true")
-        var remind: Boolean
+        var remind: Boolean,
+
+        @ApiModelProperty(value = "북마크 이미지", example = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png")
+        var image: String?
     )
 
     @ApiModel(description = "북마크 이동 API(폴더별 이동)")
