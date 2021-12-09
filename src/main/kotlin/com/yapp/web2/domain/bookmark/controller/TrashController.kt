@@ -32,15 +32,4 @@ class TrashController(
         bookmarkService.permanentDelete(request.bookmarkIdList)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
-
-    @ApiOperation("휴지통 북마크 조회 API")
-    @GetMapping
-    fun getTrashBookmarkPage(
-        request: HttpServletRequest,
-        pageable: Pageable,
-        @RequestParam @ApiParam(value = "리마인드 필터링 여부", required = true) remind: Boolean
-    ): ResponseEntity<Page<Bookmark>> {
-        val token = request.getHeader("AccessToken")
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByUserId(token, pageable, remind))
-    }
 }
