@@ -19,16 +19,18 @@ pipeline {
     stage('SSH transfer') {
       steps {
         sshPublisher(failOnError: true, publishers: [
-          configName: "dotoriham",
-          verbose: true,
-          transfers: [
-            sshTransfer(
-              sourceFiles: "run.zsh",
-              removePrefix: "",
-              remoteDirectory: "",
-              execCommand: "sh run.zsh"
-            )
-          ]
+          sshPublisherDesc(
+            configName: "dotoriham",
+            verbose: true,
+            transfers: [
+              sshTransfer(
+                sourceFiles: "run.zsh",
+                removePrefix: "",
+                remoteDirectory: "",
+                execCommand: "sh run.zsh"
+              )
+            ]
+          )
         ])
       }
     }
