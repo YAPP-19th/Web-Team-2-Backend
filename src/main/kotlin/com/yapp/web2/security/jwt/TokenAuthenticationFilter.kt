@@ -6,9 +6,6 @@ import com.yapp.web2.util.Message
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.MalformedJwtException
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.filter.GenericFilterBean
 import javax.servlet.FilterChain
@@ -51,7 +48,6 @@ class TokenAuthenticationFilter(
             httpServletResponse.writer.println(Message.NULL_TOKEN)
         }
     }
-
 
     private fun resolveToken(request: HttpServletRequest): String {
         val bearerToken: String = request.getHeader(AUTHORIZATION_HEADER)

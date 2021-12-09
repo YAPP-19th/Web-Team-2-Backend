@@ -1,10 +1,11 @@
 package com.yapp.web2.domain.folder.service
 
+import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
-import com.yapp.web2.domain.account.repository.UserRepository
+import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.repository.findByIdOrNull
@@ -15,7 +16,7 @@ import javax.transaction.Transactional
 class FolderService(
     private val folderRepository: FolderRepository,
     private val bookmarkRepository: BookmarkRepository,
-    private val userRepository: UserRepository,
+    private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider
 ) {
     companion object {
@@ -26,7 +27,7 @@ class FolderService(
     @Transactional
     fun createFolder(request: Folder.FolderCreateRequest, accessToken: String): Folder {
         val userId = jwtProvider.getIdFromToken(accessToken)
-        val user = userRepository.findByIdOrNull(userId)
+        val user = accountRepository.findByIdOrNull(userId)
         val folder: Folder
 
         when (isParentFolder(request.parentId)) {
@@ -38,6 +39,12 @@ class FolderService(
             false -> {
                 val parentFolder: Folder = folderRepository.findById(request.parentId).get()
                 val childrenFolderList: MutableList<Folder>? = parentFolder.children
+
+                childrenFolderList?.let {
+                    if (it.size >= 8) {
+                        throw BusinessException("하위 폴더는 최대 8개까지 생성을 할 수 있습니다.")
+                    }
+                }
                 folder = Folder.dtoToEntity(request, parentFolder)
                 val accountFolder = user?.let { AccountFolder(it, folder) }
                 parentFolder.folders?.add(accountFolder!!)
@@ -106,7 +113,10 @@ class FolderService(
     fun deleteAllBookmark(id: Long) {
         bookmarkRepository.findByFolderId(id)
             .let { list ->
-                list.forEach { it.deletedByFolder() }
+                list.forEach {
+                    it.deletedByFolder()
+                    bookmarkRepository.save(it)
+                }
             }
     }
 
@@ -138,7 +148,7 @@ class FolderService(
     @Transactional
     fun findAll(accessToken: String): Map<String, Any> {
         val rootId = jwtProvider.getIdFromToken(accessToken)
-        val user = userRepository.findById(rootId).get()
+        val user = accountRepository.findById(rootId).get()
         val itemsValue = mutableMapOf<String, Any>()
 
         /* "root" 하위 데이터 */
@@ -148,7 +158,7 @@ class FolderService(
             .filter { it.parentFolder == null }
             .forEach { it.id?.let { folderId -> rootFolders.add(folderId) } }
 
-        val root = Folder.FolderReadResponse.Root(children = rootFolders)
+        val root = Folder.FolderFindAllResponse.Root(children = rootFolders)
         itemsValue["root"] = root
 
         /* "folder" 하위 데이터 */
@@ -160,8 +170,8 @@ class FolderService(
                 val children: MutableList<Long> = mutableListOf()
                 rootFolder.children?.forEach { children.add(it.id!!) }
                 val emoji = rootFolder.emoji ?: ""
-                val data = Folder.FolderReadResponse.RootFolderData(rootFolder.name, emoji)
-                val folderValue = Folder.FolderReadResponse.RootFolder(id!!, children, data)
+                val data = Folder.FolderFindAllResponse.RootFolderData(rootFolder.name, emoji)
+                val folderValue = Folder.FolderFindAllResponse.RootFolder(id!!, children, data)
                 itemsValue[id.toString()] = folderValue
             }
 
@@ -172,12 +182,26 @@ class FolderService(
         return responseMap
     }
 
+    @Transactional
     fun changeEmoji(id: Long, request: Folder.FolderEmojiChangeRequest): String {
         folderRepository.findByIdOrNull(id)?.let { folder ->
             folder.emoji = request.emoji
             folderRepository.save(folder)
             return request.emoji
         } ?: throw folderNotFoundException
+    }
+
+    @Transactional
+    fun deleteFolderList(request: Folder.FolderListDeleteRequest) {
+        request.deleteFolderIdList
+            .stream()
+            .forEach { folderId -> bookmarkRepository.findByFolderId(folderId)
+                    .let { list -> list.forEach {
+                        it.deletedByFolder()
+                        bookmarkRepository.save(it)
+                    } }
+                folderRepository.deleteById(folderId)
+            }
     }
 
 }
