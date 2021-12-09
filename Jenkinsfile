@@ -16,23 +16,25 @@ pipeline {
         sh 'docker push xodhkd36/yapp-server-test'
       }
     }
+
     stage('SSH transfer') {
       steps {
         sshPublisher(failOnError: true, publishers: [
-          sshPublisherDesc(
-            configName: "dotoriham",
-            verbose: true,
-            transfers: [
-              sshTransfer(
-                sourceFiles: "run.zsh",
-                removePrefix: "",
-                remoteDirectory: "",
-                execCommand: "sh run.zsh"
-              )
-            ]
-          )
-        ])
-      }
-    }
-  }
-}
+                    sshPublisherDesc(
+                        configName: "dotoriham",
+                        verbose: true,
+                        transfers: [
+                            sshTransfer(
+                                sourceFiles: "run.zsh",
+                                removePrefix: "",
+                                remoteDirectory: "",
+                                execCommand: "sh run.zsh"
+                              )
+                            ]
+                          )
+                        ])
+              }
+            }
+
+          }
+        }
