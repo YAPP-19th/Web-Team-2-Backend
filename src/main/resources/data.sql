@@ -101,3 +101,30 @@ INSERT INTO account_folder (account_id, folder_id)
 VALUES (1, 13);
 INSERT INTO account_folder (account_id, folder_id)
 VALUES (1, 14);
+
+
+/* RDBMS Self References Problem -> Change to FK DELETE CASCADE */
+
+-- Look up the current FK definition
+SELECT pg_get_constraintdef(oid) AS constraint_def
+FROM   pg_constraint
+WHERE  conrelid = 'public.folder'::regclass  -- assuming public schema
+AND    conname = 'fkn0cjh1seljcp0mc4tj1ufh99m';
+-- result: "FOREIGN KEY (parent_id) REFERENCES folder(id)"
+
+ALTER TABLE folder
+DROP CONSTRAINT fkn0cjh1seljcp0mc4tj1ufh99m,
+	ADD CONSTRAINT fkn0cjh1seljcp0mc4tj1ufh99m
+	FOREIGN KEY (parent_id) REFERENCES folder (id) ON DELETE CASCADE;
+
+
+SELECT pg_get_constraintdef(oid) AS constraint_def
+FROM   pg_constraint
+WHERE  conrelid = 'public.account_folder'::regclass  -- assuming public schema
+AND    conname = 'fkq12fenyrw4agbqxdkoe9j9t0';
+-- result: "FOREIGN KEY (folder_id) REFERENCES folder(id)"
+
+ALTER TABLE account_folder
+DROP CONSTRAINT fkq12fenyrw4agbqxdkoe9j9t0,
+	ADD CONSTRAINT fkq12fenyrw4agbqxdkoe9j9t0
+	FOREIGN KEY (folder_id) REFERENCES folder (id) ON DELETE CASCADE;
