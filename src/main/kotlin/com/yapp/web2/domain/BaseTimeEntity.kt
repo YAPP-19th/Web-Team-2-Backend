@@ -15,6 +15,7 @@ open class BaseTimeEntity {
     var id: Long? = null
 
     @CreatedDate
+    @Column(updatable = false)
     var createdAt: LocalDateTime? = LocalDateTime.now()
 
     @LastModifiedDate
