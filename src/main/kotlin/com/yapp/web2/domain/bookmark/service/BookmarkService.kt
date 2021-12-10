@@ -10,6 +10,7 @@ import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
@@ -43,14 +44,10 @@ class BookmarkService(
     }
 
     private fun bookmarkAddDtoToBookmark(bookmarkDto: Bookmark.AddBookmarkDto, folderId: Long, userId: Long): Bookmark {
-        var bookmark: Bookmark
-        when (bookmarkDto.remind) {
-            true -> bookmark =
-                Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDateTime.now())
-            false -> bookmark =
-                Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, null)
+        return when (bookmarkDto.remind) {
+            true -> Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDate.now(), bookmarkDto.image, bookmarkDto.description)
+            false -> Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, null, bookmarkDto.image, bookmarkDto.description)
         }
-        return bookmark
     }
 
     fun deleteBookmark(bookmarkId: String) {
@@ -75,7 +72,7 @@ class BookmarkService(
         updateBookmarkDto.let {
             toChangeBookmark.title = it.title
             when (updateBookmarkDto.remind) {
-                true -> toChangeBookmark.remindTime = LocalDateTime.now()
+                true -> toChangeBookmark.remindTime = LocalDate.now()
                 false -> toChangeBookmark.remindTime = null
             }
         }

@@ -22,15 +22,17 @@ class Account(
 
     constructor(email: String, image: String, nickname: String, socialType: String) : this(email) {
         this.image = image
-        this.nickname = nickname
+        this.name = nickname
         this.socialType = socialType
     }
 
     var password: String? = null
-    var nickname: String = ""
+    var name: String = ""
     var sex: String = ""
     var age: Int? = null
     var socialType: String = "none"
+    var fcmToken: String? = null
+    var remindCycle: String? = null
 
     // TODO: 디폴트 사진 url 추가하기
     var image: String = BASIC_IMAGE_URL
