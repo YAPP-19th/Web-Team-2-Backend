@@ -30,7 +30,7 @@ class AccountService(
     @Transactional
     protected fun updateUser(savedAccount: Account, receivedAccount: Account): Account {
         savedAccount.image = receivedAccount.image
-        savedAccount.nickname = receivedAccount.nickname
+        savedAccount.name = receivedAccount.name
         return savedAccount
     }
 
@@ -56,7 +56,7 @@ class AccountService(
         val idFromToken = jwtProvider.getIdFromToken(token)
         val account = accountRepository.findById(idFromToken).let {
             if (it.isEmpty) throw BusinessException("계정이 존재하지 않습니다.")
-            it.get().nickname = nextNickName
+            it.get().name = nextNickName
             it
         }
     }
