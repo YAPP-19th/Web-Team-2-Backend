@@ -58,6 +58,10 @@ class Folder(
         return "Folder(name='$name', index=$index, bookmarkCount=$bookmarkCount, parentFolder=$parentFolder, emoji=$emoji)"
     }
 
+    fun setParentFolder() {
+        this.parentFolder = null
+    }
+
     fun updateFolderToParent(index: Int) {
         this.parentFolder = null
         this.index = index
@@ -109,17 +113,8 @@ class Folder(
 
     @ApiModel(description = "폴더 이동(드래그 & 드랍) DTO")
     class FolderMoveRequest(
-        @ApiModelProperty(value = "이동 전 부모폴더 ID(\"root\" => 최상위 부모폴더)", required = true, example = "1")
-        @field: PositiveOrZero
-        var prevParentId: Long,
-
         @ApiModelProperty(value = "이동 후 부모폴더 ID(\"root\" => 최상위 부모폴더)", required = true, example = "2")
-        @field: PositiveOrZero
-        var nextParentId: Long,
-
-        @ApiModelProperty(value = "이동 전 폴더 Index", required = true, example = "0")
-        @field: PositiveOrZero
-        val prevIndex: Int,
+        var nextParentId: Any,
 
         @ApiModelProperty(value = "이동 후 폴더 Index", required = true, example = "2")
         @field: PositiveOrZero
