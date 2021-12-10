@@ -44,8 +44,8 @@ class AccountService(
     }
 
     fun checkNickNameDuplication(nickNameDto:String): String {
-        val account = accountRepository.findByNickname(nickNameDto)
-        return when (val account = accountRepository.findByNickname(nickNameDto)) {
+        val account = accountRepository.findByName(nickNameDto)
+        return when (val account = accountRepository.findByName(nickNameDto)) {
             null -> "사용가능한 닉네임입니다."
             else -> "이미 사용중인 닉네임입니다."
         }
