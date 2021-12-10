@@ -41,6 +41,7 @@ class FolderMoveFromFolderToTopFolder(
 
     override fun updateFolderAfterMove() {
         moveFolder.setParentFolder()
+        moveFolder.index = request.nextIndex
     }
 
 
