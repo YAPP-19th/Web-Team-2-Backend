@@ -32,15 +32,12 @@ class Bookmark(
         this.title = title
     }
 
-    constructor(userId: Long, folderId: Long, link: String, remindTime: LocalDateTime) : this(userId, folderId, link) {
-        this.remindTime = remindTime
-    }
-
     constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDateTime?) : this(userId, folderId, link, title) {
         this.remindTime = remindTime
     }
 
-    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDateTime?, image: String?): this(userId, folderId, link, title, remindTime) {
+    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDateTime?, image: String?, description: String?): this(userId, folderId, link, title, remindTime) {
+        this.description = description
         this.image = image
     }
 
@@ -69,7 +66,10 @@ class Bookmark(
         var remind: Boolean,
 
         @ApiModelProperty(value = "북마크 이미지", example = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png")
-        var image: String?
+        var image: String?,
+
+        @ApiModelProperty(value = "description", example = "설명 예제...")
+        var description: String?
     )
 
     @ApiModel(description = "북마크 이동 API(폴더별 이동)")
