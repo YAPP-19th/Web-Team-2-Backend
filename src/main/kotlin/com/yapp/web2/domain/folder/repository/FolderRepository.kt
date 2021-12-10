@@ -4,6 +4,7 @@ import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.folder.entity.Folder
 import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 
@@ -41,4 +42,9 @@ interface FolderRepository : JpaRepository<Folder, Long> {
                 "   WHERE af.account = ?1)"
     )
     fun findAllByAccount(user: Account): MutableList<Folder>
+
+    @EntityGraph(attributePaths = ["parentFolder", "children", "folders"])
+    @Modifying
+    @Query("DELETE FROM Folder f WHERE f = ?1")
+    fun deleteByFolder(folder: Folder)
 }

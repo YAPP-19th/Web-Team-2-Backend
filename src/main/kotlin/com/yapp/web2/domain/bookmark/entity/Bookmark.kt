@@ -26,6 +26,7 @@ class Bookmark(
     var deleted: Boolean = false
     var description: String? = null
     var image: String? = null
+    var fcmToken = mutableListOf<String>()
 
     var saveTime: LocalDateTime = LocalDateTime.now()
 

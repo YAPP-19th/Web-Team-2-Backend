@@ -17,19 +17,8 @@ import javax.validation.Valid
 @RestController
 @RequestMapping("/api/v1/bookmark")
 class BookmarkController(
-    private val bookmarkPageService: BookmarkPageService,
-    private val bookmarkService: BookmarkService,
-    private val bookmarkSearchService: BookmarkSearchService
+    private val bookmarkService: BookmarkService
 ) {
-    // TODO: 2021/12/04 Swagger 추가
-    @GetMapping("/{folderId}")
-    fun getBookmarkPage(
-        @PathVariable folderId: Long,
-        pageable: Pageable,
-        @RequestParam remind: Boolean): ResponseEntity<Page<Bookmark>> {
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByFolderId(folderId, pageable, remind))
-    }
-
     @GetMapping("/click/{bookmarkId}")
     fun increaseBookmarkClickCount(@PathVariable bookmarkId: String): ResponseEntity<String> {
         bookmarkService.increaseBookmarkClickCount(bookmarkId)
@@ -75,23 +64,4 @@ class BookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body("폴더가 이동됨")
     }
 
-    // TODO: 2021/12/04 Swagger 추가
-    @GetMapping("/search/{keyWord}")
-    fun searchBookmarkList(
-        request: HttpServletRequest,
-        @PathVariable keyWord: String,
-        pageable: Pageable,
-    ): ResponseEntity<Page<Bookmark>> {
-        val token = request.getHeader("AccessToken")
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkSearchService.searchKeywordOwnUserId(token, keyWord, pageable))
-    }
-
-    @GetMapping("/todayRemind")
-    fun todayRemindBookmark(
-        request: HttpServletRequest
-    ): ResponseEntity<List<Bookmark>> {
-        val token = request.getHeader("AccessToken")
-        val result = bookmarkService.getTodayRemindBookmark(token)
-        return ResponseEntity.status(HttpStatus.OK).body(result)
-    }
 }

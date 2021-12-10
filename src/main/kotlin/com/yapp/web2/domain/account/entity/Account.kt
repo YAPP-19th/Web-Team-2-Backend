@@ -3,6 +3,7 @@ package com.yapp.web2.domain.account.entity
 import com.yapp.web2.domain.BaseTimeEntity
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.notification.entity.Notification
+import com.yapp.web2.security.jwt.TokenDto
 import javax.persistence.*
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Size
@@ -22,15 +23,17 @@ class Account(
 
     constructor(email: String, image: String, nickname: String, socialType: String) : this(email) {
         this.image = image
-        this.nickname = nickname
+        this.name = nickname
         this.socialType = socialType
     }
 
     var password: String? = null
-    var nickname: String = ""
+    var name: String = ""
     var sex: String = ""
     var age: Int? = null
     var socialType: String = "none"
+    var fcmToken: String? = null
+    var remindCycle: String? = "7"
 
     // TODO: 디폴트 사진 url 추가하기
     var image: String = BASIC_IMAGE_URL
@@ -55,7 +58,20 @@ class Account(
         val socialType: String
     )
 
-    class nextNickName(
+    class AccountLoginSuccess(
+        tokenDto: TokenDto, account: Account
+    ) {
+        val accessToken = tokenDto.accessToken
+        val refreshToken = tokenDto.refreshToken
+        val email = account.email
+        val name = account.name
+        val image = account.image
+        val socialType = account.socialType
+        val remindCycle = account.remindCycle
+        val remindToggle = account.remindToggle
+    }
+
+    class NextNickName(
         @field: Size(max = 20)
         val nickName: String
     )
