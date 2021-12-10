@@ -92,7 +92,7 @@ internal class AccountServiceTest {
             accountService.changeNickName(testToken, testNickName)
 
             //then
-            assertEquals(testNickName.nickName, account.nickname)
+            assertEquals(testNickName.nickName, account.name)
         }
     }
 
