@@ -3,6 +3,7 @@ package com.yapp.web2.domain.account.entity
 import com.yapp.web2.domain.BaseTimeEntity
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.notification.entity.Notification
+import com.yapp.web2.security.jwt.TokenDto
 import javax.persistence.*
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Size
@@ -56,6 +57,19 @@ class Account(
         @field: NotEmpty(message = "소셜타입을 입력해주세요")
         val socialType: String
     )
+
+    class AccountLoginSuccess(
+        tokenDto: TokenDto, account: Account
+    ) {
+        val accessToken = tokenDto.accessToken
+        val refreshToken = tokenDto.refreshToken
+        val email = account.email
+        val name = account.name
+        val image = account.image
+        val socialType = account.socialType
+        val remindCycle = account.remindCycle
+        val remindToggle = account.remindToggle
+    }
 
     class nextNickName(
         @field: Size(max = 20)

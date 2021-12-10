@@ -18,15 +18,16 @@ class AccountService(
     private val jwtProvider: JwtProvider,
     private val s3Uploader: S3Uploader
 ) {
-    fun oauth2LoginUser(dto: Account.AccountLoginRequest): TokenDto {
+    fun oauth2LoginUser(dto: Account.AccountLoginRequest): Account.AccountLoginSuccess {
         var account = Account.requestToAccount(dto)
 
         account = when (val savedAccount = accountRepository.findByEmail(account.email)) {
             null -> createUser(account)
             else -> updateUser(savedAccount, account)
         }
+        val tokenDto = jwtProvider.createToken(account)
 
-        return jwtProvider.createToken(account)
+        return Account.AccountLoginSuccess(tokenDto, account)
     }
 
     @Transactional

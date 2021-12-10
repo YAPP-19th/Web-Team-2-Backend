@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import javax.servlet.http.HttpServletRequest
-import javax.validation.Valid
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -21,9 +20,9 @@ class AccountController(
     @PostMapping("/oauth2Login")
     fun oauth2Login(
         @RequestBody @ApiParam(value = "회원 정보", required = true) request: Account.AccountLoginRequest
-    ): ResponseEntity<TokenDto> {
-        val tokenDto = accountService.oauth2LoginUser(request)
-        return ResponseEntity.status(HttpStatus.OK).body(tokenDto)
+    ): ResponseEntity<Account.AccountLoginSuccess> {
+        val loginSuccess = accountService.oauth2LoginUser(request)
+        return ResponseEntity.status(HttpStatus.OK).body(loginSuccess)
     }
 
     @ApiOperation(value = "토큰 재발급")
