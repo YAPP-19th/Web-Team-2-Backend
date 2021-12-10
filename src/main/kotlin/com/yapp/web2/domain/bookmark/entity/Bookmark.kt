@@ -3,6 +3,7 @@ package com.yapp.web2.domain.bookmark.entity
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import org.springframework.data.mongodb.core.mapping.Document
+import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.Id
 import javax.validation.constraints.NotEmpty
@@ -19,7 +20,7 @@ class Bookmark(
 
     var title: String? = ""
 
-    var remindTime: LocalDateTime? = null
+    var remindTime: LocalDate? = null
     var clickCount: Int = 0
     var deleteTime: LocalDateTime? = null
     var deleted: Boolean = false
@@ -32,11 +33,11 @@ class Bookmark(
         this.title = title
     }
 
-    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDateTime?) : this(userId, folderId, link, title) {
+    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDate?) : this(userId, folderId, link, title) {
         this.remindTime = remindTime
     }
 
-    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDateTime?, image: String?, description: String?): this(userId, folderId, link, title, remindTime) {
+    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDate?, image: String?, description: String?): this(userId, folderId, link, title, remindTime) {
         this.description = description
         this.image = image
     }

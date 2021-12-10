@@ -84,6 +84,14 @@ class BookmarkController(
     ): ResponseEntity<Page<Bookmark>> {
         val token = request.getHeader("AccessToken")
         return ResponseEntity.status(HttpStatus.OK).body(bookmarkSearchService.searchKeywordOwnUserId(token, keyWord, pageable))
+    }
 
+    @GetMapping("/todayRemind")
+    fun todayRemindBookmark(
+        request: HttpServletRequest
+    ): ResponseEntity<List<Bookmark>> {
+        val token = request.getHeader("AccessToken")
+        val result = bookmarkService.getTodayRemindBookmark(token)
+        return ResponseEntity.status(HttpStatus.OK).body(result)
     }
 }
