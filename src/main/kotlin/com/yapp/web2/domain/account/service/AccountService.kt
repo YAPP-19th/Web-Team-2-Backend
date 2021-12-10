@@ -6,6 +6,8 @@ import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.config.S3Uploader
+import com.yapp.web2.exception.custom.ExistNameException
+import com.yapp.web2.util.Message
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import javax.transaction.Transactional
@@ -30,7 +32,7 @@ class AccountService(
     @Transactional
     protected fun updateUser(savedAccount: Account, receivedAccount: Account): Account {
         savedAccount.image = receivedAccount.image
-        savedAccount.nickname = receivedAccount.nickname
+        savedAccount.name = receivedAccount.name
         return savedAccount
     }
 
@@ -43,20 +45,19 @@ class AccountService(
         return jwtProvider.reIssuedAccessToken(accessToken, refreshToken)
     }
 
-    fun checkNickNameDuplication(nickNameDto:String): String {
-        val account = accountRepository.findByNickname(nickNameDto)
-        return when (val account = accountRepository.findByNickname(nickNameDto)) {
-            null -> "사용가능한 닉네임입니다."
-            else -> "이미 사용중인 닉네임입니다."
+    fun checkNickNameDuplication(nickNameDto:Account.nextNickName): String {
+        return when(accountRepository.findAccountByName(nickNameDto.nickName)) {
+            null -> Message.AVAILABLE_NAME
+            else -> throw ExistNameException()
         }
     }
 
     @Transactional
-    fun changeNickName(token: String, nextNickName: String): Unit {
+    fun changeNickName(token: String, nextNickName: Account.nextNickName) {
         val idFromToken = jwtProvider.getIdFromToken(token)
-        val account = accountRepository.findById(idFromToken).let {
+        accountRepository.findById(idFromToken).let {
             if (it.isEmpty) throw BusinessException("계정이 존재하지 않습니다.")
-            it.get().nickname = nextNickName
+            it.get().name = nextNickName.nickName
             it
         }
     }

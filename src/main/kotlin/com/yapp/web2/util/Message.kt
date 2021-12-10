@@ -17,5 +17,9 @@ class Message {
         var WRONG_TOKEN_FORM = "형식에 어긋난 토큰입니다"
 
         var NULL_TOKEN = "값이 존재하지 않습니다"
+
+        var EXIST_NAME = "이미 존재하는 닉네임입니다"
+
+        var AVAILABLE_NAME = "사용가능한 닉네임입니다"
     }
 }

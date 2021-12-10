@@ -55,7 +55,7 @@ internal class AccountServiceTest {
         @Test
         fun `해당 닉네임을 다른 유저가 사용하고 있다면 예외를 던진다`() {
             //given
-            every { accountRepository.findByNickname(testNickName.nickName) } returns account
+            every { accountRepository.findAccountByName(testNickName.nickName) } returns account
             val expectedException = BusinessException("이미 존재하는 닉네임입니다")
 
             //when
@@ -92,7 +92,7 @@ internal class AccountServiceTest {
             accountService.changeNickName(testToken, testNickName)
 
             //then
-            assertEquals(testNickName.nickName, account.nickname)
+            assertEquals(testNickName.nickName, account.name)
         }
     }
 
