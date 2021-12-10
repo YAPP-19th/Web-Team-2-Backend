@@ -71,7 +71,7 @@ class Account(
         val remindToggle = account.remindToggle
     }
 
-    class nextNickName(
+    class NextNickName(
         @field: Size(max = 20)
         val nickName: String
     )

@@ -46,7 +46,7 @@ class AccountService(
         return jwtProvider.reIssuedAccessToken(accessToken, refreshToken)
     }
 
-    fun checkNickNameDuplication(nickNameDto:Account.nextNickName): String {
+    fun checkNickNameDuplication(nickNameDto:Account.NextNickName): String {
         return when(accountRepository.findAccountByName(nickNameDto.nickName)) {
             null -> Message.AVAILABLE_NAME
             else -> throw ExistNameException()
@@ -54,7 +54,7 @@ class AccountService(
     }
 
     @Transactional
-    fun changeNickName(token: String, nextNickName: Account.nextNickName) {
+    fun changeNickName(token: String, nextNickName: Account.NextNickName) {
         val idFromToken = jwtProvider.getIdFromToken(token)
         accountRepository.findById(idFromToken).let {
             if (it.isEmpty) throw BusinessException("계정이 존재하지 않습니다.")

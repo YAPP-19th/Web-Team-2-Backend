@@ -41,13 +41,13 @@ internal class AccountServiceTest {
     inner class ChangeNickName {
 
         private lateinit var testToken: String
-        private lateinit var testNickName: Account.nextNickName
+        private lateinit var testNickName: Account.NextNickName
         private lateinit var account: Account
 
         @BeforeEach
         internal fun setUp() {
             testToken = "testToken"
-            testNickName = Account.nextNickName("testNickName")
+            testNickName = Account.NextNickName("testNickName")
             account = Account("test")
             account.image = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png"
         }
