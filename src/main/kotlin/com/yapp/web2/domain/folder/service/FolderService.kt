@@ -5,6 +5,12 @@ import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
+import com.yapp.web2.domain.folder.service.move.inner.FolderMoveInnerStrategy
+import com.yapp.web2.domain.folder.service.move.inner.FolderMoveWithEqualParent
+import com.yapp.web2.domain.folder.service.move.outer.FolderMoveFromFolderToFolder
+import com.yapp.web2.domain.folder.service.move.outer.FolderMoveFromFolderToTopFolder
+import com.yapp.web2.domain.folder.service.move.outer.FolderMoveFromTopFolderToFolder
+import com.yapp.web2.domain.folder.service.move.outer.FolderMoveOuterStrategy
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
@@ -67,45 +73,52 @@ class FolderService(
             ?: throw folderNotFoundException
     }
 
-    /**
-     * 폴더 이동(드래그 앤 드랍) 로직
-     * 1) 이동 전 부모폴더 & 폴더리스트, 이동 후 부모폴더 & 폴더리스트, 이동 폴더 조회
-     * 2) 이동 전 폴더 리스트에서 자신보다 index가 큰 폴더들은 각각 -1
-     * 3) 이동 후 폴더 리스트에서 자신보다 index가 큰 폴더들은 각각 +1
-     * 4) 이동 전 폴더 리스트에서 제거 & 이동 후 폴더 리스트에 추가
-     * 5) 이동 전, 이동 후 폴더 리스트 초기화 & DB 저장
-     */
     @Transactional
-    fun moveFolder(id: Long, request: Folder.FolderMoveRequest) {
-        // 1)
-        val prevParentFolder = folderRepository.findByIdOrNull(request.prevParentId)
-        val nextParentFolder = folderRepository.findByIdOrNull(request.nextParentId)
-        val prevChildFolderList = prevParentFolder?.children
-        val nextChildFolderList = nextParentFolder?.children
-        val moveFolder = folderRepository.findByIdOrNull(id)
+    fun moveFolder(id: Long, request: Folder.FolderMoveRequest, accessToken: String) {
+        val userId = jwtProvider.getIdFromToken(accessToken)
+        val user = accountRepository.findById(userId).get()
+        val moveFolder = folderRepository.findById(id).get()
+        val nextParentId = request.nextParentId.toString().toLongOrNull()
+        var nextParentFolder: Folder? = null
 
-        // 2)
-        folderRepository.findByIndexGreaterThanPrevFolder(prevParentFolder!!, request.prevIndex)
-            ?.let {
-                it.forEach { folder -> folder.index-- }
-            }
+        if (nextParentId != null) {
+            nextParentFolder = folderRepository.findById(nextParentId).get()
+        }
 
-        // 3)
-        folderRepository.findByIndexGreaterThanNextFolder(nextParentFolder!!, request.nextIndex)
-            ?.let {
-                it.forEach { folder -> folder.index++ }
-            }
+        /* 최상위 -> 최상위 && 상위 -> 상위(동일한 부모) */
+        if ((moveFolder.parentFolder == null && nextParentId == null)
+            || (moveFolder.parentFolder == nextParentFolder)
+        ) {
+            val folderMove: FolderMoveInnerStrategy =
+                FolderMoveWithEqualParent(request, moveFolder, folderRepository, user)
 
-        // TODO: 2021/12/02 예외 생각
-        moveFolder?.updateIndexAndParentFolder(request.nextIndex, nextParentFolder)
+            folderMove.moveFolder()
+        }
 
-        // 4)
-        prevChildFolderList?.removeAt(request.prevIndex)
-        moveFolder?.let { nextChildFolderList?.add(request.nextIndex, it) }
+        /* 최상위 -> 상위 */
+        if (moveFolder.parentFolder == null && nextParentId != null) {
+            val folderMove: FolderMoveOuterStrategy =
+                FolderMoveFromTopFolderToFolder(request, moveFolder, folderRepository, user)
 
-        // 5)
-        prevParentFolder.children = prevChildFolderList
-        nextParentFolder.children = nextChildFolderList
+            folderMove.folderMoveStrategy(moveFolder, request.nextIndex)
+        }
+
+        /* 상위 -> 최상위 */
+        if (moveFolder.parentFolder != null && nextParentId == null) {
+            val folderMove: FolderMoveOuterStrategy =
+                FolderMoveFromFolderToTopFolder(request, moveFolder, folderRepository, user)
+
+            folderMove.folderMoveStrategy(moveFolder, request.nextIndex)
+        }
+
+        /* 상위 -> 상위 */
+        if (moveFolder.parentFolder != null && nextParentId != null) {
+            val folderMove: FolderMoveOuterStrategy =
+                FolderMoveFromFolderToFolder(request, moveFolder, folderRepository, user)
+
+            folderMove.folderMoveStrategy(moveFolder, request.nextIndex)
+        }
+
     }
 
     @Transactional
