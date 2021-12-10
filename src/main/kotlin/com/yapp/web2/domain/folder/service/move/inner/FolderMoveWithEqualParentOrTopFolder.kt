@@ -13,7 +13,7 @@ import com.yapp.web2.domain.folder.repository.FolderRepository
  *   2-1) low index 이상, high index 미만 인 최상위 폴더들의 index - 1
  *   2-2) 이동하는 폴더 index 설정
  */
-class FolderMoveWithEqualParent(
+class FolderMoveWithEqualParentOrTopFolder(
     val request: Folder.FolderMoveRequest,
     private val moveFolder: Folder,
     private val folderRepository: FolderRepository,
