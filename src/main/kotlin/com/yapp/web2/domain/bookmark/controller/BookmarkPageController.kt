@@ -44,7 +44,7 @@ class BookmarkPageController(
         return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getTrashPageByUserId(token, pageable, remind))
     }
 
-    @GetMapping("/{keyWord}")
+    @GetMapping("/search/{keyWord}")
     fun searchBookmarkList(
         request: HttpServletRequest,
         @PathVariable keyWord: String,
