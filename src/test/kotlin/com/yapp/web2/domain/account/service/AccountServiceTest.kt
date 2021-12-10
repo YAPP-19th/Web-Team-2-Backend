@@ -41,13 +41,13 @@ internal class AccountServiceTest {
     inner class ChangeNickName {
 
         private lateinit var testToken: String
-        private lateinit var testNickName: Account.nextNickName
+        private lateinit var testNickName: Account.NextNickName
         private lateinit var account: Account
 
         @BeforeEach
         internal fun setUp() {
             testToken = "testToken"
-            testNickName = Account.nextNickName("testNickName")
+            testNickName = Account.NextNickName("testNickName")
             account = Account("test")
             account.image = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png"
         }
@@ -55,7 +55,7 @@ internal class AccountServiceTest {
         @Test
         fun `해당 닉네임을 다른 유저가 사용하고 있다면 예외를 던진다`() {
             //given
-            every { accountRepository.findByName(testNickName.nickName) } returns account
+            every { accountRepository.findAccountByName(testNickName.nickName) } returns account
             val expectedException = BusinessException("이미 존재하는 닉네임입니다")
 
             //when

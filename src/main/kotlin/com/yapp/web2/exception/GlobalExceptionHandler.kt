@@ -1,5 +1,6 @@
 package com.yapp.web2.exception
 
+import com.yapp.web2.exception.custom.ExistNameException
 import com.yapp.web2.exception.custom.NoRefreshTokenException
 import com.yapp.web2.exception.custom.PrefixMisMatchException
 import com.yapp.web2.exception.custom.TokenMisMatchException
@@ -30,6 +31,14 @@ class GlobalExceptionHandler {
         val response = ErrorResponse.of(e.message)
 
         return getResponse(response, HttpStatus.UNAUTHORIZED.value())
+    }
+
+    @ExceptionHandler(ExistNameException::class)
+    fun handleExistNameException(e: ExistNameException): ResponseEntity<ErrorResponse> {
+        log.error("ExistNameException", e)
+        val response = ErrorResponse.of(e.message)
+
+        return getResponse(response, HttpStatus.CONFLICT.value())
     }
 
     @ExceptionHandler(value = [Exception::class, RuntimeException::class])
