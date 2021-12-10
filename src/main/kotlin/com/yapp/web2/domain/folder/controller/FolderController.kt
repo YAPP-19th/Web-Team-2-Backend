@@ -57,7 +57,7 @@ class FolderController(
         @RequestBody @Valid @ApiParam(value = "이동할 폴더의 정보", required = true) request: Folder.FolderMoveRequest
     ): ResponseEntity<String> {
         val accessToken = servletRequest.getHeader("AccessToken")
-        folderService.moveFolder(folderId, request)
+        folderService.moveFolder(folderId, request, accessToken)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
