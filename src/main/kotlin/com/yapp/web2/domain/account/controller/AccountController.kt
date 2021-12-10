@@ -42,20 +42,13 @@ class AccountController(
         return ResponseEntity.status(HttpStatus.OK).body(image)
     }
 
-    @GetMapping("/deleteProfileImage")
-    fun deleteProfileImage(request: HttpServletRequest): ResponseEntity<String> {
-        val token = request.getHeader("AccessToken")
-        accountService.deleteProfileImage(token)
-        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
-    }
-
     @PostMapping("/nickNameCheck")
-    fun nickNameCheck(@RequestBody @Valid nickName: String): ResponseEntity<String> {
+    fun nickNameCheck(@RequestBody nickName: Account.nextNickName): ResponseEntity<String> {
         val result = accountService.checkNickNameDuplication(nickName)
         return ResponseEntity.status(HttpStatus.OK).body(result)
     }
     @PostMapping("/nickNameChange")
-    fun nickNameChange(request: HttpServletRequest, @RequestBody @Valid nickName: String): ResponseEntity<String> {
+    fun nickNameChange(request: HttpServletRequest, @RequestBody nickName: Account.nextNickName): ResponseEntity<String> {
         val token = request.getHeader("AccessToken")
         accountService.changeNickName(token, nickName)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
