@@ -156,7 +156,6 @@ class FolderService(
         /* "folder" 하위 데이터 */
         val allFolderList: MutableList<Folder> = folderRepository.findAllByAccount(user)
         allFolderList.stream()
-            //filter { it.children != null }
             .forEach { rootFolder ->
                 val id = rootFolder.id
                 val children: MutableList<Long> = mutableListOf()
