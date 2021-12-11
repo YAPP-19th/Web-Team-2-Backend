@@ -58,7 +58,7 @@ class Folder(
         return "Folder(name='$name', index=$index, bookmarkCount=$bookmarkCount, parentFolder=$parentFolder, emoji=$emoji)"
     }
 
-    fun setParentFolder() {
+    fun setTopFolder() {
         this.parentFolder = null
     }
 

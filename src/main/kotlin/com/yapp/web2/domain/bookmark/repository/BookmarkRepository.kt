@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.data.mongodb.repository.Query
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Repository
 interface BookmarkRepository : MongoRepository<Bookmark, String> {
@@ -23,4 +24,5 @@ interface BookmarkRepository : MongoRepository<Bookmark, String> {
     fun findByTitleContainingIgnoreCaseOrLinkContainingIgnoreCaseAndUserId(title: String, link: String, userId: Long, pageable: Pageable): Page<Bookmark>
     fun findByFolderId(id: Long): List<Bookmark>
     fun findAllByRemindTimeAndDeleteTimeIsNull(remindTime: LocalDate): List<Bookmark>
+    fun findAllByRemindTimeAndUserId(now: LocalDate, userId: Long): List<Bookmark>
 }

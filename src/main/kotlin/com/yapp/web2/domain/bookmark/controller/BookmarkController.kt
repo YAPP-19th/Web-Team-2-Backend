@@ -63,4 +63,5 @@ class BookmarkController(
         bookmarkService.moveBookmark(bookmarkId, bookmark)
         return ResponseEntity.status(HttpStatus.OK).body("폴더가 이동됨")
     }
+
 }

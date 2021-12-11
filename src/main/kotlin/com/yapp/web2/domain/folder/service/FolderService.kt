@@ -6,7 +6,7 @@ import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveInnerStrategy
-import com.yapp.web2.domain.folder.service.move.inner.FolderMoveWithEqualParent
+import com.yapp.web2.domain.folder.service.move.inner.FolderMoveWithEqualParentOrTopFolder
 import com.yapp.web2.domain.folder.service.move.outer.FolderMoveFromFolderToFolder
 import com.yapp.web2.domain.folder.service.move.outer.FolderMoveFromFolderToTopFolder
 import com.yapp.web2.domain.folder.service.move.outer.FolderMoveFromTopFolderToFolder
@@ -90,7 +90,7 @@ class FolderService(
             || (moveFolder.parentFolder == nextParentFolder)
         ) {
             val folderMove: FolderMoveInnerStrategy =
-                FolderMoveWithEqualParent(request, moveFolder, folderRepository, user)
+                FolderMoveWithEqualParentOrTopFolder(request, moveFolder, folderRepository, user)
 
             folderMove.moveFolder()
         }
