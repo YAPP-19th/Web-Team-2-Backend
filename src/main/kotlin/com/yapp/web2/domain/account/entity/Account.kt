@@ -15,7 +15,7 @@ class Account(
 
     companion object {
         fun requestToAccount(dto: AccountLoginRequest): Account {
-            return Account(dto.email, dto.imageUrl, dto.name, dto.socialType)
+            return Account(dto.email, dto.image, dto.name, dto.socialType)
         }
 
         const val BASIC_IMAGE_URL: String = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png"
@@ -53,7 +53,7 @@ class Account(
         val email: String,
         @field: NotEmpty(message = "닉네임을 입력해주세요")
         val name: String,
-        val imageUrl: String,
+        val image: String,
         @field: NotEmpty(message = "소셜타입을 입력해주세요")
         val socialType: String
     )
