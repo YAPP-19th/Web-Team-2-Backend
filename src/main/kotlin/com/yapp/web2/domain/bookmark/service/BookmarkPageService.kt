@@ -8,6 +8,7 @@ import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 
 @Service
 class BookmarkPageService(
@@ -43,5 +44,11 @@ class BookmarkPageService(
     private fun checkFolderAbsence(folderId: Long) {
         val folder = folderRepository.findById(folderId)
         if (folder.isEmpty) throw ObjectNotFoundException("해당 폴더가 존재하지 않습니다.")
+    }
+
+    fun getTodayRemindBookmark(token: String): List<Bookmark> {
+        val idFromToken = jwtProvider.getIdFromToken(token)
+        val now = LocalDate.now()
+        return bookmarkRepository.findAllByRemindTimeAndUserIdAndDeleteTimeIsNull(now, idFromToken)
     }
 }
