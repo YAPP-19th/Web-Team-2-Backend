@@ -50,12 +50,6 @@ class BookmarkService(
         }
     }
 
-    fun getTodayRemindBookmark(token: String): List<Bookmark> {
-        val idFromToken = jwtProvider.getIdFromToken(token)
-        val now = LocalDate.now()
-        return bookmarkRepository.findAllByRemindTimeAndUserId(now, idFromToken)
-    }
-
     fun deleteBookmark(bookmarkId: String) {
         val bookmark = getBookmarkIfPresent(bookmarkId)
         val folder = bookmark.folderId?.let { checkFolderAbsence(it) }
@@ -131,5 +125,12 @@ class BookmarkService(
                 bookmark?.let { entity -> bookmarkRepository.delete(entity) }
             }
         }
+    }
+
+    fun releaseRemindBookmark(bookmarkId: String) {
+        val bookmark = bookmarkRepository.findById(bookmarkId)
+        if(bookmark.isEmpty) throw BusinessException("없어요")
+        else bookmark.get().remindTime = null
+        bookmarkRepository.save(bookmark.get())
     }
 }
