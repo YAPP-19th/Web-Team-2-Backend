@@ -1,13 +1,9 @@
 package com.yapp.web2.domain.bookmark.controller
 
 import com.yapp.web2.domain.bookmark.entity.Bookmark
-import com.yapp.web2.domain.bookmark.service.BookmarkPageService
-import com.yapp.web2.domain.bookmark.service.BookmarkSearchService
 import com.yapp.web2.domain.bookmark.service.BookmarkService
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
