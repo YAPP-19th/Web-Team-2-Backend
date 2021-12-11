@@ -61,4 +61,10 @@ class BookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.MOVED)
     }
 
+
+    @DeleteMapping("/remind/{bookmarkId}")
+    fun releaseRemindBookmark(@PathVariable bookmarkId: String): ResponseEntity<String> {
+        bookmarkService.releaseRemindBookmark(bookmarkId)
+        return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
+    }
 }
