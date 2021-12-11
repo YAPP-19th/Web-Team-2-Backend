@@ -21,5 +21,15 @@ class Message {
         var EXIST_NAME = "이미 존재하는 닉네임입니다"
 
         var AVAILABLE_NAME = "사용가능한 닉네임입니다"
+
+        var CLICK = "카운트가 증가되었습니다"
+
+        var SAVED = "저장되었습니다"
+
+        var DELETED = "휴지통으로 이동되었습니다"
+
+        var UPDATED = "업데이트 되었습니다"
+
+        var MOVED = "이동 되었습니다"
     }
 }

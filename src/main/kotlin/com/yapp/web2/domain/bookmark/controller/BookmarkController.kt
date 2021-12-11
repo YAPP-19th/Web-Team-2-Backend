@@ -2,6 +2,7 @@ package com.yapp.web2.domain.bookmark.controller
 
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.service.BookmarkService
+import com.yapp.web2.util.Message
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import org.springframework.http.HttpStatus
@@ -18,7 +19,7 @@ class BookmarkController(
     @GetMapping("/click/{bookmarkId}")
     fun increaseBookmarkClickCount(@PathVariable bookmarkId: String): ResponseEntity<String> {
         bookmarkService.increaseBookmarkClickCount(bookmarkId)
-        return ResponseEntity.status(HttpStatus.OK).body("올라감")
+        return ResponseEntity.status(HttpStatus.OK).body(Message.CLICK)
     }
 
     @ApiOperation(value = "북마크 생성 API")
@@ -30,14 +31,14 @@ class BookmarkController(
     ): ResponseEntity<String> {
         val token = request.getHeader("AccessToken")
         bookmarkService.addBookmark(token, folderId, bookmark)
-        return ResponseEntity.status(HttpStatus.OK).body("저장됨")
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SAVED)
     }
 
     @ApiOperation(value = "북마크 삭제 API")
     @DeleteMapping("/{bookmarkId}")
     fun deleteBookmark(@PathVariable @ApiParam(value = "북마크 ID", example = "10", required = true) bookmarkId: String): ResponseEntity<String> {
         bookmarkService.deleteBookmark(bookmarkId)
-        return ResponseEntity.status(HttpStatus.OK).body("삭제됨")
+        return ResponseEntity.status(HttpStatus.OK).body(Message.DELETED)
     }
 
     @ApiOperation(value = "북마크 수정 API")
@@ -47,7 +48,7 @@ class BookmarkController(
         @RequestBody @Valid @ApiParam(value = "북마크 수정 정보", required = true) bookmark: Bookmark.UpdateBookmarkDto
     ): ResponseEntity<String> {
         bookmarkService.updateBookmark(bookmarkId, bookmark)
-        return ResponseEntity.status(HttpStatus.OK).body("업데이트됨")
+        return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
     }
 
     @ApiOperation(value = "북마크 이동 API")
@@ -57,7 +58,7 @@ class BookmarkController(
         @RequestBody @ApiParam(value = "북마크 이동 정보", required = true) bookmark: Bookmark.MoveBookmarkDto
     ): ResponseEntity<String> {
         bookmarkService.moveBookmark(bookmarkId, bookmark)
-        return ResponseEntity.status(HttpStatus.OK).body("폴더가 이동됨")
+        return ResponseEntity.status(HttpStatus.OK).body(Message.MOVED)
     }
 
 }
