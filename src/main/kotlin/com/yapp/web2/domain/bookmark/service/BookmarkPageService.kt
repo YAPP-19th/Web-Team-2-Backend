@@ -46,9 +46,10 @@ class BookmarkPageService(
         if (folder.isEmpty) throw ObjectNotFoundException("해당 폴더가 존재하지 않습니다.")
     }
 
-    fun getTodayRemindBookmark(token: String): List<Bookmark> {
+    fun getTodayRemindBookmark(token: String): Bookmark.RemindList {
         val idFromToken = jwtProvider.getIdFromToken(token)
         val now = LocalDate.now()
-        return bookmarkRepository.findAllByRemindTimeAndUserIdAndDeleteTimeIsNull(now, idFromToken)
+
+        return Bookmark.RemindList(bookmarkRepository.findAllByRemindTimeAndUserIdAndDeleteTimeIsNull(now, idFromToken))
     }
 }
