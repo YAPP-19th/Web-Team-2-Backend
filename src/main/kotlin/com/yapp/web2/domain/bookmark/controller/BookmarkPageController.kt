@@ -57,7 +57,7 @@ class BookmarkPageController(
     @GetMapping("/today")
     fun getTodayRemindBookmarkList(
         request: HttpServletRequest
-    ): ResponseEntity<List<Bookmark>> {
+    ): ResponseEntity<Bookmark.RemindList> {
         val token = request.getHeader("AccessToken")
         val todayRemindBookmarkList = bookmarkPageService.getTodayRemindBookmark(token)
         return ResponseEntity.status(HttpStatus.OK).body(todayRemindBookmarkList)

@@ -99,6 +99,10 @@ class Bookmark(
         val bookmarkIdList: MutableList<String>?
     )
 
+    class RemindList(
+        val remindBookmarkList: List<Bookmark>
+    )
+
     fun restore(): Bookmark {
         this.deleted = false
         this.deleteTime = null
