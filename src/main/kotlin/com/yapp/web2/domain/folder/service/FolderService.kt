@@ -198,5 +198,38 @@ class FolderService(
             }
     }
 
+    @Transactional
+    fun findFolderChildList(folderId: Long): MutableList<Folder.FolderListResponse> {
+        val childList: MutableList<Folder.FolderListResponse> = mutableListOf()
+
+        folderRepository.findById(folderId).ifPresent {
+            it.children?.stream()
+                ?.forEach { folder ->
+                childList.add(Folder.FolderListResponse(folder.id!!, folder.name))
+            }
+        }
+        return childList
+    }
+
+    @Transactional
+    fun findAllParentFolderList(folderId: Long): MutableList<Folder.FolderListResponse>? {
+        val childList: MutableList<Folder.FolderListResponse> = mutableListOf()
+        val folder = folderRepository.findByIdOrNull(folderId)
+        var parentFolder = folder
+
+        while (true) {
+            parentFolder = parentFolder?.parentFolder
+            when (parentFolder) {
+                null -> {
+                    break
+                }
+                else -> {
+                    childList.add(Folder.FolderListResponse(parentFolder.id!!, parentFolder.name))
+                }
+            }
+        }
+        return childList
+    }
+
 
 }
