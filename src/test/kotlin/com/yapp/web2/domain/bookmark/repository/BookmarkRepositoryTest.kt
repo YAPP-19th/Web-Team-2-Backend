@@ -60,9 +60,10 @@ internal open class BookmarkRepositoryTest {
             val pageAble = PageRequest.of(2, 4, Sort.by("saveTime").descending())
 
             //when
-            val actualPages = bookmarkRepository.findByUserIdAndTitleContainingIgnoreCaseOrLinkContainingIgnoreCase(testUserId,
+            val actualPages = bookmarkRepository.findByTitleContainingIgnoreCaseOrLinkContainingIgnoreCaseAndUserId(
                 testKeyword,
                 testKeyword,
+                testUserId,
                 pageAble)
 
             //then
