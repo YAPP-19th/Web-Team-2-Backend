@@ -50,6 +50,12 @@ class BookmarkService(
         }
     }
 
+    fun getTodayRemindBookmark(token: String): List<Bookmark> {
+        val idFromToken = jwtProvider.getIdFromToken(token)
+        val now = LocalDate.now()
+        return bookmarkRepository.findAllByRemindTimeAndUserId(now, idFromToken)
+    }
+
     fun deleteBookmark(bookmarkId: String) {
         val bookmark = getBookmarkIfPresent(bookmarkId)
         val folder = bookmark.folderId?.let { checkFolderAbsence(it) }
