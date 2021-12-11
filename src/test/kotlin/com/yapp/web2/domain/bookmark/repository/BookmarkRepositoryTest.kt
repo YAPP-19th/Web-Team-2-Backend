@@ -30,7 +30,7 @@ internal open class BookmarkRepositoryTest {
         @Test
         fun `폴더 아이디에 해당하는 북마크들을 최신순으로 가져온다`() {
             // when
-            val bookmarkPages = bookmarkRepository.findAllByFolderId(1, PageRequest.of(1, 5, Sort.by("saveTime").descending()))
+            val bookmarkPages = bookmarkRepository.findAllByFolderIdAndDeleteTimeIsNull(1, PageRequest.of(1, 5, Sort.by("saveTime").descending()))
             // then
             for (page in bookmarkPages)
                 assertEquals(1, page.folderId)
@@ -39,7 +39,7 @@ internal open class BookmarkRepositoryTest {
         @Test
         fun `폴더 아이디에 해당하는 북마크들 중 리마인드 시간이 설정된 북마크를 최신순으로 가져온다`() {
             //when
-            val bookmarkPages = bookmarkRepository.findAllByFolderIdAndRemindTimeIsNotNull(1, PageRequest.of(1, 5, Sort.by("saveTime").descending()))
+            val bookmarkPages = bookmarkRepository.findAllByFolderIdAndDeleteTimeIsNullAndRemindTimeIsNotNull(1, PageRequest.of(1, 5, Sort.by("saveTime").descending()))
 
             //then
             for (page in bookmarkPages) {

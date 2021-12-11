@@ -18,8 +18,8 @@ class BookmarkPageService(
     fun getAllPageByFolderId(folderId: Long, pageable: Pageable, remind: Boolean): Page<Bookmark> {
         checkFolderAbsence(folderId)
         return when (remind) {
-            true -> bookmarkRepository.findAllByFolderIdAndRemindTimeIsNotNull(folderId, pageable)
-            false -> bookmarkRepository.findAllByFolderId(folderId, pageable)
+            true -> bookmarkRepository.findAllByFolderIdAndDeleteTimeIsNullAndRemindTimeIsNotNull(folderId, pageable)
+            false -> bookmarkRepository.findAllByFolderIdAndDeleteTimeIsNull(folderId, pageable)
         }
     }
 
