@@ -35,8 +35,8 @@ class BookmarkPageService(
         val idFromToken = jwtProvider.getIdFromToken(token)
 
         return when (remind) {
-            true -> bookmarkRepository.findAllByUserIdAndRemindTimeIsNotNull(idFromToken, pageable)
-            false -> bookmarkRepository.findAllByUserId(idFromToken, pageable)
+            true -> bookmarkRepository.findAllByUserIdAndRemindTimeIsNotNullAndDeleteTimeIsNull(idFromToken, pageable)
+            false -> bookmarkRepository.findAllByUserIdAndDeleteTimeIsNull(idFromToken, pageable)
         }
     }
 
