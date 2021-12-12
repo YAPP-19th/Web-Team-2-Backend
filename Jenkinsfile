@@ -3,6 +3,8 @@ pipeline {
 
   environment {
     SLACK_CHANNEL = 'team-web-2'
+    SUCCESS_COLOR = '#00FF00'
+    FAIL_COLOR = '#FF0000'
   }
 
   stages {
@@ -10,8 +12,6 @@ pipeline {
       steps {
         sh '''cp ../properties/application.properties ./src/main/resources
 ./gradlew build -x test'''
-        slackSend (channel: SLACK_CHANNEL, color: '#FFFF00', message: "SUCCESS TEST: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-        slackSend (channel: SLACK_CHANNEL, color: '#FF0000', message: "FAIL TEST: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
       }
     }
 
@@ -44,4 +44,14 @@ pipeline {
             }
 
           }
+
+          post {
+            success {
+                slackSend (channel: SLACK_CHANNEL, color: SUCCESS_COLOR, message: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+            }
+            failure {
+                slackSend (channel: SLACK_CHANNEL, color: FAIL_COLOR, message: "FAIL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+            }
+          }
+
         }
