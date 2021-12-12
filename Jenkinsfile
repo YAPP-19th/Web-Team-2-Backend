@@ -15,7 +15,7 @@ pipeline {
       }
     }
 
-    stage('docker push') {
+    stagea('docker push') {
       steps {
         sh '''docker image prune
 '''
