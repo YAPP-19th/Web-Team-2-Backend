@@ -12,7 +12,7 @@ pipeline {
       steps {
         catchError {
           sh '''cp ../properties/application.properties ./src/main/resources
-          ./gradlew build -x test'''
+          ./gradlew build test'''
         }
       }
     }
@@ -51,10 +51,10 @@ pipeline {
 
           post {
             success {
-                slackSend (channel: SLACK_CHANNEL, color: SUCCESS_COLOR, message: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+              slackSend (channel: SLACK_CHANNEL, color: SUCCESS_COLOR, message: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
             }
             failure {
-                slackSend (channel: SLACK_CHANNEL, color: FAIL_COLOR, message: "FAIL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+              slackSend (channel: SLACK_CHANNEL, color: FAIL_COLOR, message: "FAILURE: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
             }
           }
 
