@@ -12,12 +12,12 @@ pipeline {
       steps {
         catchError {
           sh '''cp ../properties/application.properties ./src/main/resources
-          ./gradlew build -x test'''
+          ./gradlew build test'''
         }
       }
     }
 
-    stagea('docker push') {
+    stage('docker push') {
       steps {
         catchError {
           sh '''docker image prune
