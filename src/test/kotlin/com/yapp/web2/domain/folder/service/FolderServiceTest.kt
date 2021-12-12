@@ -135,36 +135,6 @@ internal open class FolderServiceTest {
         )
     }
 
-    // TODO: 2021/12/08 테스트 코드 
-//    @Test
-//    fun `prevIndex가 2인 폴더가 nextIndex가 3인 폴더로 이동한다`() {
-//        // given & when
-//        val moveRequest = Folder.FolderMoveRequest(1L, 2L, 2, 3)
-//        val prevParentFolder = getParentFolder("이동 전 부모폴더")
-//        val nextParentFolder = getParentFolder("이동 후 부모폴더")
-//        val prevChildFolders = getChildFolders(prevParentFolder, 0, 9)
-//        val prevMoveFolder = prevChildFolders[2]
-//
-//        // prevIndex, nextIndex 보다 큰 인덱스를 가진 폴더 리스트
-//        val stubPrevChildFolders = getChildFolders(prevParentFolder, 3, 9)
-//        val stubNextChildFolders = getChildFolders(nextParentFolder, 4, 9)
-//
-//        // mock
-//        every { folderRepository.findById(1L).orElse(null) } returns prevParentFolder
-//        every { folderRepository.findById(2L).orElse(null) } returns nextParentFolder
-//        every { folderRepository.findById(10L).orElse(null) } returns prevMoveFolder
-//        every { folderRepository.findByIndexGreaterThanPrevFolder(prevParentFolder, 2) } returns stubPrevChildFolders
-//        every { folderRepository.findByIndexGreaterThanNextFolder(nextParentFolder, 3) } returns stubNextChildFolders
-//
-//        // then
-//        assertAll(
-//            { assertDoesNotThrow { folderService.moveFolder(10L, moveRequest) } },
-//            { assertThat(stubPrevChildFolders.size).isNotEqualTo(stubNextChildFolders.size) },
-//            { assertThat(stubPrevChildFolders.size + 1).isEqualTo(stubNextChildFolders.size) },
-//            { assertThat(prevMoveFolder).isEqualTo(stubNextChildFolders[moveRequest.nextIndex]) }
-//        )
-//    }
-
     @Test
     fun `폴더에 존재하는 모든 북마크를 제거한다`() {
         // given & when
@@ -172,11 +142,13 @@ internal open class FolderServiceTest {
 
         // mock
         every { bookmarkRepository.findByFolderId(1L) } returns bookmarks
+        every { bookmarkRepository.save(any()) } returns bookmarks[0]
 
         // then
         assertAll(
             { assertDoesNotThrow { folderService.deleteAllBookmark(1L) } },
             { verify(exactly = 1) { bookmarkRepository.findByFolderId(any()) } },
+            { verify(exactly = bookmarks.size) { bookmarkRepository.save(any()) } },
             { bookmarks.forEach {
                     assertThat(it.deleted).isEqualTo(true)
                     assertThat(it.folderId).isNull()
@@ -186,15 +158,18 @@ internal open class FolderServiceTest {
     }
 
     @Test
-    fun `특정 폴더를 삭제한다`() {
-        // given & mock
-        every { folderRepository.deleteById(any()) } returns Unit
+    fun `폴더를 삭제한다`() {
+        // mock
+        every { folderRepository.findByIdOrNull(any()) } returns folder
+        every { folderRepository.deleteByFolder(folder) } returns Unit
 
         // when
-        folderService.deleteFolder(3L)
+        folderService.deleteFolder(1L)
 
         // then
-        verify { folderService.deleteFolder(any()) }
+        assertAll(
+            { verify(exactly = 1) { folderRepository.deleteByFolder(any()) } },
+        )
     }
 
     @Test
@@ -207,30 +182,30 @@ internal open class FolderServiceTest {
     }
 
     // TODO: 2021/12/08 테스트 코드 
-//    @Test
-//    fun `전체 폴더를 조회하고 출력한다`() {
-//        // given
-//        val rootFolder1 = getParentFolder("부모폴더 1")
-//        val rootFolder2 = getParentFolder("부모폴더 2")
-//        rootFolder1.id = 1L
-//        rootFolder2.id = 2L
-//        rootFolder1.children = getChildFolders(rootFolder1, 0, 5)
-//        rootFolder2.children = getChildFolders(rootFolder2, 0, 6)
-//        val allFolder: MutableList<Folder> = mutableListOf(rootFolder1, rootFolder2)
-//
-//        // mock
-//        every { jwtProvider.getIdFromToken(any()) } returns 1L
-//        every { userRepository.findById(any()).get() } returns user
-//        every { folderRepository.findAllByParentFolderIsNull(user) } returns allFolder
-//
-//        // when
-//        val actual = folderService.findAll("test")
-//
-//        // then
-//        printAllFolderToJson(actual)
-//    }
+    @Test
+    fun `전체 폴더를 조회하고 출력한다`() {
+        // given
+        val rootFolder1 = getParentFolder("부모폴더 1")
+        val rootFolder2 = getParentFolder("부모폴더 2")
+        rootFolder1.id = 1L
+        rootFolder2.id = 2L
+        rootFolder1.children = getChildFolders(rootFolder1, 0, 5)
+        rootFolder2.children = getChildFolders(rootFolder2, 0, 6)
+        val allFolder: MutableList<Folder> = mutableListOf(rootFolder1, rootFolder2)
 
-    // TODO: 2021/12/08 mock bookmarkRepository.save() 
+        // mock
+        every { jwtProvider.getIdFromToken(any()) } returns 1L
+        every { accountRepository.findById(any()).get() } returns user
+        every { folderRepository.findAllByParentFolderIsNull(user) } returns allFolder
+        every { folderRepository.findAllByAccount(user) } returns allFolder
+
+        // when
+        val actual = folderService.findAll("test")
+
+        // then
+        printJson(actual)
+    }
+
     @Test
     fun `폴더를 삭제하면 북마크도 함께 삭제된다`() {
         // given
@@ -242,7 +217,7 @@ internal open class FolderServiceTest {
         every { bookmarkRepository.findByFolderId(1) } returns bookmarks1
         every { bookmarkRepository.findByFolderId(2) } returns bookmarks2
         every { folderRepository.deleteById(any()) } returns Unit
-        //every {bookmarkRepository.save(any()) } returns bookmarks1.get(0)
+        every {bookmarkRepository.save(any()) } returns bookmarks1[0]
 
         // when
         folderService.deleteFolderList(deleteList)
@@ -260,11 +235,47 @@ internal open class FolderServiceTest {
                     assertThat(it.deleted).isTrue()
                 }
             },
-
         )
     }
 
-    private fun printAllFolderToJson(actual: Map<String, Any>) {
+    @Test
+    fun `특정 폴더에 대한 모든 자식들의 폴더 ID와 폴더명을 출력한다`() {
+        // given
+        val parentFolder = getParentFolder("부모 폴더")
+        parentFolder.children = getChildFolders(parentFolder, 0, 4)
+
+        // mock
+        every { folderRepository.findByIdOrNull(any()) } returns parentFolder
+
+        // when
+        val actual = folderService.findFolderChildList(1L)
+
+        // then
+        printJson(actual)
+    }
+
+    @Test
+    fun `특정 폴더에 대한 모든 부모들의 폴더 ID와 폴더명을 출력한다`() {
+        // given
+        val rootParentFolder = getParentFolder("최상위 부모 폴더")
+        val parentFolder = getParentFolder("부모 폴더")
+        val folder = getParentFolder("자식 폴더")
+        rootParentFolder.id = 1L
+        parentFolder.id = 2L
+        folder.parentFolder = parentFolder
+        parentFolder.parentFolder = rootParentFolder
+
+        // mock
+        every { folderRepository.findByIdOrNull(any()) } returns folder
+
+        // when
+        val actual = folderService.findAllParentFolderList(1L)
+
+        // then
+        actual?.let { printJson(it) }
+    }
+
+    private fun printJson(actual: Any) {
         val mapper = ObjectMapper()
         val json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actual)
         println(json)
@@ -279,7 +290,7 @@ internal open class FolderServiceTest {
 
         (start..end).forEach {
             val folder = Folder("${parentFolder.name}-$it", it, 0, parentFolder)
-            folder.id = start.toLong()
+            folder.id = it.toLong()
             childFolders.add(folder)
         }
 
