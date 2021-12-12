@@ -84,9 +84,11 @@ class FolderService(
             nextParentFolder = folderRepository.findById(nextParentId).get()
         }
 
-        /* 최상위 -> 최상위 && 상위 -> 상위(동일한 부모) */
-        if ((moveFolder.parentFolder == null && nextParentId == null)
-            || (moveFolder.parentFolder == nextParentFolder)
+        // (moveFolder.parentFolder == null && nextParentId
+
+        /* 최상위 -> 최상위 OR 상위 -> 상위(동일한 부모) */
+        if (isMoveTopFolderToTopFolder(moveFolder, nextParentId)
+            || isMoveFolderToFolderWithEqualParent(moveFolder, nextParentFolder)
         ) {
             val folderMove: FolderMoveInnerStrategy =
                 FolderMoveWithEqualParentOrTopFolder(request, moveFolder, folderRepository, user)
@@ -96,8 +98,17 @@ class FolderService(
 
         val folderMove = FolderMoveFactory.getFolderMove(request, moveFolder, folderRepository, user)
         folderMove.folderDragAndDrop(moveFolder, request.nextIndex)
-
     }
+
+    private fun isMoveTopFolderToTopFolder(
+        moveFolder: Folder,
+        nextParentId: Long?
+    ) = (moveFolder.parentFolder == null && nextParentId == null)
+
+    private fun isMoveFolderToFolderWithEqualParent(
+        moveFolder: Folder,
+        nextParentFolder: Folder?
+    ) = (moveFolder.parentFolder == nextParentFolder)
 
     @Transactional
     fun deleteAllBookmark(folderId: Long) {
@@ -112,8 +123,8 @@ class FolderService(
 
     @Transactional
     fun deleteFolder(id: Long) {
-        folderRepository.findById(id).ifPresent { folder ->
-            folderRepository.deleteByFolder(folder)
+        folderRepository.findByIdOrNull(id)?.let {
+            folder -> folderRepository.deleteByFolder(folder)
         }
     }
 
@@ -202,11 +213,11 @@ class FolderService(
     fun findFolderChildList(folderId: Long): MutableList<Folder.FolderListResponse> {
         val childList: MutableList<Folder.FolderListResponse> = mutableListOf()
 
-        folderRepository.findById(folderId).ifPresent {
+        folderRepository.findByIdOrNull(folderId)?.let {
             it.children?.stream()
                 ?.forEach { folder ->
-                childList.add(Folder.FolderListResponse(folder.id!!, folder.name))
-            }
+                    childList.add(Folder.FolderListResponse(folder.id!!, folder.name))
+                }
         }
         return childList
     }

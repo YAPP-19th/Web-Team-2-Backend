@@ -4,7 +4,6 @@ import com.yapp.web2.exception.custom.ExistNameException
 import com.yapp.web2.exception.custom.NoRefreshTokenException
 import com.yapp.web2.exception.custom.PrefixMisMatchException
 import com.yapp.web2.exception.custom.TokenMisMatchException
-import com.yapp.web2.util.CustomStatusCode
 import com.yapp.web2.util.Message
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.SignatureException

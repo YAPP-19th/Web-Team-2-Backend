@@ -6,6 +6,7 @@ import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.ObjectNotFoundException
+import com.yapp.web2.exception.custom.BookmarkNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -19,6 +20,11 @@ class BookmarkService(
     private val folderRepository: FolderRepository,
     private val jwtProvider: JwtProvider
 ) {
+
+    companion object {
+        private val bookmarkNotFoundException = BookmarkNotFoundException()
+    }
+
     @Transactional
     fun addBookmark(token: String, folderId: Long, bookmarkDto: Bookmark.AddBookmarkDto): Bookmark {
         val idFromToken = jwtProvider.getIdFromToken(token)
@@ -61,9 +67,8 @@ class BookmarkService(
     }
 
     private fun getBookmarkIfPresent(bookmarkId: String): Bookmark {
-        val bookmark = bookmarkRepository.findById(bookmarkId)
-        if (bookmark.isEmpty) throw BusinessException("없어요")
-        return bookmark.get()
+        return bookmarkRepository.findByIdOrNull(bookmarkId)
+            ?: throw bookmarkNotFoundException
     }
 
     fun updateBookmark(bookmarkId: String, updateBookmarkDto: Bookmark.UpdateBookmarkDto): Bookmark {
@@ -128,9 +133,10 @@ class BookmarkService(
     }
 
     fun releaseRemindBookmark(bookmarkId: String) {
-        val bookmark = bookmarkRepository.findById(bookmarkId)
-        if(bookmark.isEmpty) throw BusinessException("없어요")
-        else bookmark.get().remindTime = null
-        bookmarkRepository.save(bookmark.get())
+        bookmarkRepository.findByIdOrNull(bookmarkId)
+            ?.let {
+                it.remindTime = null
+                bookmarkRepository.save(it)
+            } ?: bookmarkNotFoundException
     }
 }
