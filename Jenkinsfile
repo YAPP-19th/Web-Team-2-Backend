@@ -1,10 +1,18 @@
 pipeline {
   agent any
+
+  environment {
+    SLACK_CHANNEL = 'team-web-2'
+  }
+
   stages {
     stage('build') {
       steps {
         sh '''cp ../properties/application.properties ./src/main/resources
 ./gradlew build -x test'''
+        slackSend (channel: )
+        slackSend (channel: SLACK_CHANNEL, color: '#FFFF00', message: "SUCCESS TEST: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        slackSend (channel: SLACK_CHANNEL, color: '#FF0000', message: "FAIL TEST: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
       }
     }
 
