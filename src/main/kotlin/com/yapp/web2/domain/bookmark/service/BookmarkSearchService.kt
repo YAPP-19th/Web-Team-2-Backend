@@ -15,13 +15,12 @@ class BookmarkSearchService(
     fun searchKeywordOwnUserId(token: String, keyword: String, pageable: Pageable): Page<Bookmark> {
         //TODO: jwt를 통한 토큰 방식 먼저 구현하여 플로우에 맞게 처리하기
         val idFromToken = jwtProvider.getIdFromToken(token)
-        //if (!isUserEnroll(userId))
-        var bookmarkPage1 =
-            bookmarkRepository.findByTitleContainingIgnoreCaseOrLinkContainingIgnoreCaseAndUserId(keyword, keyword, idFromToken, pageable)
-        return bookmarkPage1
+        return bookmarkRepository.findByTitleContainingIgnoreCaseOrLinkContainingIgnoreCaseAndUserId(
+            keyword,
+            keyword,
+            idFromToken,
+            pageable
+        )
     }
 
-//    private fun isUserEnroll(userId: Long): Boolean {
-//        return true
-//    }
 }
