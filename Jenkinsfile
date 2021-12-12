@@ -10,8 +10,10 @@ pipeline {
   stages {
     stage('build') {
       steps {
-        sh '''cp ../properties/application.properties ./src/main/resources
-./gradlew build -x test'''
+        catchError {
+          sh '''cp ../properties/application.properties ./src/main/resources
+          ./gradlew build -x test'''
+        }
       }
     }
 
