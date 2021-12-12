@@ -21,7 +21,7 @@ interface FolderMoveOuterStrategy {
         moveFolder.updateIndex(nextIndex)
     }
 
-    fun folderMoveStrategy(moveFolder: Folder, nextIndex: Int) {
+    fun folderDragAndDrop(moveFolder: Folder, nextIndex: Int) {
         indexDecreaseBeforeFolder()
         indexIncreaseAfterFolder()
         removeBeforeFolderList()

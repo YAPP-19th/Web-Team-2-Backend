@@ -87,4 +87,20 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
+    @ApiOperation(value = "자식 폴더 리스트 조회 API")
+    @GetMapping("/{folderId}/children")
+    fun findFolderChildList(
+        @PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long
+    ): ResponseEntity<MutableList<Folder.FolderListResponse>> {
+        return ResponseEntity.status(HttpStatus.OK).body(folderService.findFolderChildList(folderId))
+    }
+
+    @ApiOperation(value = "부모 폴더 리스트 조회 API")
+    @GetMapping("/{folderId}/parent")
+    fun findAllFolderParentList(
+        @PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long
+    ): ResponseEntity<MutableList<Folder.FolderListResponse>> {
+        return ResponseEntity.status(HttpStatus.OK).body(folderService.findAllParentFolderList(folderId))
+    }
+
 }

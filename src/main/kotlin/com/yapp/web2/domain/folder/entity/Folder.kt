@@ -155,4 +155,13 @@ class Folder(
         )
     }
 
+    @ApiModel(description = "자식 폴더 리스트 & 부모 폴더 리스트 조회 DTO")
+    class FolderListResponse(
+        @ApiModelProperty(value = "자식 or 부모 폴더 ID", required = true, example = "12")
+        var folderId: Long,
+
+        @ApiModelProperty(value = "자식 or 부모 폴더 이름", required = true, example = "자식 폴더 1-2")
+        var name: String
+    )
+
 }

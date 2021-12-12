@@ -5,12 +5,9 @@ import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
+import com.yapp.web2.domain.folder.service.move.factory.FolderMoveFactory
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveInnerStrategy
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveWithEqualParentOrTopFolder
-import com.yapp.web2.domain.folder.service.move.outer.FolderMoveFromFolderToFolder
-import com.yapp.web2.domain.folder.service.move.outer.FolderMoveFromFolderToTopFolder
-import com.yapp.web2.domain.folder.service.move.outer.FolderMoveFromTopFolderToFolder
-import com.yapp.web2.domain.folder.service.move.outer.FolderMoveOuterStrategy
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
@@ -47,7 +44,7 @@ class FolderService(
                 val childrenFolderList: MutableList<Folder>? = parentFolder.children
 
                 childrenFolderList?.let {
-                    if (it.size >= 8) {
+                    if (isMaxFolderCount(it.size)) {
                         throw BusinessException("하위 폴더는 최대 8개까지 생성을 할 수 있습니다.")
                     }
                 }
@@ -59,6 +56,8 @@ class FolderService(
         }
         return folderRepository.save(folder)
     }
+
+    private fun isMaxFolderCount(size: Int) = size >= 8
 
     private fun isParentFolder(parentId: Long) = parentId == 0L
 
@@ -91,33 +90,12 @@ class FolderService(
         ) {
             val folderMove: FolderMoveInnerStrategy =
                 FolderMoveWithEqualParentOrTopFolder(request, moveFolder, folderRepository, user)
-
             folderMove.moveFolder()
+            return
         }
 
-        /* 최상위 -> 상위 */
-        if (moveFolder.parentFolder == null && nextParentId != null) {
-            val folderMove: FolderMoveOuterStrategy =
-                FolderMoveFromTopFolderToFolder(request, moveFolder, folderRepository, user)
-
-            folderMove.folderMoveStrategy(moveFolder, request.nextIndex)
-        }
-
-        /* 상위 -> 최상위 */
-        if (moveFolder.parentFolder != null && nextParentId == null) {
-            val folderMove: FolderMoveOuterStrategy =
-                FolderMoveFromFolderToTopFolder(request, moveFolder, folderRepository, user)
-
-            folderMove.folderMoveStrategy(moveFolder, request.nextIndex)
-        }
-
-        /* 상위 -> 상위 */
-        if (moveFolder.parentFolder != null && nextParentId != null) {
-            val folderMove: FolderMoveOuterStrategy =
-                FolderMoveFromFolderToFolder(request, moveFolder, folderRepository, user)
-
-            folderMove.folderMoveStrategy(moveFolder, request.nextIndex)
-        }
+        val folderMove = FolderMoveFactory.getFolderMove(request, moveFolder, folderRepository, user)
+        folderMove.folderDragAndDrop(moveFolder, request.nextIndex)
 
     }
 
@@ -178,7 +156,6 @@ class FolderService(
         /* "folder" 하위 데이터 */
         val allFolderList: MutableList<Folder> = folderRepository.findAllByAccount(user)
         allFolderList.stream()
-            //filter { it.children != null }
             .forEach { rootFolder ->
                 val id = rootFolder.id
                 val children: MutableList<Long> = mutableListOf()
@@ -219,6 +196,39 @@ class FolderService(
                     }
                 folderRepository.deleteById(folderId)
             }
+    }
+
+    @Transactional
+    fun findFolderChildList(folderId: Long): MutableList<Folder.FolderListResponse> {
+        val childList: MutableList<Folder.FolderListResponse> = mutableListOf()
+
+        folderRepository.findById(folderId).ifPresent {
+            it.children?.stream()
+                ?.forEach { folder ->
+                childList.add(Folder.FolderListResponse(folder.id!!, folder.name))
+            }
+        }
+        return childList
+    }
+
+    @Transactional
+    fun findAllParentFolderList(folderId: Long): MutableList<Folder.FolderListResponse>? {
+        val childList: MutableList<Folder.FolderListResponse> = mutableListOf()
+        val folder = folderRepository.findByIdOrNull(folderId)
+        var parentFolder = folder
+
+        while (true) {
+            parentFolder = parentFolder?.parentFolder
+            when (parentFolder) {
+                null -> {
+                    break
+                }
+                else -> {
+                    childList.add(Folder.FolderListResponse(parentFolder.id!!, parentFolder.name))
+                }
+            }
+        }
+        return childList
     }
 
 

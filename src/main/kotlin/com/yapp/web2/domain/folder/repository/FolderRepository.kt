@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface FolderRepository : JpaRepository<Folder, Long> {
 
-    // TODO: 2021/12/02 N+1
     @Query("SELECT f FROM Folder f WHERE f.parentFolder = ?1 and f.index > ?2")
     fun findByIndexGreaterThanPrevFolder(parent: Folder, index: Int): MutableList<Folder>?
 
@@ -30,7 +29,7 @@ interface FolderRepository : JpaRepository<Folder, Long> {
                 "   FROM AccountFolder af " +
                 "   WHERE af.account = ?1)" +
                 " AND f.parentFolder IS NULL " +
-                " ORDER BY f.id"
+                " ORDER BY f.index"
     )
     fun findAllByParentFolderIsNull(user: Account): MutableList<Folder>
 
