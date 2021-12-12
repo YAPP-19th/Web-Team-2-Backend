@@ -181,7 +181,6 @@ internal open class FolderServiceTest {
         assertThrows<FolderNotFoundException> { folderService.changeFolderName(1L, changeNameRequest) }
     }
 
-    // TODO: 2021/12/08 테스트 코드 
     @Test
     fun `전체 폴더를 조회하고 출력한다`() {
         // given
