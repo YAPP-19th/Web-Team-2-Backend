@@ -6,6 +6,7 @@ import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.config.S3Uploader
+import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.exception.custom.AccountNotFoundException
 import com.yapp.web2.exception.custom.ExistNameException
 import com.yapp.web2.util.Message
@@ -15,6 +16,7 @@ import javax.transaction.Transactional
 
 @Service
 class AccountService(
+    private val folderService: FolderService,
     private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider,
     private val s3Uploader: S3Uploader
@@ -32,6 +34,7 @@ class AccountService(
             else -> updateUser(savedAccount, account)
         }
         val tokenDto = jwtProvider.createToken(account)
+        folderService.createDefaultFolder()
 
         return Account.AccountLoginSuccess(tokenDto, account)
     }
