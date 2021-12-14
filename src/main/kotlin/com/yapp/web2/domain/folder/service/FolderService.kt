@@ -245,8 +245,9 @@ class FolderService(
             }
             parentFolder = parentFolder.parentFolder
         }
+        childList.reverse()
+
         return childList
     }
-
 
 }
