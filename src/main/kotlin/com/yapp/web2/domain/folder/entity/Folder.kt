@@ -146,7 +146,8 @@ class Folder(
         class RootFolder(
             var id: Long, // 폴더 ID
             var children: MutableList<Long>? = mutableListOf(),
-            var data: RootFolderData
+            var data: RootFolderData,
+            val isExpanded: Boolean = false
         )
 
         class RootFolderData(
