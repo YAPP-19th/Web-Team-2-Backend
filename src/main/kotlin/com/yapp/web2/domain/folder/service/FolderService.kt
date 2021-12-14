@@ -90,8 +90,6 @@ class FolderService(
             nextParentFolder = folderRepository.findById(nextParentId).get()
         }
 
-        // (moveFolder.parentFolder == null && nextParentId
-
         /* 최상위 -> 최상위 OR 상위 -> 상위(동일한 부모) */
         if (isMoveTopFolderToTopFolder(moveFolder, nextParentId)
             || isMoveFolderToFolderWithEqualParent(moveFolder, nextParentFolder)
