@@ -51,13 +51,13 @@ class FolderController(
 
     @ApiOperation(value = "폴더 이동(드래그 & 드랍) API")
     @PatchMapping("/{folderId}/move")
-    fun moveFolder(
+    fun moveFolderDragAndDrop(
         servletRequest: HttpServletRequest,
         @PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long,
         @RequestBody @Valid @ApiParam(value = "이동할 폴더의 정보", required = true) request: Folder.FolderMoveRequest
     ): ResponseEntity<String> {
         val accessToken = servletRequest.getHeader("AccessToken")
-        folderService.moveFolder(folderId, request, accessToken)
+        folderService.moveFolderDragAndDrop(folderId, request, accessToken)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 

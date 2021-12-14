@@ -26,6 +26,12 @@ class FolderService(
         private val folderNotFoundException = FolderNotFoundException()
     }
 
+    @Transactional
+    fun createDefaultFolder() {
+        val defaultFolder = Folder("보관함1", index = 0, parentFolder = null)
+        folderRepository.save(defaultFolder)
+    }
+
     // TODO: 리팩토링
     @Transactional
     fun createFolder(request: Folder.FolderCreateRequest, accessToken: String): Folder {
@@ -73,7 +79,7 @@ class FolderService(
     }
 
     @Transactional
-    fun moveFolder(id: Long, request: Folder.FolderMoveRequest, accessToken: String) {
+    fun moveFolderDragAndDrop(id: Long, request: Folder.FolderMoveRequest, accessToken: String) {
         val userId = jwtProvider.getIdFromToken(accessToken)
         val user = accountRepository.findById(userId).get()
         val moveFolder = folderRepository.findById(id).get()
@@ -124,7 +130,7 @@ class FolderService(
     @Transactional
     fun deleteFolder(id: Long) {
         folderRepository.findByIdOrNull(id)?.let {
-            folder -> folderRepository.deleteByFolder(folder)
+                folder -> folderRepository.deleteByFolder(folder)
         }
     }
 
@@ -216,7 +222,7 @@ class FolderService(
         folderRepository.findByIdOrNull(folderId)?.let {
             it.children?.stream()
                 ?.forEach { folder ->
-                    childList.add(Folder.FolderListResponse(folder.id!!, folder.name))
+                    childList.add(Folder.FolderListResponse(folder.id!!, folder.emoji!!, folder.name))
                 }
         }
         return childList
@@ -229,15 +235,15 @@ class FolderService(
         var parentFolder = folder
 
         while (true) {
-            parentFolder = parentFolder?.parentFolder
             when (parentFolder) {
                 null -> {
                     break
                 }
                 else -> {
-                    childList.add(Folder.FolderListResponse(parentFolder.id!!, parentFolder.name))
+                    childList.add(Folder.FolderListResponse(parentFolder.id!!, parentFolder.emoji!!, parentFolder.name))
                 }
             }
+            parentFolder = parentFolder.parentFolder
         }
         return childList
     }
