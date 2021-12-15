@@ -121,6 +121,15 @@ class Folder(
         val nextIndex: Int
     )
 
+    @ApiModel(description = "폴더 이동(버튼) DTO")
+    class FolderMoveButtonRequest(
+        @ApiModelProperty(value = "이동할 폴더들의 ID 리스트", required = true)
+        val folderIdList: MutableList<Long>,
+
+        @ApiModelProperty(value = "이동하는 폴더의 ID", required = true)
+        val nextFolderId: Long
+    )
+
     @ApiModel(description = "폴더 리스트 삭제 DTO")
     class FolderListDeleteRequest(
         @ApiModelProperty(value = "삭제할 폴더들의 ID 리스트", required = true, example = "[1,4,5]")
