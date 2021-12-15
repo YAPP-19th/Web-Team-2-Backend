@@ -104,6 +104,39 @@ class FolderService(
         folderMove.folderDragAndDrop(moveFolder, request.nextIndex)
     }
 
+    @Transactional
+    fun moveFolderButton(accessToken: String, request: Folder.FolderMoveButtonRequest) {
+        val userId = jwtProvider.getIdFromToken(accessToken)
+        val user = accountRepository.findById(userId).get()
+
+        // 현재는 단일 폴더 이동만 가능해서 리스트가 반드시 1개로 요청
+        val folderId = request.folderIdList[0]
+        val beforeFolder = folderRepository.findById(folderId).orElseThrow { folderNotFoundException }
+
+        val beforeChildren: MutableList<Folder> =
+            when (beforeFolder.parentFolder) {
+                null -> { // 이동하려는 폴더가 최상위 일경우
+                    folderRepository.findAllByParentFolderIsNull(user)
+                }
+                else -> {
+                    beforeFolder.parentFolder!!.children!!
+                }
+            }
+
+        // 이전 폴더 리스트에서 이동하려는 폴더보다 index가 큰 폴더들 -1
+        beforeChildren.stream()
+            .filter { it.index > beforeFolder.index }
+            .forEach {
+                it.index--
+                folderRepository.save(it)
+            }
+
+        val nextFolder = folderRepository.findById(request.nextFolderId).orElseThrow { folderNotFoundException }
+        val nextFolderIndex = nextFolder.children?.size ?: 0
+        beforeFolder.index = nextFolderIndex
+        beforeFolder.parentFolder = nextFolder
+    }
+
     private fun isMoveTopFolderToTopFolder(
         moveFolder: Folder,
         nextParentId: Long?
@@ -127,8 +160,8 @@ class FolderService(
 
     @Transactional
     fun deleteFolder(id: Long) {
-        folderRepository.findByIdOrNull(id)?.let {
-                folder -> folderRepository.deleteByFolder(folder)
+        folderRepository.findByIdOrNull(id)?.let { folder ->
+            folderRepository.deleteByFolder(folder)
         }
     }
 

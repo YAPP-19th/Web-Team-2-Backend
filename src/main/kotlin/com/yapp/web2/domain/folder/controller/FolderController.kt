@@ -61,6 +61,17 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
+    @ApiOperation(value = "폴더 이동(버튼) API")
+    @PatchMapping("/move")
+    fun moveFolderByButton(
+        servletRequest: HttpServletRequest,
+        @RequestBody @ApiParam(value = "이동할 폴더들의 ID 및 다음 폴더 ID", required = true) request: Folder.FolderMoveButtonRequest
+    ): ResponseEntity<String> {
+        val accessToken = servletRequest.getHeader("AccessToken")
+        folderService.moveFolderButton(accessToken, request)
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
+    }
+
     @ApiOperation(value = "폴더 삭제 API")
     @DeleteMapping("/{folderId}")
     fun deleteAllBookmarkAndFolder(
