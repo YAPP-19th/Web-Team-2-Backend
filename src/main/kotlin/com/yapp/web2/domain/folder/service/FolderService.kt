@@ -1,5 +1,6 @@
 package com.yapp.web2.domain.folder.service
 
+import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.AccountFolder
@@ -27,9 +28,11 @@ class FolderService(
     }
 
     @Transactional
-    fun createDefaultFolder() {
+    fun createDefaultFolder(account: Account) {
         val defaultFolder = Folder("보관함1", index = 0, parentFolder = null)
-        folderRepository.save(defaultFolder)
+        val folder = folderRepository.save(defaultFolder)
+        val accountFolder = AccountFolder(account, folder)
+        folder.folders?.add(accountFolder)
     }
 
     // TODO: 리팩토링
@@ -277,7 +280,6 @@ class FolderService(
             parentFolder = parentFolder.parentFolder
         }
         childList.reverse()
-
         return childList
     }
 
