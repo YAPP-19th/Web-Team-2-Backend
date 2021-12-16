@@ -1,18 +1,18 @@
-package com.yapp.web2.domain.notification.service
+package com.yapp.web2.domain.remind.service
 
-import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
-import com.yapp.web2.domain.notification.entity.dto.RemindCycleRequest
-import com.yapp.web2.domain.notification.entity.dto.RemindToggleRequest
+import com.yapp.web2.domain.remind.entity.dto.RemindCycleRequest
+import com.yapp.web2.domain.remind.entity.dto.RemindToggleRequest
 import com.yapp.web2.security.jwt.JwtProvider
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 
 @Service
-class NotificationService(
+class RemindService(
     private val bookmarkRepository: BookmarkRepository,
     private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider
@@ -31,7 +31,7 @@ class NotificationService(
     fun changeRemindAlarm(request: RemindToggleRequest, accessToken: String) {
         val userId = jwtProvider.getIdFromToken(accessToken)
 
-        accountRepository.findById(userId).ifPresent {
+        accountRepository.findByIdOrNull(userId)?.let {
             it.remindToggle = request.remindToggle
             accountRepository.save(it)
         }
@@ -41,7 +41,7 @@ class NotificationService(
     fun updateRemindAlarmCycle(request: RemindCycleRequest, accessToken: String) {
         val userId = jwtProvider.getIdFromToken(accessToken)
 
-        accountRepository.findById(userId).ifPresent {
+        accountRepository.findByIdOrNull(userId)?.let {
             it.remindCycle = request.remindCycle
             accountRepository.save(it)
         }
