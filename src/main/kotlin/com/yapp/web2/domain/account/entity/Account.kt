@@ -36,7 +36,7 @@ class Account(
     var age: Int? = null
     var socialType: String = "none"
     var fcmToken: String? = null
-    var remindCycle: String? = "7"
+    var remindCycle: Int? = 7
 
     // TODO: 디폴트 사진 url 추가하기
     var image: String = BASIC_IMAGE_URL
