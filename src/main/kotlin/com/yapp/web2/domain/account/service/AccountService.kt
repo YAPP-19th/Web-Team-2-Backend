@@ -30,11 +30,14 @@ class AccountService(
         var account = Account.requestToAccount(dto)
 
         account = when (val savedAccount = accountRepository.findByEmail(account.email)) {
-            null -> createUser(account)
+            null -> {
+                val account2 = createUser(account)
+                folderService.createDefaultFolder(account)
+                account2
+            }
             else -> updateUser(savedAccount, account)
         }
         val tokenDto = jwtProvider.createToken(account)
-        folderService.createDefaultFolder()
 
         return Account.AccountLoginSuccess(tokenDto, account)
     }
