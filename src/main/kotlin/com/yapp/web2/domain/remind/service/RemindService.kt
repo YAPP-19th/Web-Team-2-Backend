@@ -6,6 +6,7 @@ import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.remind.entity.dto.RemindCycleRequest
 import com.yapp.web2.domain.remind.entity.dto.RemindToggleRequest
 import com.yapp.web2.security.jwt.JwtProvider
+import com.yapp.web2.util.RemindCycleUtil
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -33,17 +34,16 @@ class RemindService(
 
         accountRepository.findByIdOrNull(userId)?.let {
             it.remindToggle = request.remindToggle
-            accountRepository.save(it)
         }
     }
 
     @Transactional
     fun updateRemindAlarmCycle(request: RemindCycleRequest, accessToken: String) {
-        val userId = jwtProvider.getIdFromToken(accessToken)
+        RemindCycleUtil.validRemindCycle(request.remindCycle)
 
+        val userId = jwtProvider.getIdFromToken(accessToken)
         accountRepository.findByIdOrNull(userId)?.let {
             it.remindCycle = request.remindCycle
-            accountRepository.save(it)
         }
 
     }
