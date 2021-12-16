@@ -5,8 +5,10 @@ import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.config.S3Uploader
+import com.yapp.web2.domain.folder.service.FolderService
 import io.mockk.MockKAnnotations
 import io.mockk.every
+import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
@@ -19,6 +21,9 @@ import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
 internal class AccountServiceTest {
+
+    @InjectMockKs
+    private lateinit var folderService: FolderService
 
     @MockK
     private lateinit var accountRepository: AccountRepository
@@ -33,7 +38,7 @@ internal class AccountServiceTest {
     @BeforeEach
     internal fun init() {
         MockKAnnotations.init(this)
-        accountService = AccountService(accountRepository, jwtProvider, s3Uploader)
+        accountService = AccountService(folderService, accountRepository, jwtProvider, s3Uploader)
     }
 
 
