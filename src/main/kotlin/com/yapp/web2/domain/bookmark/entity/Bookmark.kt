@@ -19,6 +19,8 @@ class Bookmark(
     lateinit var id: String
 
     var title: String? = ""
+    var folderEmoji: String = ""
+    var folderName: String = ""
 
     var remindTime: LocalDate? = null
     var clickCount: Int = 0
@@ -38,7 +40,13 @@ class Bookmark(
         this.remindTime = remindTime
     }
 
-    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDate?, image: String?, description: String?): this(userId, folderId, link, title, remindTime) {
+    constructor(userId: Long, folderId: Long,
+                folderEmoji: String, folderName: String,
+                link: String, title: String?,
+                remindTime: LocalDate?, image: String?,
+                description: String?): this(userId, folderId, link, title, remindTime) {
+        this.folderEmoji = folderEmoji
+        this.folderName = folderName
         this.description = description
         this.image = image
     }
@@ -76,11 +84,7 @@ class Bookmark(
 
     @ApiModel(description = "북마크 이동 API(폴더별 이동)")
     class MoveBookmarkDto(
-
-        // TODO: 2021/12/04 RequestParam 데이터 검증
-        @ApiModelProperty(value = "이동 전 폴더 ID", required = true, example = "1")
-        val prevFolderId: Long,
-
+        val bookmarkIdList: MutableList<String>,
         @ApiModelProperty(value = "이동 후 폴더 ID", required = true, example = "2")
         val nextFolderId: Long
     )
@@ -101,6 +105,10 @@ class Bookmark(
 
     class RemindList(
         val remindBookmarkList: List<Bookmark>
+    )
+
+    class BookmarkIdList(
+        val idList: MutableList<String>
     )
 
     fun restore(): Bookmark {
