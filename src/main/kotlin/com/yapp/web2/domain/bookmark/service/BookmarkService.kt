@@ -1,5 +1,6 @@
 package com.yapp.web2.domain.bookmark.service
 
+import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
@@ -17,13 +18,15 @@ import java.time.LocalDateTime
 class BookmarkService(
     private val bookmarkRepository: BookmarkRepository,
     private val folderRepository: FolderRepository,
+    private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider
 ) {
     @Transactional
     fun addBookmark(token: String, folderId: Long, bookmarkDto: Bookmark.AddBookmarkDto): Bookmark {
         val idFromToken = jwtProvider.getIdFromToken(token)
+        val account = accountRepository.findById(idFromToken)
         val folder = checkFolderAbsence(folderId)
-        val toSaveBookmark = bookmarkAddDtoToBookmark(bookmarkDto, folderId, idFromToken)
+        val toSaveBookmark = bookmarkAddDtoToBookmark(bookmarkDto, folder, idFromToken, account.get().remindCycle!!)
         checkSameBookmark(toSaveBookmark, folderId)
 
         folder.bookmarkCount++
@@ -43,21 +46,22 @@ class BookmarkService(
         }
     }
 
-    private fun bookmarkAddDtoToBookmark(bookmarkDto: Bookmark.AddBookmarkDto, folderId: Long, userId: Long): Bookmark {
+    private fun bookmarkAddDtoToBookmark(bookmarkDto: Bookmark.AddBookmarkDto, folder: Folder, userId: Long, remindCycle: Int): Bookmark {
         return when (bookmarkDto.remind) {
-            true -> Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDate.now(), bookmarkDto.image, bookmarkDto.description)
-            false -> Bookmark(userId, folderId, bookmarkDto.url, bookmarkDto.title, null, bookmarkDto.image, bookmarkDto.description)
+            true -> Bookmark(userId, folder.id!!, folder.emoji!!, folder.name, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDate.now().plusDays(remindCycle.toLong()), bookmarkDto.image, bookmarkDto.description)
+            false -> Bookmark(userId, folder.id!!, folder.emoji!!, folder.name, bookmarkDto.url, bookmarkDto.title, null, bookmarkDto.image, bookmarkDto.description)
         }
     }
 
-    fun deleteBookmark(bookmarkId: String) {
-        val bookmark = getBookmarkIfPresent(bookmarkId)
-        val folder = bookmark.folderId?.let { checkFolderAbsence(it) }
-
-        folder!!.bookmarkCount--
-        bookmark.deleteTime = LocalDateTime.now()
-        bookmark.deleted = true
-        bookmarkRepository.save(bookmark)
+    fun deleteBookmark(bookmarkList: Bookmark.BookmarkIdList) {
+        for(bookmarkId in bookmarkList.idList) {
+            val bookmark = getBookmarkIfPresent(bookmarkId)
+            bookmark.deleteTime = LocalDateTime.now()
+            bookmark.deleted = true
+            bookmarkRepository.save(bookmark)
+            val folder = bookmark.folderId?.let { checkFolderAbsence(it) }
+            folder!!.bookmarkCount--
+        }
     }
 
     private fun getBookmarkIfPresent(bookmarkId: String): Bookmark {
@@ -80,7 +84,6 @@ class BookmarkService(
         return toChangeBookmark
     }
 
-    @Transactional
     fun increaseBookmarkClickCount(bookmarkId: String): Bookmark {
         val bookmark = getBookmarkIfPresent(bookmarkId)
         bookmark.clickCount++
@@ -89,13 +92,20 @@ class BookmarkService(
 
     @Transactional
     fun moveBookmark(bookmarkId: String, moveBookmarkDto: Bookmark.MoveBookmarkDto) {
-        if (isSameFolder(moveBookmarkDto.prevFolderId, moveBookmarkDto.nextFolderId)) return
         val bookmark = getBookmarkIfPresent(bookmarkId)
+        if (isSameFolder(bookmark.folderId!!, moveBookmarkDto.nextFolderId)) return
+
         //TODO: count를 enum으로 변환할 것
-        updateClickCountByFolderId(moveBookmarkDto.prevFolderId, -1)
-        updateClickCountByFolderId(moveBookmarkDto.nextFolderId, 1)
+        updateClickCountByFolderId(bookmark.folderId!!, -1)
         bookmark.folderId = moveBookmarkDto.nextFolderId
+        updateClickCountByFolderId(bookmark.folderId!!, 1)
         bookmarkRepository.save(bookmark)
+    }
+
+    fun moveBookmarkList(moveBookmarkDto: Bookmark.MoveBookmarkDto) {
+        val bookmarkIdList = moveBookmarkDto.bookmarkIdList
+        for(bookmarkId in bookmarkIdList)
+            moveBookmark(bookmarkId, moveBookmarkDto)
     }
 
     @Transactional
