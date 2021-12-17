@@ -10,6 +10,7 @@ import javax.validation.constraints.Size
 
 @Entity
 class Account(
+    @Column(unique = true, nullable = true, columnDefinition = "회원 이메일", length = 255)
     var email: String
 ) : BaseTimeEntity() {
 
@@ -27,19 +28,37 @@ class Account(
         this.socialType = socialType
     }
 
+    @Column(nullable = true, columnDefinition = "패스워드")
     var password: String? = null
+
+    @Column(nullable = true, columnDefinition = "이름")
     var name: String = ""
+
+    @Column(nullable = true, columnDefinition = "성별", length = 10)
     var sex: String = ""
+
+    @Column(nullable = true, columnDefinition = "나이", length = 5)
     var age: Int? = null
+
+    @Column(nullable = true, columnDefinition = "소셜로그인 타입", length = 20)
     var socialType: String = "none"
+
+    @Column(columnDefinition = "FCM Token", length = 255)
     var fcmToken: String? = null
+
+    @Column(columnDefinition = "리마인드 주기 일자", length = 10)
     var remindCycle: String? = "7"
 
-    // TODO: 디폴트 사진 url 추가하기
+    @Column(nullable = true, columnDefinition = "계정 이미지 URL", length = 255)
     var image: String = BASIC_IMAGE_URL
 
+    @Column(columnDefinition = "배경 색상", length = 30)
     var backgroundColor: String = "black"
+
+    @Column(columnDefinition = "리마인드 토글(알림 수신)", length = 10)
     var remindToggle: Boolean = true
+
+    @Column(nullable = true, columnDefinition = "리마인드 수신 확인", length = 10)
     var remindNotiCheck: Boolean = true
 
     @OneToMany(mappedBy = "account")

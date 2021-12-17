@@ -11,8 +11,13 @@ import javax.validation.constraints.PositiveOrZero
 
 @Entity
 class Folder(
+    @Column(columnDefinition = "폴더 이름")
     var name: String,
+
+    @Column(nullable = false, columnDefinition = "폴더 간 순서")
     var index: Int,
+
+    @Column(nullable = false, columnDefinition = "북마크 갯수")
     var bookmarkCount: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -20,6 +25,17 @@ class Folder(
     @JsonBackReference
     var parentFolder: Folder?,
 ) : BaseTimeEntity() {
+
+    @Column(columnDefinition = "폴더 이모지")
+    var emoji: String? = ""
+
+    @OrderBy("index asc")
+    @OneToMany(mappedBy = "parentFolder", cascade = [CascadeType.ALL])
+    @JsonManagedReference
+    var children: MutableList<Folder>? = mutableListOf()
+
+    @OneToMany(mappedBy = "folder", cascade = [CascadeType.ALL])
+    var folders: MutableList<AccountFolder>? = mutableListOf()
 
     companion object {
         fun dtoToEntity(dto: FolderCreateRequest): Folder {
@@ -30,16 +46,6 @@ class Folder(
             return Folder(dto.name, dto.index, 0, parentFolder)
         }
     }
-
-    var emoji: String? = ""
-
-    @OrderBy("index asc")
-    @OneToMany(mappedBy = "parentFolder", cascade = [CascadeType.ALL])
-    @JsonManagedReference
-    var children: MutableList<Folder>? = mutableListOf()
-
-    @OneToMany(mappedBy = "folder", cascade = [CascadeType.ALL])
-    var folders: MutableList<AccountFolder>? = mutableListOf()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
