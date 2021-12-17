@@ -115,4 +115,8 @@ class Bookmark(
         this.deleteTime = LocalDateTime.now()
     }
 
+    fun remindOff() {
+        this.remindTime = null
+    }
+
 }
