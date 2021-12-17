@@ -47,4 +47,12 @@ class RemindService(
         }
 
     }
+
+    @Transactional
+    fun bookmarkRemindOff(bookmarkId: String) {
+        bookmarkRepository.findByIdOrNull(bookmarkId)?.let {
+            it.remindOff()
+            bookmarkRepository.save(it)
+        }
+    }
 }
