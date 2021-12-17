@@ -9,5 +9,7 @@ class ExceptionMessage {
 
         const val ACCOUNT_NOT_EXIST = "존재하지 않는 계정입니다."
 
+        const val REMIND_CYCLE_VALID_EXCEPTION = "정확한 주기 일자를 입력해주세요."
+
     }
 }

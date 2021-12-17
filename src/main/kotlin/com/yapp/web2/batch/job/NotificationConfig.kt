@@ -1,8 +1,7 @@
 package com.yapp.web2.batch.job
 
 import com.yapp.web2.domain.bookmark.entity.Bookmark
-import com.yapp.web2.domain.notification.service.NotificationService
-import jdk.jshell.spi.ExecutionControlProvider
+import com.yapp.web2.domain.remind.service.RemindService
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing
@@ -10,7 +9,6 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.launch.support.RunIdIncrementer
-import org.springframework.batch.core.listener.ExecutionContextPromotionListener
 import org.springframework.batch.item.ItemProcessor
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.support.ListItemReader
@@ -22,7 +20,7 @@ import org.springframework.context.annotation.Configuration
 class NotificationConfig(
     private val jobBuilderFactory: JobBuilderFactory,
     private val stepBuilderFactory: StepBuilderFactory,
-    private val notificationService: NotificationService
+    private val notificationService: RemindService
 ) {
     @Bean(name = ["bookmarkNotificationJob"])
     fun bookmarkNotificationJob(): Job {
