@@ -33,7 +33,7 @@ class Account(
     var age: Int? = null
     var socialType: String = "none"
     var fcmToken: String? = null
-    var remindCycle: String? = "7"
+    var remindCycle: Int? = 7
 
     // TODO: 디폴트 사진 url 추가하기
     var image: String = BASIC_IMAGE_URL
@@ -59,7 +59,7 @@ class Account(
     )
 
     class AccountLoginSuccess(
-        tokenDto: TokenDto, account: Account
+        tokenDto: TokenDto, account: Account, isRegistered: Boolean
     ) {
         val accessToken = tokenDto.accessToken
         val refreshToken = tokenDto.refreshToken
@@ -69,6 +69,7 @@ class Account(
         val socialType = account.socialType
         val remindCycle = account.remindCycle
         val remindToggle = account.remindToggle
+        var isRegistered = isRegistered
     }
 
     class NextNickName(
