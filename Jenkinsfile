@@ -20,8 +20,7 @@ pipeline {
     stage('docker push') {
       steps {
         catchError {
-          sh '''docker image prune
-'''
+          sh '''sudo docker image prune -f'''
           sh 'docker build -t xodhkd36/yapp-server-test .'
           sh 'docker push xodhkd36/yapp-server-test'
         }
