@@ -71,13 +71,11 @@ class FolderService(
     private fun isParentFolder(parentId: Long) = parentId == 0L
 
     @Transactional
-    fun changeFolderName(id: Long, request: Folder.FolderNameChangeRequest): String {
-        folderRepository.findByIdOrNull(id)
-            ?.let { folder ->
-                folder.name = request.name
-                folderRepository.save(folder)
-                return request.name
-            }
+    fun changeFolder(folderId: Long, request: Folder.FolderChangeRequest) {
+        folderRepository.findByIdOrNull(folderId)?.let { folder ->
+            request.name?.let { folder.name = it }
+            request.emoji?.let { folder.emoji = it }
+        }
             ?: throw folderNotFoundException
     }
 
@@ -222,15 +220,6 @@ class FolderService(
         responseMap["items"] = itemsValue
 
         return responseMap
-    }
-
-    @Transactional
-    fun changeEmoji(id: Long, request: Folder.FolderEmojiChangeRequest): String {
-        folderRepository.findByIdOrNull(id)?.let { folder ->
-            folder.emoji = request.emoji
-            folderRepository.save(folder)
-            return request.emoji
-        } ?: throw folderNotFoundException
     }
 
     @Transactional
