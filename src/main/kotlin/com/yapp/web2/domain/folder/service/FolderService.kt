@@ -72,8 +72,27 @@ class FolderService(
     @Transactional
     fun changeFolder(folderId: Long, request: Folder.FolderChangeRequest) {
         folderRepository.findByIdOrNull(folderId)?.let { folder ->
-            request.name?.let { folder.name = it }
-            request.emoji?.let { folder.emoji = it }
+            request.name?.let { requestName ->
+                folder.name = requestName
+                // 폴더 하위에 존재하는 모든 북마크의 폴더 이름 수정
+                bookmarkRepository.findByFolderId(folderId).let { bookmarkList ->
+                    bookmarkList.stream().forEach { bookmark ->
+                        bookmark.folderName = request.name
+                        bookmarkRepository.save(bookmark)
+                    }
+                }
+            }
+
+            request.emoji?.let { requestEmoji ->
+                folder.emoji = requestEmoji
+                // 폴더 하위에 존재하는 모든 북마크의 폴더 이모지 수정
+                bookmarkRepository.findByFolderId(folderId).let { bookmarkList ->
+                    bookmarkList.stream().forEach { bookmark ->
+                        bookmark.folderEmoji = request.emoji
+                        bookmarkRepository.save(bookmark)
+                    }
+                }
+            }
         }
     }
 
