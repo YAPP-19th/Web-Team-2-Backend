@@ -29,14 +29,14 @@ class RemindService(
     }
 
     @Transactional
-    fun changeRemindAlarm(request: RemindToggleRequest, accessToken: String) {
+    fun changeRemindToggle(request: RemindToggleRequest, accessToken: String) {
         val userId = jwtProvider.getIdFromToken(accessToken)
 
         // 리마인드 알림을 Off 할 때, 모든 리마인드 주기 Null 처리
         if (isRemindOff(request.remindToggle)) {
             bookmarkRepository.findAllByUserId(userId).let {
                 it.stream().forEach { bookmark ->
-                    bookmark.remindTime = null
+                    bookmark.remindOff()
                     bookmarkRepository.save(bookmark)
                 }
             }
