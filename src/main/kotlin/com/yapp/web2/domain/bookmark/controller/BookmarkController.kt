@@ -2,6 +2,7 @@ package com.yapp.web2.domain.bookmark.controller
 
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.service.BookmarkService
+import com.yapp.web2.util.ControllerUtil
 import com.yapp.web2.util.Message
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
@@ -29,7 +30,7 @@ class BookmarkController(
         @PathVariable @ApiParam(value = "북마크를 지정할 폴더 ID", example = "12", required = true) folderId: Long,
         @RequestBody @ApiParam(value = "북마크 생성 정보", required = true) bookmark: Bookmark.AddBookmarkDto
     ): ResponseEntity<String> {
-        val token = request.getHeader("AccessToken")
+        val token = ControllerUtil.extractAccessToken(request)
         bookmarkService.addBookmark(token, folderId, bookmark)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SAVED)
     }
@@ -44,10 +45,12 @@ class BookmarkController(
     @ApiOperation(value = "북마크 수정 API")
     @PatchMapping("/{bookmarkId}")
     fun updateBookmark(
+        request: HttpServletRequest,
         @PathVariable @ApiParam(value = "북마크 ID", example = "10", required = true) bookmarkId: String,
         @RequestBody @Valid @ApiParam(value = "북마크 수정 정보", required = true) bookmark: Bookmark.UpdateBookmarkDto
     ): ResponseEntity<String> {
-        bookmarkService.updateBookmark(bookmarkId, bookmark)
+        val token = ControllerUtil.extractAccessToken(request)
+        bookmarkService.updateBookmark(token, bookmarkId, bookmark)
         return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
     }
 

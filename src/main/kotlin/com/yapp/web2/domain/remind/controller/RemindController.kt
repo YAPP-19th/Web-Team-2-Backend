@@ -3,6 +3,7 @@ package com.yapp.web2.domain.remind.controller
 import com.yapp.web2.domain.remind.entity.dto.RemindCycleRequest
 import com.yapp.web2.domain.remind.entity.dto.RemindToggleRequest
 import com.yapp.web2.domain.remind.service.RemindService
+import com.yapp.web2.util.ControllerUtil
 import com.yapp.web2.util.Message
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
@@ -19,12 +20,12 @@ class RemindController(
 
     @ApiOperation(value = "리마인드 알람 설정(토글) API")
     @PatchMapping("/mypage/remind/toggle")
-    fun changeRemindAlarm(
+    fun changeRemindToggle(
         servletRequest: HttpServletRequest,
         @RequestBody @ApiParam(value = "리마인드 토글(true / false)", required = true) request: RemindToggleRequest
     ): ResponseEntity<String> {
-        val accessToken = servletRequest.getHeader("AccessToken")
-        remindService.changeRemindAlarm(request, accessToken)
+        val accessToken = ControllerUtil.extractAccessToken(servletRequest)
+        remindService.changeRemindToggle(request, accessToken)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
@@ -35,7 +36,7 @@ class RemindController(
         servletRequest: HttpServletRequest,
         @RequestBody @ApiParam(value = "리마인드 알람 주기 설정 정보", required = true) request: RemindCycleRequest
     ): ResponseEntity<String> {
-        val accessToken = servletRequest.getHeader("AccessToken")
+        val accessToken = ControllerUtil.extractAccessToken(servletRequest)
         remindService.updateRemindAlarmCycle(request, accessToken)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }

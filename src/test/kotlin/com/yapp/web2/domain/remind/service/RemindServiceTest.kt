@@ -52,7 +52,7 @@ internal class RemindServiceTest {
         every { jwtProvider.getIdFromToken(any()) } returns 1L
 
         // when
-        remindService.changeRemindAlarm(request, "token")
+        remindService.changeRemindToggle(request, "token")
 
         // then
         assertThat(account.remindToggle).isEqualTo(false)

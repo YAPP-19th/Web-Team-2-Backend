@@ -29,13 +29,25 @@ class RemindService(
     }
 
     @Transactional
-    fun changeRemindAlarm(request: RemindToggleRequest, accessToken: String) {
+    fun changeRemindToggle(request: RemindToggleRequest, accessToken: String) {
         val userId = jwtProvider.getIdFromToken(accessToken)
+
+        // 리마인드 알림을 Off 할 때, 모든 리마인드 주기 Null 처리
+        if (isRemindOff(request.remindToggle)) {
+            bookmarkRepository.findAllByUserId(userId).let {
+                it.stream().forEach { bookmark ->
+                    bookmark.remindOff()
+                    bookmarkRepository.save(bookmark)
+                }
+            }
+        }
 
         accountRepository.findByIdOrNull(userId)?.let {
             it.remindToggle = request.remindToggle
         }
     }
+
+    private fun isRemindOff(remindToggle: Boolean) = !remindToggle
 
     @Transactional
     fun updateRemindAlarmCycle(request: RemindCycleRequest, accessToken: String) {

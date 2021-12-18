@@ -14,8 +14,9 @@ import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import javax.transaction.Transactional
+import org.springframework.transaction.annotation.Transactional
 
+@Transactional
 @Service
 class FolderService(
     private val folderRepository: FolderRepository,
@@ -27,7 +28,6 @@ class FolderService(
         private val folderNotFoundException = FolderNotFoundException()
     }
 
-    @Transactional
     fun createDefaultFolder(account: Account) {
         val defaultFolder = Folder("보관함1", index = 0, parentFolder = null)
         val folder = folderRepository.save(defaultFolder)
@@ -36,7 +36,6 @@ class FolderService(
     }
 
     // TODO: 리팩토링
-    @Transactional
     fun createFolder(request: Folder.FolderCreateRequest, accessToken: String): Folder {
         val userId = jwtProvider.getIdFromToken(accessToken)
         val user = accountRepository.findByIdOrNull(userId)
@@ -76,10 +75,8 @@ class FolderService(
             request.name?.let { folder.name = it }
             request.emoji?.let { folder.emoji = it }
         }
-            ?: throw folderNotFoundException
     }
 
-    @Transactional
     fun moveFolderDragAndDrop(id: Long, request: Folder.FolderMoveRequest, accessToken: String) {
         val userId = jwtProvider.getIdFromToken(accessToken)
         val user = accountRepository.findById(userId).get()
@@ -105,7 +102,6 @@ class FolderService(
         folderMove.folderDragAndDrop(moveFolder, request.nextIndex)
     }
 
-    @Transactional
     fun moveFolderButton(accessToken: String, request: Folder.FolderMoveButtonRequest) {
         val userId = jwtProvider.getIdFromToken(accessToken)
         val user = accountRepository.findById(userId).get()
@@ -148,18 +144,17 @@ class FolderService(
         nextParentFolder: Folder?
     ) = (moveFolder.parentFolder == nextParentFolder)
 
-    @Transactional
     fun deleteAllBookmark(folderId: Long) {
         bookmarkRepository.findByFolderId(folderId)
             .let { list ->
                 list.forEach {
                     it.deletedByFolder()
+                    it.remindOff()
                     bookmarkRepository.save(it)
                 }
             }
     }
 
-    @Transactional
     fun deleteFolder(id: Long) {
         folderRepository.findByIdOrNull(id)?.let { folder ->
             folderRepository.deleteByFolder(folder)
@@ -186,7 +181,6 @@ class FolderService(
 		} ...
     }
     */
-    @Transactional
     fun findAll(accessToken: String): Map<String, Any> {
         val rootId = jwtProvider.getIdFromToken(accessToken)
         val user = accountRepository.findById(rootId).get()
@@ -222,7 +216,6 @@ class FolderService(
         return responseMap
     }
 
-    @Transactional
     fun deleteFolderList(request: Folder.FolderListDeleteRequest) {
         request.deleteFolderIdList
             .stream()
@@ -238,7 +231,7 @@ class FolderService(
             }
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     fun findFolderChildList(folderId: Long): MutableList<Folder.FolderListResponse> {
         val childList: MutableList<Folder.FolderListResponse> = mutableListOf()
 
@@ -251,7 +244,7 @@ class FolderService(
         return childList
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     fun findAllParentFolderList(folderId: Long): MutableList<Folder.FolderListResponse>? {
         val childList: MutableList<Folder.FolderListResponse> = mutableListOf()
         val folder = folderRepository.findByIdOrNull(folderId)

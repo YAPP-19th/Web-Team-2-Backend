@@ -23,5 +23,7 @@ interface BookmarkRepository : MongoRepository<Bookmark, String> {
     fun findByTitleContainingIgnoreCaseOrLinkContainingIgnoreCaseAndUserId(title: String, link: String, userId: Long, pageable: Pageable): Page<Bookmark>
     fun findByFolderId(id: Long): List<Bookmark>
     fun findAllByRemindTimeAndDeleteTimeIsNull(remindTime: LocalDate): List<Bookmark>
-    fun findAllByRemindTimeAndUserIdAndDeleteTimeIsNull(now: LocalDate, userId: Long): List<Bookmark>
+    fun findAllByRemindTimeAfterAndUserIdAndDeleteTimeIsNull(now: LocalDate, userId: Long): List<Bookmark>
+
+    fun findAllByUserId(userId: Long): List<Bookmark>
 }

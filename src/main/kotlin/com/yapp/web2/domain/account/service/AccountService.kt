@@ -75,6 +75,7 @@ class AccountService(
         val idFromToken = jwtProvider.getIdFromToken(token)
         accountRepository.findById(idFromToken).let {
             if (it.isEmpty) throw accountNotFoundException
+            checkNickNameDuplication(Account.NextNickName(profileChanged.name))
             it.get().image = profileChanged.profileImageUrl
             it.get().name = profileChanged.name
             it
