@@ -11,13 +11,13 @@ import javax.validation.constraints.PositiveOrZero
 
 @Entity
 class Folder(
-    @Column(columnDefinition = "폴더 이름")
+    @Column
     var name: String,
 
-    @Column(nullable = false, columnDefinition = "폴더 간 순서")
+    @Column(nullable = false)
     var index: Int,
 
-    @Column(nullable = false, columnDefinition = "북마크 갯수")
+    @Column(nullable = false)
     var bookmarkCount: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -26,7 +26,7 @@ class Folder(
     var parentFolder: Folder?,
 ) : BaseTimeEntity() {
 
-    @Column(columnDefinition = "폴더 이모지")
+    @Column
     var emoji: String? = ""
 
     @OrderBy("index asc")
