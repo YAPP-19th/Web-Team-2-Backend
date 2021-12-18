@@ -107,15 +107,24 @@ class BookmarkService(
     @Transactional
     fun moveBookmark(bookmarkId: String, moveBookmarkDto: Bookmark.MoveBookmarkDto) {
         val bookmark = getBookmarkIfPresent(bookmarkId)
-        val folder = folderRepository.findById(moveBookmarkDto.nextFolderId)
-        if (isSameFolder(bookmark.folderId!!, moveBookmarkDto.nextFolderId)) return
-
-        //TODO: count를 enum으로 변환할 것
-        updateClickCountByFolderId(bookmark.folderId!!, -1)
-        bookmark.folderId = moveBookmarkDto.nextFolderId
-        bookmark.folderName = folder.get().name
-        bookmark.folderEmoji = folder.get().emoji!!
-        updateClickCountByFolderId(bookmark.folderId!!, 1)
+        when(bookmark.folderId) {
+            null -> {
+                val folder = folderRepository.findById(moveBookmarkDto.nextFolderId)
+                bookmark.folderId = moveBookmarkDto.nextFolderId
+                bookmark.folderName = folder.get().name
+                bookmark.folderEmoji = folder.get().emoji!!
+                updateClickCountByFolderId(bookmark.folderId!!, 1)
+            }
+            else -> {
+                val folder = folderRepository.findById(moveBookmarkDto.nextFolderId)
+                if (isSameFolder(bookmark.folderId!!, moveBookmarkDto.nextFolderId)) return
+                updateClickCountByFolderId(bookmark.folderId!!, -1)
+                bookmark.folderId = moveBookmarkDto.nextFolderId
+                bookmark.folderName = folder.get().name
+                bookmark.folderEmoji = folder.get().emoji!!
+                updateClickCountByFolderId(bookmark.folderId!!, 1)
+            }
+        }
         bookmarkRepository.save(bookmark)
     }
 
