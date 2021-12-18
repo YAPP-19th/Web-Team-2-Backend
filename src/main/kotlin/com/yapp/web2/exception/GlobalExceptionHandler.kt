@@ -97,12 +97,12 @@ class GlobalExceptionHandler {
             val error = Error().apply {
                 val field = errorObject as FieldError
                 this.field = field.field
-                this.message = errorObject.defaultMessage
+                this.`class` = errorObject.objectName
                 this.value = errorObject.rejectedValue
             }
             errors.add(error)
         }
-        val response = ErrorResponse.of(e.message, errors)
+        val response = ErrorResponse.of(e.fieldError!!.defaultMessage, errors)
         return getResponse(response, HttpStatus.BAD_REQUEST.value())
     }
 
