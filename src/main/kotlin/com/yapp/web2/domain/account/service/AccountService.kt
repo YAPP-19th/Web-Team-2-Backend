@@ -37,18 +37,11 @@ class AccountService(
                 folderService.createDefaultFolder(account)
                 account2
             }
-            else -> updateUser(savedAccount, account)
+            else -> savedAccount
         }
         val tokenDto = jwtProvider.createToken(account)
 
         return Account.AccountLoginSuccess(tokenDto, account, isRegistered)
-    }
-
-    @Transactional
-    protected fun updateUser(savedAccount: Account, receivedAccount: Account): Account {
-        savedAccount.image = receivedAccount.image
-        savedAccount.name = receivedAccount.name
-        return savedAccount
     }
 
     @Transactional
@@ -73,6 +66,17 @@ class AccountService(
         accountRepository.findById(idFromToken).let {
             if (it.isEmpty) throw accountNotFoundException
             it.get().name = nextNickName.nickName
+            it
+        }
+    }
+
+    @Transactional
+    fun changeProfile(token: String, profileChanged: Account.ProfileChanged) {
+        val idFromToken = jwtProvider.getIdFromToken(token)
+        accountRepository.findById(idFromToken).let {
+            if (it.isEmpty) throw accountNotFoundException
+            it.get().image = profileChanged.profileImageUrl
+            it.get().name = profileChanged.name
             it
         }
     }

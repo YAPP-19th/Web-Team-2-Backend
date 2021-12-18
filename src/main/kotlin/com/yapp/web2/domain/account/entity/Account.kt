@@ -107,6 +107,15 @@ class Account(
         val fcmToken = account.fcmToken
     }
 
+    class ProfileChanged(
+        val profileImageUrl: String,
+        val name: String
+    )
+
+    class ImageUrl(
+        val imageUrl: String
+    )
+
     class NextNickName(
         @field: Size(max = 20)
         val nickName: String
