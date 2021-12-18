@@ -34,7 +34,7 @@ class FolderMoveWithEqualParentOrTopFolder(
     }
 
     override fun moveFolder() {
-        when (moveFolder.index < request.nextIndex) {
+        when (isLowIndexToHighIndexMove()) {
             true -> {
                 folderList.stream()
                     .filter { it.index > moveFolder.index && it.index <= request.nextIndex }
@@ -48,4 +48,6 @@ class FolderMoveWithEqualParentOrTopFolder(
         }
         moveFolder.index = request.nextIndex
     }
+
+    private fun isLowIndexToHighIndexMove() = moveFolder.index < request.nextIndex
 }

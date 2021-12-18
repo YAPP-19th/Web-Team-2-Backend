@@ -33,12 +33,13 @@ class AccountService(
         account = when (val savedAccount = accountRepository.findByEmail(account.email)) {
             null -> {
                 isRegistered = false
-                createUser(account)
+                val account2 = createUser(account)
+                folderService.createDefaultFolder(account)
+                account2
             }
             else -> updateUser(savedAccount, account)
         }
         val tokenDto = jwtProvider.createToken(account)
-        folderService.createDefaultFolder()
 
         return Account.AccountLoginSuccess(tokenDto, account, isRegistered)
     }

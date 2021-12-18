@@ -35,9 +35,9 @@ class BookmarkController(
     }
 
     @ApiOperation(value = "북마크 삭제 API")
-    @DeleteMapping("/{bookmarkId}")
-    fun deleteBookmark(@PathVariable @ApiParam(value = "북마크 ID", example = "10", required = true) bookmarkId: String): ResponseEntity<String> {
-        bookmarkService.deleteBookmark(bookmarkId)
+    @PostMapping("/delete")
+    fun deleteBookmark(@RequestBody bookmarkList:Bookmark.BookmarkIdList): ResponseEntity<String> {
+        bookmarkService.deleteBookmark(bookmarkList)
         return ResponseEntity.status(HttpStatus.OK).body(Message.DELETED)
     }
 
@@ -48,6 +48,14 @@ class BookmarkController(
         @RequestBody @Valid @ApiParam(value = "북마크 수정 정보", required = true) bookmark: Bookmark.UpdateBookmarkDto
     ): ResponseEntity<String> {
         bookmarkService.updateBookmark(bookmarkId, bookmark)
+        return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
+    }
+
+    @PostMapping("/moveList")
+    fun moveBookmarkList(
+        @RequestBody moveBookmarkDto: Bookmark.MoveBookmarkDto
+    ): ResponseEntity<String> {
+        bookmarkService.moveBookmarkList(moveBookmarkDto)
         return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
     }
 
