@@ -103,18 +103,13 @@ class Folder(
         val folderId: Long
     )
 
-    @ApiModel(description = "폴더 이름 수정 DTO")
-    class FolderNameChangeRequest(
-        @ApiModelProperty(value = "수정할 폴더 이름", required = true, example = "Change Folder")
-        @field: NotEmpty(message = "변경할 폴더 명을 입력해주세요")
-        val name: String
-    )
+    @ApiModel(description = "폴더 수정 DTO")
+    class FolderChangeRequest(
+        @ApiModelProperty(value = "수정할 폴더 이모지", example = "U+1F604")
+        val emoji: String?,
 
-    @ApiModel(description = "폴더 이모지 수정 DTO")
-    class FolderEmojiChangeRequest(
-        @ApiModelProperty(value = "수정할 이모지 이름", required = true, example = "U+1F604")
-        @field: NotEmpty(message = "변경할 이모지를 입력해주세요")
-        val emoji: String
+        @ApiModelProperty(value = "수정할 폴더 이름",  example = "폴더 이름 수정")
+        val name: String?
     )
 
     @ApiModel(description = "폴더 이동(드래그 & 드랍) DTO")

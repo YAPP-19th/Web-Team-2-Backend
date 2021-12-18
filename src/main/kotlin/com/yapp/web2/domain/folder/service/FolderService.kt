@@ -69,14 +69,12 @@ class FolderService(
 
     private fun isParentFolder(parentId: Long) = parentId == 0L
 
-    fun changeFolderName(id: Long, request: Folder.FolderNameChangeRequest): String {
-        folderRepository.findByIdOrNull(id)
-            ?.let { folder ->
-                folder.name = request.name
-                folderRepository.save(folder)
-                return request.name
-            }
-            ?: throw folderNotFoundException
+    @Transactional
+    fun changeFolder(folderId: Long, request: Folder.FolderChangeRequest) {
+        folderRepository.findByIdOrNull(folderId)?.let { folder ->
+            request.name?.let { folder.name = it }
+            request.emoji?.let { folder.emoji = it }
+        }
     }
 
     fun moveFolderDragAndDrop(id: Long, request: Folder.FolderMoveRequest, accessToken: String) {
@@ -216,13 +214,6 @@ class FolderService(
         responseMap["items"] = itemsValue
 
         return responseMap
-    }
-
-    fun changeEmoji(id: Long, request: Folder.FolderEmojiChangeRequest): String {
-        folderRepository.findByIdOrNull(id)?.let { folder ->
-            folder.emoji = request.emoji
-            return request.emoji
-        } ?: throw folderNotFoundException
     }
 
     fun deleteFolderList(request: Folder.FolderListDeleteRequest) {
