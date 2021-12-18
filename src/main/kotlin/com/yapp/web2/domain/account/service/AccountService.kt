@@ -72,7 +72,6 @@ class AccountService(
     @Transactional
     fun changeProfile(token: String, profileChanged: Account.ProfileChanged) {
         val account = jwtProvider.getAccountFromToken(token)
-
         account.let {
             it.image = profileChanged.profileImageUrl
             it.name = profileChanged.name

@@ -3,6 +3,7 @@ package com.yapp.web2.domain.folder.controller
 import com.yapp.web2.domain.folder.entity.Folder
 
 import com.yapp.web2.domain.folder.service.FolderService
+import com.yapp.web2.util.ControllerUtil
 import com.yapp.web2.util.Message
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
@@ -29,23 +30,13 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(folderId?.let { Folder.FolderCreateResponse(it) })
     }
 
-    @ApiOperation("폴더 이름 수정 API")
-    @PatchMapping("/{folderId}/name")
-    fun changeFolderName(
-        @PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long,
-        @RequestBody @ApiParam(value = "수정할 폴더명", required = true) request: Folder.FolderNameChangeRequest
+    @ApiOperation("폴더 수정")
+    @PatchMapping("/{folderId}")
+    fun updateFolder(
+        @PathVariable @ApiParam(value = "폴더 ID", example = "4", required = true) folderId: Long,
+        @RequestBody @ApiParam(value = "수정할 폴더 이름 및 이모지 정보", required = true) request: Folder.FolderChangeRequest
     ): ResponseEntity<String> {
-        folderService.changeFolderName(folderId, request)
-        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
-    }
-
-    @ApiOperation(value = "폴더 이모지 수정 API")
-    @PatchMapping("/{folderId}/emoji")
-    fun changeFolderEmoji(
-        @PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long,
-        @RequestBody @ApiParam(value = "수정할 이모지 이름", required = true) request: Folder.FolderEmojiChangeRequest
-    ): ResponseEntity<String> {
-        folderService.changeEmoji(folderId, request)
+        folderService.changeFolder(folderId, request)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
@@ -56,7 +47,7 @@ class FolderController(
         @PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long,
         @RequestBody @Valid @ApiParam(value = "이동할 폴더의 정보", required = true) request: Folder.FolderMoveRequest
     ): ResponseEntity<String> {
-        val accessToken = servletRequest.getHeader("AccessToken")
+        val accessToken = ControllerUtil.extractAccessToken(servletRequest)
         folderService.moveFolderDragAndDrop(folderId, request, accessToken)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
@@ -67,7 +58,7 @@ class FolderController(
         servletRequest: HttpServletRequest,
         @RequestBody @ApiParam(value = "이동할 폴더들의 ID 및 다음 폴더 ID", required = true) request: Folder.FolderMoveButtonRequest
     ): ResponseEntity<String> {
-        val accessToken = servletRequest.getHeader("AccessToken")
+        val accessToken = ControllerUtil.extractAccessToken(servletRequest)
         folderService.moveFolderButton(accessToken, request)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
@@ -84,7 +75,7 @@ class FolderController(
     @ApiOperation(value = "폴더 조회 API", response = Folder.FolderFindAllResponse::class)
     @GetMapping
     fun findAll(servletRequest: HttpServletRequest): ResponseEntity<Map<String, Any>> {
-        val accessToken = servletRequest.getHeader("AccessToken")
+        val accessToken = ControllerUtil.extractAccessToken(servletRequest)
         val response = folderService.findAll(accessToken)
         return ResponseEntity.status(HttpStatus.OK).body(response)
     }

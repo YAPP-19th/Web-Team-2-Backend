@@ -3,6 +3,7 @@ package com.yapp.web2.domain.bookmark.controller
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.service.BookmarkPageService
 import com.yapp.web2.domain.bookmark.service.BookmarkSearchService
+import com.yapp.web2.util.ControllerUtil
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -30,7 +31,7 @@ class BookmarkPageController(
         pageable: Pageable,
         @RequestParam remind: Boolean
     ): ResponseEntity<Page<Bookmark>> {
-        val token = request.getHeader("AccessToken")
+        val token = ControllerUtil.extractAccessToken(request)
         return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByUserId(token, pageable, remind))
     }
 
@@ -40,7 +41,7 @@ class BookmarkPageController(
         pageable: Pageable,
         @RequestParam remind: Boolean
     ): ResponseEntity<Page<Bookmark>> {
-        val token = request.getHeader("AccessToken")
+        val token = ControllerUtil.extractAccessToken(request)
         return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getTrashPageByUserId(token, pageable, remind))
     }
 
@@ -50,7 +51,7 @@ class BookmarkPageController(
         @PathVariable keyWord: String,
         pageable: Pageable,
     ): ResponseEntity<Page<Bookmark>> {
-        val token = request.getHeader("AccessToken")
+        val token = ControllerUtil.extractAccessToken(request)
         return ResponseEntity.status(HttpStatus.OK).body(bookmarkSearchService.searchKeywordOwnUserId(token, keyWord, pageable))
     }
 
@@ -58,7 +59,7 @@ class BookmarkPageController(
     fun getTodayRemindBookmarkList(
         request: HttpServletRequest
     ): ResponseEntity<Bookmark.RemindList> {
-        val token = request.getHeader("AccessToken")
+        val token = ControllerUtil.extractAccessToken(request)
         val todayRemindBookmarkList = bookmarkPageService.getTodayRemindBookmark(token)
         return ResponseEntity.status(HttpStatus.OK).body(todayRemindBookmarkList)
     }
