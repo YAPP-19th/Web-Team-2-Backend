@@ -37,18 +37,11 @@ class AccountService(
                 folderService.createDefaultFolder(account)
                 account2
             }
-            else -> updateUser(savedAccount, account)
+            else -> savedAccount
         }
         val tokenDto = jwtProvider.createToken(account)
 
         return Account.AccountLoginSuccess(tokenDto, account, isRegistered)
-    }
-
-    @Transactional
-    protected fun updateUser(savedAccount: Account, receivedAccount: Account): Account {
-        savedAccount.image = receivedAccount.image
-        savedAccount.name = receivedAccount.name
-        return savedAccount
     }
 
     @Transactional
