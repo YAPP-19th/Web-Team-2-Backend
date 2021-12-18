@@ -42,19 +42,17 @@ internal open class FolderServiceTest {
     private lateinit var jwtProvider: JwtProvider
 
     private lateinit var folder: Folder
-    private lateinit var changeName: String
     private lateinit var changeEmoji: String
-    private lateinit var changeNameRequest: Folder.FolderNameChangeRequest
-    private lateinit var changeEmojiRequest: Folder.FolderEmojiChangeRequest
+    private lateinit var changeName: String
+    private lateinit var changeRequest: Folder.FolderChangeRequest
     private lateinit var user: Account
 
     @BeforeEach
     fun setup() {
         folder = Folder("Folder", 0, parentFolder = null)
-        changeName = "Update Folder"
         changeEmoji = "️🥕🥕"
-        changeNameRequest = Folder.FolderNameChangeRequest(changeName)
-        changeEmojiRequest = Folder.FolderEmojiChangeRequest(changeEmoji)
+        changeName = "Update Folder"
+        changeRequest = Folder.FolderChangeRequest(changeEmoji, changeName)
         user = Account("test@gmail.com")
     }
 
@@ -107,15 +105,14 @@ internal open class FolderServiceTest {
     fun `폴더 이름을 수정한다`() {
         // given & mock
         every { folderRepository.findByIdOrNull(any()) } returns folder
-        every { folderRepository.save(any()) } returns folder
 
         // when
-        val actual = folderService.changeFolderName(1L, changeNameRequest)
+        folderService.changeFolder(1L, changeRequest)
 
         // then
         assertAll(
-            { assertDoesNotThrow { folderService.changeFolderName(10L, changeNameRequest) } },
-            { assertThat(actual).isEqualTo(changeName) }
+            { assertDoesNotThrow { folderService.changeFolder(10L, changeRequest) } },
+            { assertThat(folder.name).isEqualTo(changeName) }
         )
     }
 
@@ -123,15 +120,30 @@ internal open class FolderServiceTest {
     fun `폴더 이모지를 수정한다`() {
         // given & mock
         every { folderRepository.findByIdOrNull(any()) } returns folder
-        every { folderRepository.save(any()) } returns folder
 
         // when
-        val actual = folderService.changeEmoji(1L, changeEmojiRequest)
+        folderService.changeFolder(1L, changeRequest)
 
         // then
         assertAll(
-            { assertDoesNotThrow { folderService.changeEmoji(10L, changeEmojiRequest) } },
-            { assertThat(actual).isEqualTo(changeEmoji) }
+            { assertDoesNotThrow { folderService.changeFolder(10L, changeRequest) } },
+            { assertThat(folder.emoji).isEqualTo(changeEmoji) }
+        )
+    }
+
+    @Test
+    fun `폴더 이름과 이모지를 수정한다`() {
+        // given & mock
+        every { folderRepository.findByIdOrNull(any()) } returns folder
+
+        // when
+        folderService.changeFolder(1L, changeRequest)
+
+        // then
+        assertAll(
+            { assertDoesNotThrow { folderService.changeFolder(10L, changeRequest) } },
+            { assertThat(folder.name).isEqualTo(changeName) },
+            { assertThat(folder.emoji).isEqualTo(changeEmoji) }
         )
     }
 
@@ -178,7 +190,7 @@ internal open class FolderServiceTest {
         every { folderRepository.findByIdOrNull(any()) }.throws(FolderNotFoundException())
 
         // then
-        assertThrows<FolderNotFoundException> { folderService.changeFolderName(1L, changeNameRequest) }
+        assertThrows<FolderNotFoundException> { folderService.changeFolder(1L, changeRequest) }
     }
 
     @Test
