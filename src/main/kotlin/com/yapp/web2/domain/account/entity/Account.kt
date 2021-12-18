@@ -88,7 +88,7 @@ class Account(
         val socialType: String,
 
         @ApiModelProperty(value = "FCM 토큰", required = true, example = "dOOUnnp-iBs:APA91bF1i7mobIF7kEhi3aVlFuv6A5--P1S...")
-        //@field: NotEmpty(message = "FCM 토큰을 입력해주세요")
+        @field: NotEmpty(message = "FCM 토큰을 입력해주세요")
         val fcmToken: String
     )
 
