@@ -151,6 +151,7 @@ class FolderService(
             .let { list ->
                 list.forEach {
                     it.deletedByFolder()
+                    it.remindOff()
                     bookmarkRepository.save(it)
                 }
             }
