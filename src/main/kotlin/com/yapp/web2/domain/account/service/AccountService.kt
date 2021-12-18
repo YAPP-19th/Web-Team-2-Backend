@@ -28,9 +28,11 @@ class AccountService(
 
     fun oauth2LoginUser(dto: Account.AccountLoginRequest): Account.AccountLoginSuccess {
         var account = Account.requestToAccount(dto)
+        var isRegistered = true
 
         account = when (val savedAccount = accountRepository.findByEmail(account.email)) {
             null -> {
+                isRegistered = false
                 val account2 = createUser(account)
                 folderService.createDefaultFolder(account)
                 account2
@@ -39,7 +41,7 @@ class AccountService(
         }
         val tokenDto = jwtProvider.createToken(account)
 
-        return Account.AccountLoginSuccess(tokenDto, account)
+        return Account.AccountLoginSuccess(tokenDto, account, isRegistered)
     }
 
     @Transactional

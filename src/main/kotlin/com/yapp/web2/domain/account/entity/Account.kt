@@ -93,7 +93,7 @@ class Account(
     )
 
     class AccountLoginSuccess(
-        tokenDto: TokenDto, account: Account
+        tokenDto: TokenDto, account: Account, isRegistered: Boolean
     ) {
         val accessToken = tokenDto.accessToken
         val refreshToken = tokenDto.refreshToken
@@ -103,6 +103,7 @@ class Account(
         val socialType = account.socialType
         val remindCycle = account.remindCycle
         val remindToggle = account.remindToggle
+        var isRegistered = isRegistered
         val fcmToken = account.fcmToken
     }
 
