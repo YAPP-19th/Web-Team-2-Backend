@@ -29,5 +29,7 @@ class Message {
         var UPDATED = "업데이트 되었습니다"
 
         var MOVED = "이동 되었습니다"
+
+        var IMAGE_NOT_FOUND = "이미지가 존재하지 않습니다"
     }
 }

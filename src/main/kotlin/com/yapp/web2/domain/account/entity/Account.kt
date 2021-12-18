@@ -7,6 +7,7 @@ import com.yapp.web2.security.jwt.TokenDto
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import javax.persistence.*
+import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Size
 
@@ -109,6 +110,7 @@ class Account(
 
     class ProfileChanged(
         val profileImageUrl: String,
+        @field: NotBlank(message = "이름을 입력해주세요")
         val name: String
     )
 
@@ -117,7 +119,7 @@ class Account(
     )
 
     class NextNickName(
-        @field: Size(max = 20)
+        @field: NotBlank(message = "이름을 입력해주세요")
         val nickName: String
     )
 }

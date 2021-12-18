@@ -2,13 +2,12 @@ package com.yapp.web2.domain.account.service
 
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.repository.AccountRepository
-import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.config.S3Uploader
 import com.yapp.web2.domain.folder.service.FolderService
-import com.yapp.web2.exception.custom.AccountNotFoundException
 import com.yapp.web2.exception.custom.ExistNameException
+import com.yapp.web2.exception.custom.ImageNotFoundException
 import com.yapp.web2.util.Message
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -23,7 +22,7 @@ class AccountService(
 ) {
 
     companion object {
-        val accountNotFoundException = AccountNotFoundException()
+        private const val DIR_NAME = "static"
     }
 
     fun oauth2LoginUser(dto: Account.AccountLoginRequest): Account.AccountLoginSuccess {
@@ -62,53 +61,45 @@ class AccountService(
 
     @Transactional
     fun changeNickName(token: String, nextNickName: Account.NextNickName) {
-        val idFromToken = jwtProvider.getIdFromToken(token)
-        accountRepository.findById(idFromToken).let {
-            if (it.isEmpty) throw accountNotFoundException
-            it.get().name = nextNickName.nickName
+        val account = jwtProvider.getAccountFromToken(token)
+
+        account.let {
+            it.name = nextNickName.nickName
             it
         }
     }
 
     @Transactional
     fun changeProfile(token: String, profileChanged: Account.ProfileChanged) {
-        val idFromToken = jwtProvider.getIdFromToken(token)
-        accountRepository.findById(idFromToken).let {
-            if (it.isEmpty) throw accountNotFoundException
-            checkNickNameDuplication(Account.NextNickName(profileChanged.name))
-            it.get().image = profileChanged.profileImageUrl
-            it.get().name = profileChanged.name
+        val account = jwtProvider.getAccountFromToken(token)
+        account.let {
+            it.image = profileChanged.profileImageUrl
+            it.name = profileChanged.name
             it
         }
     }
 
     @Transactional
     fun changeProfileImage(token: String, profile: MultipartFile): String {
-        val idFromToken = jwtProvider.getIdFromToken(token)
-        val account = accountRepository.findById(idFromToken).let {
-            if (it.isEmpty) throw accountNotFoundException
-            it.get().image = s3Uploader.upload(profile, "static")
+        val account = jwtProvider.getAccountFromToken(token).let {
+            it.image = s3Uploader.upload(profile, DIR_NAME)
             it
         }
-        return account.get().image
+        return account.image
     }
 
     @Transactional
     fun deleteProfileImage(token: String) {
-        val idFromToken = jwtProvider.getIdFromToken(token)
-        accountRepository.findById(idFromToken).let {
-            if (it.isEmpty) throw accountNotFoundException
-            if (it.get().image == Account.BASIC_IMAGE_URL) throw BusinessException("사진이 이미 존재하지 않습니다")
-            it.get().image = Account.BASIC_IMAGE_URL
+        val account = jwtProvider.getAccountFromToken(token)
+        account.let {
+            if (it.image == Account.BASIC_IMAGE_URL) throw ImageNotFoundException()
+            it.image = Account.BASIC_IMAGE_URL
         }
     }
 
     @Transactional
     fun changeBackgroundColor(token: String, changeUrl: String) {
-        val idFromToken = jwtProvider.getIdFromToken(token)
-        accountRepository.findById(idFromToken).let {
-            if (it.isEmpty) throw accountNotFoundException
-            it.get().backgroundColor = changeUrl
-        }
+        val account = jwtProvider.getAccountFromToken(token)
+        account.backgroundColor = changeUrl
     }
 }
