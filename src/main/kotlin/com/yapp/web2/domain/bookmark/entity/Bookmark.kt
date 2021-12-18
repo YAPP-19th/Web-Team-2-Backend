@@ -28,6 +28,17 @@ class Bookmark(
         this.image = image
     }
 
+    constructor(userId: Long, folderId: Long,
+                folderEmoji: String, folderName: String,
+                link: String, title: String?,
+                remindTime: LocalDate?, image: String?,
+                description: String?): this(userId, folderId, link, title, remindTime) {
+        this.folderEmoji = folderEmoji
+        this.folderName = folderName
+        this.description = description
+        this.image = image
+    }
+
     @Id
     lateinit var id: String
 
@@ -44,26 +55,6 @@ class Bookmark(
     var fcmToken = mutableListOf<String>()
 
     var saveTime: LocalDateTime = LocalDateTime.now()
-
-
-    constructor(userId: Long, folderId: Long, link: String, title: String?) : this(userId, folderId, link) {
-        this.title = title
-    }
-
-    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDate?) : this(userId, folderId, link, title) {
-        this.remindTime = remindTime
-    }
-
-    constructor(userId: Long, folderId: Long,
-                folderEmoji: String, folderName: String,
-                link: String, title: String?,
-                remindTime: LocalDate?, image: String?,
-                description: String?): this(userId, folderId, link, title, remindTime) {
-        this.folderEmoji = folderEmoji
-        this.folderName = folderName
-        this.description = description
-        this.image = image
-    }
     
     @ApiModel(description = "북마크 수정 DTO")
     class UpdateBookmarkDto(
