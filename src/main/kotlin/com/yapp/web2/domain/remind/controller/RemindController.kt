@@ -19,7 +19,7 @@ class RemindController(
 
     @ApiOperation(value = "리마인드 알람 설정(토글) API")
     @PatchMapping("/mypage/remind/toggle")
-    fun changeRemindAlarm(
+    fun changeRemindToggle(
         servletRequest: HttpServletRequest,
         @RequestBody @ApiParam(value = "리마인드 토글(true / false)", required = true) request: RemindToggleRequest
     ): ResponseEntity<String> {
