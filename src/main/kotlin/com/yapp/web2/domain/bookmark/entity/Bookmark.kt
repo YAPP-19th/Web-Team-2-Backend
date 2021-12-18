@@ -124,6 +124,8 @@ class Bookmark(
 
     fun deletedByFolder() {
         this.folderId = null
+        this.folderEmoji = ""
+        this.folderName = ""
         this.deleted = true
         this.deleteTime = LocalDateTime.now()
     }

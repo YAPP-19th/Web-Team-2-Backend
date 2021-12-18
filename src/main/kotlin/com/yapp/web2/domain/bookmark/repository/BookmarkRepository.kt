@@ -24,4 +24,6 @@ interface BookmarkRepository : MongoRepository<Bookmark, String> {
     fun findByFolderId(id: Long): List<Bookmark>
     fun findAllByRemindTimeAndDeleteTimeIsNull(remindTime: LocalDate): List<Bookmark>
     fun findAllByRemindTimeAndUserIdAndDeleteTimeIsNull(now: LocalDate, userId: Long): List<Bookmark>
+
+    fun findAllByUserId(userId: Long): List<Bookmark>
 }

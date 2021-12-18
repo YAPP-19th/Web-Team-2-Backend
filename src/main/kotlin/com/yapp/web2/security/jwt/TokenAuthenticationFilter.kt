@@ -1,6 +1,5 @@
 package com.yapp.web2.security.jwt
 
-import com.yapp.web2.exception.ErrorResponse
 import com.yapp.web2.exception.custom.PrefixMisMatchException
 import com.yapp.web2.util.Message
 import io.jsonwebtoken.ExpiredJwtException
