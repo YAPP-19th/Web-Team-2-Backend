@@ -63,7 +63,7 @@ class AccountController(
 
     @PostMapping("/nickNameChange")
     fun nickNameChange(request: HttpServletRequest, @RequestBody nickName: Account.NextNickName): ResponseEntity<String> {
-        val token = request.getHeader("AccessToken")
+        val token = ControllerUtil.extractAccessToken(request)
         accountService.changeNickName(token, nickName)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
