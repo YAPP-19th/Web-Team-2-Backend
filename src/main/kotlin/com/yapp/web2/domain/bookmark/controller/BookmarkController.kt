@@ -44,10 +44,12 @@ class BookmarkController(
     @ApiOperation(value = "북마크 수정 API")
     @PatchMapping("/{bookmarkId}")
     fun updateBookmark(
+        request: HttpServletRequest,
         @PathVariable @ApiParam(value = "북마크 ID", example = "10", required = true) bookmarkId: String,
         @RequestBody @Valid @ApiParam(value = "북마크 수정 정보", required = true) bookmark: Bookmark.UpdateBookmarkDto
     ): ResponseEntity<String> {
-        bookmarkService.updateBookmark(bookmarkId, bookmark)
+        val token = request.getHeader("AccessToken")
+        bookmarkService.updateBookmark(token, bookmarkId, bookmark)
         return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
     }
 

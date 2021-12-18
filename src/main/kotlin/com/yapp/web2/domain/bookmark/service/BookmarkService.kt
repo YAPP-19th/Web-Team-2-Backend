@@ -59,14 +59,23 @@ class BookmarkService(
         }
     }
 
+    @Transactional
     fun deleteBookmark(bookmarkList: Bookmark.BookmarkIdList) {
         for(bookmarkId in bookmarkList.idList) {
+            // TODO: 2021/12/18 bookmark 예외처리 메소드 안에서 진행하는 게 좋을 거 같음
             val bookmark = getBookmarkIfPresent(bookmarkId)
+
+            when (val folderId = bookmark.folderId) {
+                null -> Unit
+                else -> {
+                    val folder = checkFolderAbsence(folderId)
+                    folder.bookmarkCount--
+                }
+            }
+
             bookmark.deleteTime = LocalDateTime.now()
             bookmark.deleted = true
             bookmarkRepository.save(bookmark)
-            val folder = bookmark.folderId?.let { checkFolderAbsence(it) }
-            folder!!.bookmarkCount--
         }
     }
 
@@ -75,13 +84,15 @@ class BookmarkService(
             ?: throw bookmarkNotFoundException
     }
 
-    fun updateBookmark(bookmarkId: String, updateBookmarkDto: Bookmark.UpdateBookmarkDto): Bookmark {
+    fun updateBookmark(token: String, bookmarkId: String, updateBookmarkDto: Bookmark.UpdateBookmarkDto): Bookmark {
         val toChangeBookmark = getBookmarkIfPresent(bookmarkId)
+        val idFromToken = jwtProvider.getIdFromToken(token)
+        val account = accountRepository.findById(idFromToken)
 
         updateBookmarkDto.let {
             toChangeBookmark.title = it.title
             when (updateBookmarkDto.remind) {
-                true -> toChangeBookmark.remindTime = LocalDate.now()
+                true -> toChangeBookmark.remindTime = LocalDate.now().plusDays(account.get().remindCycle!!.toLong())
                 false -> toChangeBookmark.remindTime = null
             }
         }
@@ -98,11 +109,14 @@ class BookmarkService(
     @Transactional
     fun moveBookmark(bookmarkId: String, moveBookmarkDto: Bookmark.MoveBookmarkDto) {
         val bookmark = getBookmarkIfPresent(bookmarkId)
+        val folder = folderRepository.findById(moveBookmarkDto.nextFolderId)
         if (isSameFolder(bookmark.folderId!!, moveBookmarkDto.nextFolderId)) return
 
         //TODO: count를 enum으로 변환할 것
         updateClickCountByFolderId(bookmark.folderId!!, -1)
         bookmark.folderId = moveBookmarkDto.nextFolderId
+        bookmark.folderName = folder.get().name
+        bookmark.folderEmoji = folder.get().emoji!!
         updateClickCountByFolderId(bookmark.folderId!!, 1)
         bookmarkRepository.save(bookmark)
     }
