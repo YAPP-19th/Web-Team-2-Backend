@@ -78,6 +78,17 @@ class AccountService(
     }
 
     @Transactional
+    fun changeProfile(token: String, profileChanged: Account.ProfileChanged) {
+        val idFromToken = jwtProvider.getIdFromToken(token)
+        accountRepository.findById(idFromToken).let {
+            if (it.isEmpty) throw accountNotFoundException
+            it.get().image = profileChanged.profileImageUrl
+            it.get().name = profileChanged.name
+            it
+        }
+    }
+
+    @Transactional
     fun changeProfileImage(token: String, profile: MultipartFile): String {
         val idFromToken = jwtProvider.getIdFromToken(token)
         val account = accountRepository.findById(idFromToken).let {

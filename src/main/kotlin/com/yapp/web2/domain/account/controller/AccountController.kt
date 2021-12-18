@@ -1,5 +1,6 @@
 package com.yapp.web2.domain.account.controller
 
+import com.yapp.web2.config.S3Uploader
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.service.AccountService
 import com.yapp.web2.security.jwt.TokenDto
@@ -15,7 +16,8 @@ import javax.servlet.http.HttpServletRequest
 @RestController
 @RequestMapping("/api/v1/user")
 class AccountController(
-    private val accountService: AccountService
+    private val accountService: AccountService,
+    private val s3Uploader: S3Uploader
 ) {
     @PostMapping("/oauth2Login")
     fun oauth2Login(
@@ -34,11 +36,17 @@ class AccountController(
         return ResponseEntity.status(HttpStatus.OK).body(tokenDto)
     }
 
-    @PostMapping("/changeProfileImage")
-    fun changeProfileImage(request: HttpServletRequest, @RequestBody image: MultipartFile): ResponseEntity<String> {
+    @PostMapping("/uploadProfileImage")
+    fun uploadProfileImage(@RequestBody image: MultipartFile): ResponseEntity<Account.ImageUrl> {
+        val imageUrl= Account.ImageUrl(s3Uploader.upload(image, "static"))
+        return ResponseEntity.status(HttpStatus.OK).body(imageUrl)
+    }
+
+    @PostMapping("/changeProfile")
+    fun changeProfile(request: HttpServletRequest, @RequestBody profileChanged: Account.ProfileChanged): ResponseEntity<String> {
         val token = request.getHeader("AccessToken")
-        val image = accountService.changeProfileImage(token, image)
-        return ResponseEntity.status(HttpStatus.OK).body(image)
+        accountService.changeProfile(token, profileChanged)
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
     @PostMapping("/nickNameCheck")
@@ -46,6 +54,7 @@ class AccountController(
         val result = accountService.checkNickNameDuplication(nickName)
         return ResponseEntity.status(HttpStatus.OK).body(result)
     }
+
     @PostMapping("/nickNameChange")
     fun nickNameChange(request: HttpServletRequest, @RequestBody nickName: Account.NextNickName): ResponseEntity<String> {
         val token = request.getHeader("AccessToken")
