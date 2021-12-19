@@ -1,5 +1,6 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.ir.backend.js.compile
 
 plugins {
     id("org.springframework.boot") version "2.5.4"
@@ -41,6 +42,9 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("io.springfox:springfox-boot-starter:3.0.0")
+
+    implementation("org.springframework.boot:spring-boot-starter-actuator:2.3.1.RELEASE")
+    implementation("de.codecentric:spring-boot-admin-client:2.3.1")
 
     runtimeOnly ("io.jsonwebtoken:jjwt-impl:0.11.2")
     runtimeOnly("org.postgresql:postgresql")
