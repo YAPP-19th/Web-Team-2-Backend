@@ -54,6 +54,7 @@ dependencies {
     implementation("com.google.firebase:firebase-admin:6.8.1")
     implementation("com.squareup.okhttp3:okhttp:4.2.2")
 
+    // aws s3
     implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.228"))
     implementation ("com.amazonaws:aws-java-sdk-s3")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
