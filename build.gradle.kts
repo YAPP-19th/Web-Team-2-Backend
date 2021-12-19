@@ -43,6 +43,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("io.springfox:springfox-boot-starter:3.0.0")
 
+    // Spring Boot actuator, admin
     implementation("org.springframework.boot:spring-boot-starter-actuator:2.3.1.RELEASE")
     implementation("de.codecentric:spring-boot-admin-client:2.3.1")
 
