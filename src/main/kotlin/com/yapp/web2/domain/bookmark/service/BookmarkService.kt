@@ -61,7 +61,7 @@ class BookmarkService(
 
     @Transactional
     fun deleteBookmark(bookmarkList: Bookmark.BookmarkIdList) {
-        for(bookmarkId in bookmarkList.idList) {
+        for (bookmarkId in bookmarkList.idList) {
             // TODO: 2021/12/18 bookmark 예외처리 메소드 안에서 진행하는 게 좋을 거 같음
             val bookmark = getBookmarkIfPresent(bookmarkId)
 
@@ -123,7 +123,7 @@ class BookmarkService(
 
     fun moveBookmarkList(moveBookmarkDto: Bookmark.MoveBookmarkDto) {
         val bookmarkIdList = moveBookmarkDto.bookmarkIdList
-        for(bookmarkId in bookmarkIdList)
+        for (bookmarkId in bookmarkIdList)
             moveBookmark(bookmarkId, moveBookmarkDto)
     }
 

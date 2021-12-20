@@ -108,7 +108,7 @@ class Folder(
         @ApiModelProperty(value = "수정할 폴더 이모지", example = "U+1F604")
         val emoji: String?,
 
-        @ApiModelProperty(value = "수정할 폴더 이름",  example = "폴더 이름 수정")
+        @ApiModelProperty(value = "수정할 폴더 이름", example = "폴더 이름 수정")
         val name: String?
     )
 
@@ -177,5 +177,4 @@ class Folder(
         @ApiModelProperty(value = "자식 or 부모 폴더 이름", required = true, example = "자식 폴더 1-2")
         var name: String
     )
-
 }

@@ -3,7 +3,7 @@ package com.yapp.web2.util
 import javax.servlet.http.HttpServletRequest
 
 class ControllerUtil {
-    companion object{
+    companion object {
         private const val ACCESS_TOKEN = "AccessToken"
         private const val REFRESH_TOKEN = "RefreshToken"
 

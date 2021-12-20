@@ -29,7 +29,6 @@ class RemindController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
-
     @ApiOperation(value = "리마인드 알람 주기 설정 API")
     @PostMapping("/mypage/remind/cycle")
     fun updateRemindAlarmCycle(
@@ -49,5 +48,4 @@ class RemindController(
         remindService.bookmarkRemindOff(bookmarkId)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
-
 }

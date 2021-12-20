@@ -13,5 +13,4 @@ interface FolderMoveInnerStrategy {
     fun updateFolderIndex(moveFolder: Folder, nextIndex: Int) {
         moveFolder.updateIndex(nextIndex)
     }
-
 }

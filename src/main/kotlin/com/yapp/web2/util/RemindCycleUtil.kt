@@ -19,5 +19,4 @@ enum class RemindCycleUtil(val days: Int) {
             throw RemindCycleValidException()
         }
     }
-
 }

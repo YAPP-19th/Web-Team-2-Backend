@@ -74,7 +74,6 @@ internal class RemindServiceTest {
         assertThat(account.remindCycle).isEqualTo(30)
     }
 
-
     @Test
     fun `리마인드 주기가 3, 7, 14, 30일이 아니면 에러를 반환한다`() {
         // given
@@ -91,5 +90,4 @@ internal class RemindServiceTest {
             { assertThrows<RemindCycleValidException> { remindService.updateRemindAlarmCycle(request2, "token") } }
         )
     }
-
 }
