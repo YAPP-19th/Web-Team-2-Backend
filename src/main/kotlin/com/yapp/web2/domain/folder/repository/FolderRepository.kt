@@ -25,20 +25,20 @@ interface FolderRepository : JpaRepository<Folder, Long> {
     @EntityGraph(attributePaths = ["children"])
     @Query(
         "SELECT f FROM Folder f WHERE f.id in " +
-                "(  SELECT af.folder " +
-                "   FROM AccountFolder af " +
-                "   WHERE af.account = ?1)" +
-                " AND f.parentFolder IS NULL " +
-                " ORDER BY f.index"
+            "(  SELECT af.folder " +
+            "   FROM AccountFolder af " +
+            "   WHERE af.account = ?1)" +
+            " AND f.parentFolder IS NULL " +
+            " ORDER BY f.index"
     )
     fun findAllByParentFolderIsNull(user: Account): MutableList<Folder>
 
     @EntityGraph(attributePaths = ["children"])
     @Query(
         "SELECT f FROM Folder as f " +
-                "JOIN AccountFolder as af " +
-                "ON f.id = af.folder.id " +
-                "WHERE af.account = ?1"
+            "JOIN AccountFolder as af " +
+            "ON f.id = af.folder.id " +
+            "WHERE af.account = ?1"
     )
     fun findAllByAccount(user: Account): MutableList<Folder>
 

@@ -28,5 +28,4 @@ interface FolderMoveOuterStrategy {
         updateFolderAfterMove()
         updateFolderIndex(moveFolder, nextIndex)
     }
-
 }

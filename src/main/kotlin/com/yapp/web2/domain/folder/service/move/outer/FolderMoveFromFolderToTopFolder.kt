@@ -17,7 +17,7 @@ class FolderMoveFromFolderToTopFolder(
     private val moveFolder: Folder,
     private val folderRepository: FolderRepository,
     private val user: Account
-): FolderMoveOuterStrategy {
+) : FolderMoveOuterStrategy {
 
     var topFolderList: MutableList<Folder> = folderRepository.findAllByParentFolderIsNull(user)
     var prevParentFolder = moveFolder.parentFolder
@@ -43,6 +43,4 @@ class FolderMoveFromFolderToTopFolder(
         moveFolder.setTopFolder()
         moveFolder.index = request.nextIndex
     }
-
-
 }

@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @EnableBatchProcessing
 class BookmarkersApplication
 
-
 fun main(args: Array<String>) {
     runApplication<BookmarkersApplication>(*args)
 }

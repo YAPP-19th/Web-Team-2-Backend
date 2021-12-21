@@ -57,7 +57,6 @@ class RemindService(
         accountRepository.findByIdOrNull(userId)?.let {
             it.remindCycle = request.remindCycle
         }
-
     }
 
     @Transactional

@@ -52,8 +52,8 @@ class AccountService(
         return jwtProvider.reIssuedAccessToken(accessToken, refreshToken)
     }
 
-    fun checkNickNameDuplication(nickNameDto:Account.NextNickName): String {
-        return when(accountRepository.findAccountByName(nickNameDto.nickName)) {
+    fun checkNickNameDuplication(nickNameDto: Account.NextNickName): String {
+        return when (accountRepository.findAccountByName(nickNameDto.nickName)) {
             null -> Message.AVAILABLE_NAME
             else -> throw ExistNameException()
         }

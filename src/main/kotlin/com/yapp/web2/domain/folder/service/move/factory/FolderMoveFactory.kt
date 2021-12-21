@@ -31,8 +31,6 @@ class FolderMoveFactory {
 
             /* 상위 -> 상위 */
             return FolderMoveFromFolderToFolder(request, moveFolder, folderRepository, user)
-
         }
     }
-
 }

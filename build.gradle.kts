@@ -1,10 +1,14 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.ir.backend.js.compile
 
 plugins {
     id("org.springframework.boot") version "2.5.4"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
+
+    // ktlint
+    id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
+    id("org.jlleitschuh.gradle.ktlint-idea") version "10.0.0"
+
     kotlin("jvm") version "1.5.21"
     kotlin("plugin.spring") version "1.5.21"
     kotlin("plugin.jpa") version "1.5.21"
@@ -47,21 +51,19 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator:2.3.1.RELEASE")
     implementation("de.codecentric:spring-boot-admin-client:2.3.1")
 
-    runtimeOnly ("io.jsonwebtoken:jjwt-impl:0.11.2")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.2")
     runtimeOnly("org.postgresql:postgresql")
 
-    // Firebase Cloud Messaging
     implementation("com.google.firebase:firebase-admin:6.8.1")
     implementation("com.squareup.okhttp3:okhttp:4.2.2")
 
-    // aws s3
     implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.228"))
-    implementation ("com.amazonaws:aws-java-sdk-s3")
+    implementation("com.amazonaws:aws-java-sdk-s3")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
         exclude(group = "org.mockito")
     }
-    testImplementation ("org.springframework.batch:spring-batch-test")
+    testImplementation("org.springframework.batch:spring-batch-test")
     testImplementation("com.ninja-squad:springmockk:2.0.3")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
 }

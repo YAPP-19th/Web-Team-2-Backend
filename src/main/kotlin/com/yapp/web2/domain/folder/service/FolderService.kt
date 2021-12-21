@@ -108,8 +108,8 @@ class FolderService(
         }
 
         /* 최상위 -> 최상위 OR 상위 -> 상위(동일한 부모) */
-        if (isMoveTopFolderToTopFolder(moveFolder, nextParentId)
-            || isMoveFolderToFolderWithEqualParent(moveFolder, nextParentFolder)
+        if (isMoveTopFolderToTopFolder(moveFolder, nextParentId) ||
+            isMoveFolderToFolderWithEqualParent(moveFolder, nextParentFolder)
         ) {
             val folderMove: FolderMoveInnerStrategy =
                 FolderMoveWithEqualParentOrTopFolder(request, moveFolder, folderRepository, user)
@@ -298,5 +298,4 @@ class FolderService(
         childList.reverse()
         return childList
     }
-
 }

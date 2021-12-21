@@ -58,7 +58,7 @@ class FolderMoveServiceTest {
 
         // mock
         every { jwtProvider.getIdFromToken(any()) } returns 1L
-        every { accountRepository.findById(any()).get()} returns user
+        every { accountRepository.findById(any()).get() } returns user
         every { folderRepository.findById(any()).get() } returns moveFolder
         every { folderRepository.findAllByParentFolderIsNull(any()) } returns topFolderList
 
@@ -68,31 +68,24 @@ class FolderMoveServiceTest {
         // then
         assertAll(
             { assertThat(topFolderList[0].index).isEqualTo(moveRequest.nextIndex) },
-            { assertThat(topFolderList[0].index).isEqualTo(moveFolder.index)}
+            { assertThat(topFolderList[0].index).isEqualTo(moveFolder.index) }
         )
-
     }
 
     @DisplayName("FolderMoveFromTopFolderToFolder")
     @Test
     fun `보관함에서 폴더로 이동`() {
-
     }
 
     @Test
     fun `폴더에서 보관함으로 이동`() {
-
     }
 
     @Test
     fun `폴더에서 폴더로 이동`() {
-
     }
-
 
     @Test
     fun `동일한 부모 내 폴더에서 폴더로 이동`() {
-
     }
-
 }

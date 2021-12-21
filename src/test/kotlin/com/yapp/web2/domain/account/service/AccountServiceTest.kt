@@ -41,7 +41,6 @@ internal class AccountServiceTest {
         accountService = AccountService(folderService, accountRepository, jwtProvider, s3Uploader)
     }
 
-
     @Nested
     inner class ChangeNickName {
 

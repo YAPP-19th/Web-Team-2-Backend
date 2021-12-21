@@ -94,7 +94,9 @@ class Account(
     )
 
     class AccountLoginSuccess(
-        tokenDto: TokenDto, account: Account, isRegistered: Boolean
+        tokenDto: TokenDto,
+        account: Account,
+        isRegistered: Boolean
     ) {
         val accessToken = tokenDto.accessToken
         val refreshToken = tokenDto.refreshToken

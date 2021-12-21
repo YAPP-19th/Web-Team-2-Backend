@@ -44,7 +44,7 @@ class AccountController(
 
     @PostMapping("/uploadProfileImage")
     fun uploadProfileImage(@RequestBody image: MultipartFile): ResponseEntity<Account.ImageUrl> {
-        val imageUrl= Account.ImageUrl(s3Uploader.upload(image, DIR_NAME))
+        val imageUrl = Account.ImageUrl(s3Uploader.upload(image, DIR_NAME))
         return ResponseEntity.status(HttpStatus.OK).body(imageUrl)
     }
 
@@ -74,5 +74,4 @@ class AccountController(
         accountService.changeBackgroundColor(token, changeUrl)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
-
 }

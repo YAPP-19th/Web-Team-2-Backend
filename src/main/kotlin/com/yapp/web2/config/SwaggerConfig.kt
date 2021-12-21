@@ -71,5 +71,4 @@ class SwaggerConfig {
             .licenseUrl("http://www.apache.org/licenses/")
             .build()
     }
-
 }
