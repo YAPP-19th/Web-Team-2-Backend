@@ -41,11 +41,15 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("org.springframework.boot:spring-boot-starter-batch")
-    implementation("io.jsonwebtoken:jjwt:0.9.1")
+    implementation ("org.springframework.boot:spring-boot-starter-batch")
+    implementation ("io.jsonwebtoken:jjwt:0.9.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("io.springfox:springfox-boot-starter:3.0.0")
+
+    // Spring Boot actuator, admin
+    implementation("org.springframework.boot:spring-boot-starter-actuator:2.3.1.RELEASE")
+    implementation("de.codecentric:spring-boot-admin-client:2.3.1")
 
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.2")
     runtimeOnly("org.postgresql:postgresql")

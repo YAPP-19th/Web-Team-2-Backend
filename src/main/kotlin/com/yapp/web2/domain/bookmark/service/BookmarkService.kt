@@ -29,10 +29,9 @@ class BookmarkService(
 
     @Transactional
     fun addBookmark(token: String, folderId: Long, bookmarkDto: Bookmark.AddBookmarkDto): Bookmark {
-        val idFromToken = jwtProvider.getIdFromToken(token)
-        val account = accountRepository.findById(idFromToken)
+        val account = jwtProvider.getAccountFromToken(token)
         val folder = checkFolderAbsence(folderId)
-        val toSaveBookmark = bookmarkAddDtoToBookmark(bookmarkDto, folder, idFromToken, account.get().remindCycle!!)
+        val toSaveBookmark = bookmarkAddDtoToBookmark(bookmarkDto, folder, account.id!!, account.remindCycle!!)
         checkSameBookmark(toSaveBookmark, folderId)
 
         folder.bookmarkCount++
@@ -86,18 +85,17 @@ class BookmarkService(
 
     fun updateBookmark(token: String, bookmarkId: String, updateBookmarkDto: Bookmark.UpdateBookmarkDto): Bookmark {
         val toChangeBookmark = getBookmarkIfPresent(bookmarkId)
-        val idFromToken = jwtProvider.getIdFromToken(token)
-        val account = accountRepository.findById(idFromToken)
+        val account = jwtProvider.getAccountFromToken(token)
 
         updateBookmarkDto.let {
             toChangeBookmark.title = it.title
             when (updateBookmarkDto.remind) {
-                true -> toChangeBookmark.remindTime = LocalDate.now().plusDays(account.get().remindCycle!!.toLong())
+                true -> toChangeBookmark.remindTime = LocalDate.now().plusDays(account.remindCycle!!.toLong())
                 false -> toChangeBookmark.remindTime = null
             }
         }
-        bookmarkRepository.save(toChangeBookmark)
-        return toChangeBookmark
+
+        return bookmarkRepository.save(toChangeBookmark)
     }
 
     fun increaseBookmarkClickCount(bookmarkId: String): Bookmark {
@@ -109,15 +107,24 @@ class BookmarkService(
     @Transactional
     fun moveBookmark(bookmarkId: String, moveBookmarkDto: Bookmark.MoveBookmarkDto) {
         val bookmark = getBookmarkIfPresent(bookmarkId)
-        val folder = folderRepository.findById(moveBookmarkDto.nextFolderId)
-        if (isSameFolder(bookmark.folderId!!, moveBookmarkDto.nextFolderId)) return
-
-        //TODO: count를 enum으로 변환할 것
-        updateClickCountByFolderId(bookmark.folderId!!, -1)
-        bookmark.folderId = moveBookmarkDto.nextFolderId
-        bookmark.folderName = folder.get().name
-        bookmark.folderEmoji = folder.get().emoji!!
-        updateClickCountByFolderId(bookmark.folderId!!, 1)
+        when(bookmark.folderId) {
+            null -> {
+                val folder = folderRepository.findById(moveBookmarkDto.nextFolderId)
+                bookmark.folderId = moveBookmarkDto.nextFolderId
+                bookmark.folderName = folder.get().name
+                bookmark.folderEmoji = folder.get().emoji!!
+                updateClickCountByFolderId(bookmark.folderId!!, 1)
+            }
+            else -> {
+                val folder = folderRepository.findById(moveBookmarkDto.nextFolderId)
+                if (isSameFolder(bookmark.folderId!!, moveBookmarkDto.nextFolderId)) return
+                updateClickCountByFolderId(bookmark.folderId!!, -1)
+                bookmark.folderId = moveBookmarkDto.nextFolderId
+                bookmark.folderName = folder.get().name
+                bookmark.folderEmoji = folder.get().emoji!!
+                updateClickCountByFolderId(bookmark.folderId!!, 1)
+            }
+        }
         bookmarkRepository.save(bookmark)
     }
 

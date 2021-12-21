@@ -47,41 +47,6 @@ class Folder(
         }
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Folder
-        if (id != other.id) return false
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return id?.hashCode() ?: 0
-    }
-
-    override fun toString(): String {
-        return "Folder(name='$name', index=$index, bookmarkCount=$bookmarkCount, parentFolder=$parentFolder, emoji=$emoji)"
-    }
-
-    fun setTopFolder() {
-        this.parentFolder = null
-    }
-
-    fun updateFolderToParent(index: Int) {
-        this.parentFolder = null
-        this.index = index
-    }
-
-    fun updateIndex(nextIndex: Int) {
-        this.index = nextIndex
-    }
-
-    fun updateIndexAndParentFolder(nextIndex: Int, nextParentFolder: Folder) {
-        this.index = nextIndex
-        this.parentFolder = nextParentFolder
-    }
-
     @ApiModel(description = "폴더 생성 DTO")
     class FolderCreateRequest(
         @ApiModelProperty(value = "부모 폴더 ID(0일경우 부모폴더)", example = "0")
@@ -177,4 +142,39 @@ class Folder(
         @ApiModelProperty(value = "자식 or 부모 폴더 이름", required = true, example = "자식 폴더 1-2")
         var name: String
     )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Folder
+        if (id != other.id) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return id?.hashCode() ?: 0
+    }
+
+    override fun toString(): String {
+        return "Folder(name='$name', index=$index, bookmarkCount=$bookmarkCount, parentFolder=$parentFolder, emoji=$emoji)"
+    }
+
+    fun setTopFolder() {
+        this.parentFolder = null
+    }
+
+    fun updateFolderToParent(index: Int) {
+        this.parentFolder = null
+        this.index = index
+    }
+
+    fun updateIndex(nextIndex: Int) {
+        this.index = nextIndex
+    }
+
+    fun updateIndexAndParentFolder(nextIndex: Int, nextParentFolder: Folder) {
+        this.index = nextIndex
+        this.parentFolder = nextParentFolder
+    }
 }

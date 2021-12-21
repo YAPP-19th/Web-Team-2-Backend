@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import javax.servlet.http.HttpServletRequest
+import javax.validation.Valid
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -48,14 +49,14 @@ class AccountController(
     }
 
     @PostMapping("/changeProfile")
-    fun changeProfile(request: HttpServletRequest, @RequestBody profileChanged: Account.ProfileChanged): ResponseEntity<String> {
+    fun changeProfile(request: HttpServletRequest, @RequestBody @Valid profileChanged: Account.ProfileChanged): ResponseEntity<String> {
         val token = ControllerUtil.extractAccessToken(request)
         accountService.changeProfile(token, profileChanged)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
     @PostMapping("/nickNameCheck")
-    fun nickNameCheck(@RequestBody nickName: Account.NextNickName): ResponseEntity<String> {
+    fun nickNameCheck(@RequestBody @Valid nickName: Account.NextNickName): ResponseEntity<String> {
         val result = accountService.checkNickNameDuplication(nickName)
         return ResponseEntity.status(HttpStatus.OK).body(result)
     }
