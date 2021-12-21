@@ -12,7 +12,7 @@ pipeline {
       steps {
         catchError {
           sh '''cp ../properties/application.properties ./src/main/resources
-          ./gradlew build -x test'''
+          ./gradlew build -x test ktlintCheck'''
         }
       }
     }
