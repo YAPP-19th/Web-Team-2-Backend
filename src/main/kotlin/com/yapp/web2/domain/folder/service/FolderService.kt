@@ -163,8 +163,27 @@ class FolderService(
         nextParentFolder: Folder?
     ) = (moveFolder.parentFolder == nextParentFolder)
 
-    fun deleteAllBookmark(folderId: Long) {
-        bookmarkRepository.findByFolderId(folderId)
+    @Transactional(readOnly = true)
+    fun findByFolderId(folderId: Long): Folder {
+        return folderRepository.findById(folderId)
+            .orElseThrow { folderNotFoundException }
+    }
+
+    fun deleteFolder(folder: Folder) {
+        folderRepository.deleteByFolder(folder)
+    }
+
+    fun deleteFolderRecursive(folder: Folder) {
+        // Base Condition: 최하위 Depth의 폴더
+        val children: MutableList<Folder> = folder.children ?: return
+
+        children.let { folderList ->
+            folderList.stream().forEach { folder ->
+                deleteFolderRecursive(folder)
+            }
+        }
+
+        bookmarkRepository.findByFolderId(folder.id!!)
             .let { list ->
                 list.forEach {
                     it.deletedByFolder()
@@ -172,12 +191,8 @@ class FolderService(
                     bookmarkRepository.save(it)
                 }
             }
-    }
 
-    fun deleteFolder(id: Long) {
-        folderRepository.findByIdOrNull(id)?.let { folder ->
-            folderRepository.deleteByFolder(folder)
-        }
+        folderRepository.deleteByFolder(folder)
     }
 
     /* API

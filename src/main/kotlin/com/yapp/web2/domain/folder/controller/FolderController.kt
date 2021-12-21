@@ -63,12 +63,14 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
-    @ApiOperation(value = "폴더 삭제 API")
+    @ApiOperation(value = "폴더 삭제(삭제하려는 폴더와 하위에 존재하는 모든 폴더 및 북마크들 삭제) API")
     @DeleteMapping("/{folderId}")
-    fun deleteAllBookmarkAndFolder(
-        @PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long): ResponseEntity<String> {
-        folderService.deleteAllBookmark(folderId)
-        folderService.deleteFolder(folderId)
+    fun deleteAllBookmarkAndAllFolderWithRelatedFolder(
+        @PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long
+    ): ResponseEntity<String> {
+        val folder = folderService.findByFolderId(folderId)
+        folderService.deleteFolderRecursive(folder)
+        folderService.deleteFolder(folder)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
@@ -104,5 +106,4 @@ class FolderController(
     ): ResponseEntity<MutableList<Folder.FolderListResponse>> {
         return ResponseEntity.status(HttpStatus.OK).body(folderService.findAllParentFolderList(folderId))
     }
-
 }
