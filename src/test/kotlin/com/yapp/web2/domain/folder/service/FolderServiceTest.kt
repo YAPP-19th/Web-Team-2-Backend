@@ -160,7 +160,7 @@ internal open class FolderServiceTest {
 
         // then
         assertAll(
-            { assertDoesNotThrow { folderService.deleteAllBookmark(1L) } },
+            { assertDoesNotThrow { folderService.deleteFolderRecursive(folder) } },
             { verify(exactly = 1) { bookmarkRepository.findByFolderId(any()) } },
             { verify(exactly = bookmarks.size) { bookmarkRepository.save(any()) } },
             { bookmarks.forEach {
@@ -178,7 +178,7 @@ internal open class FolderServiceTest {
         every { folderRepository.deleteByFolder(folder) } returns Unit
 
         // when
-        folderService.deleteFolder(1L)
+        folderService.deleteFolder(folder)
 
         // then
         assertAll(
