@@ -61,6 +61,8 @@ class Bookmark(
     var fcmToken = mutableListOf<String>()
 
     var saveTime: LocalDateTime = LocalDateTime.now()
+    var remindCheck: Boolean = false
+    var remindStatus: Boolean = false
 
     @ApiModel(description = "북마크 수정 DTO")
     class UpdateBookmarkDto(
@@ -138,5 +140,9 @@ class Bookmark(
 
     fun remindOff() {
         this.remindTime = null
+    }
+
+    fun updateRemindCheck() {
+        this.remindCheck = true
     }
 }

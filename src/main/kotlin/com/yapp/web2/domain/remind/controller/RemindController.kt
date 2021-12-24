@@ -1,6 +1,8 @@
 package com.yapp.web2.domain.remind.controller
 
+import com.yapp.web2.domain.remind.entity.dto.ReadRemindListRequest
 import com.yapp.web2.domain.remind.entity.dto.RemindCycleRequest
+import com.yapp.web2.domain.remind.entity.dto.RemindListResponse
 import com.yapp.web2.domain.remind.entity.dto.RemindToggleRequest
 import com.yapp.web2.domain.remind.service.RemindService
 import com.yapp.web2.util.ControllerUtil
@@ -48,4 +50,21 @@ class RemindController(
         remindService.bookmarkRemindOff(bookmarkId)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
+
+    @ApiOperation(value = "리마인드 리스트 조회 API")
+    @GetMapping("/remind")
+    fun getRemindList(servletRequest: HttpServletRequest): ResponseEntity<MutableList<RemindListResponse>> {
+        val accessToken = ControllerUtil.extractAccessToken(servletRequest)
+        return ResponseEntity.status(HttpStatus.OK).body(remindService.getRemindList(accessToken))
+    }
+
+    @ApiOperation(value = "리마인드 읽음 처리 API")
+    @PostMapping("/remind")
+    fun remindCheckUpdate(
+        @RequestBody @ApiParam(value = "리마인드 읽음으로 처리 할 북마크 ID 리스트", required = true) request: ReadRemindListRequest)
+        : ResponseEntity<String> {
+        remindService.remindCheckUpdate(request)
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
+    }
+
 }
