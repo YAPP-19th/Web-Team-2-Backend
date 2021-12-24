@@ -89,7 +89,7 @@ class RemindService(
         return remindList
     }
 
-    fun remindCheckUpdate(accessToken: String, request: ReadRemindListRequest) {
+    fun remindCheckUpdate(request: ReadRemindListRequest) {
         request.bookmarkIdList.stream()
             .forEach { id ->
                 bookmarkRepository.findByIdOrNull(id)?.let { bookmark ->
