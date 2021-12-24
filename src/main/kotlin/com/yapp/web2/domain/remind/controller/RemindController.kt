@@ -61,11 +61,9 @@ class RemindController(
     @ApiOperation(value = "리마인드 읽음 처리 API")
     @PostMapping("/remind")
     fun remindCheckUpdate(
-        servletRequest: HttpServletRequest,
         @RequestBody @ApiParam(value = "리마인드 읽음으로 처리 할 북마크 ID 리스트", required = true) request: ReadRemindListRequest)
         : ResponseEntity<String> {
-        val accessToken = ControllerUtil.extractAccessToken(servletRequest)
-        remindService.remindCheckUpdate(accessToken, request)
+        remindService.remindCheckUpdate(request)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
