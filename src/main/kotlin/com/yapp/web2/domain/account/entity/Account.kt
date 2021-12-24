@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiModelProperty
 import javax.persistence.*
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.Size
 
 @Entity
 class Account(
@@ -107,7 +106,6 @@ class Account(
         val remindCycle = account.remindCycle
         val remindToggle = account.remindToggle
         var isRegistered = isRegistered
-        val fcmToken = account.fcmToken
     }
 
     class ProfileChanged(
