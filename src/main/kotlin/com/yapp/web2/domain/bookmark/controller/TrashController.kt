@@ -6,12 +6,9 @@ import com.yapp.web2.domain.bookmark.service.BookmarkService
 import com.yapp.web2.util.Message
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import javax.servlet.http.HttpServletRequest
 
 @RestController
 @RequestMapping("/api/v1/trash")

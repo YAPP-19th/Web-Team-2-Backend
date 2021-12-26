@@ -6,6 +6,5 @@ enum class CustomStatusCode(
     NO_REFRESH_TOKEN(401);
 
     companion object {
-
     }
 }

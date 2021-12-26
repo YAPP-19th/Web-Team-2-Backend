@@ -12,6 +12,4 @@ class Remind(
 
     @ManyToOne
     var account: Account
-) : BaseTimeEntity() {
-
-}
+) : BaseTimeEntity()

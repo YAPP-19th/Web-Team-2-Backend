@@ -3,16 +3,9 @@ package com.yapp.web2.domain.bookmark.service
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
-import com.yapp.web2.exception.ObjectNotFoundException
-import io.mockk.MockKAnnotations
-import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import java.util.*
 
 internal class BookmarkPageServiceTest {

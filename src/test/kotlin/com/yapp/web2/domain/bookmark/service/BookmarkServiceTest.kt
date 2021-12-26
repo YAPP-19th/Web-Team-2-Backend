@@ -11,12 +11,9 @@ import io.mockk.impl.annotations.MockK
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import java.time.LocalDateTime
 import java.util.*
-
 
 internal class BookmarkServiceTest {
     @MockK
@@ -28,7 +25,6 @@ internal class BookmarkServiceTest {
     @MockK
     private lateinit var folderRepository: FolderRepository
     private lateinit var bookmarkService: BookmarkService
-
 
     @BeforeEach
     internal fun init() {
@@ -103,7 +99,6 @@ internal class BookmarkServiceTest {
             //then
             assertEquals(predictException.message, actualException.message)
         }
-
     }
 
     @Nested

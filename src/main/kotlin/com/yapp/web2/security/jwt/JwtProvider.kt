@@ -3,6 +3,8 @@ package com.yapp.web2.security.jwt
 import com.yapp.web2.exception.custom.NoRefreshTokenException
 import com.yapp.web2.exception.custom.TokenMisMatchException
 import com.yapp.web2.domain.account.entity.Account
+import com.yapp.web2.domain.account.repository.AccountRepository
+import com.yapp.web2.exception.custom.AccountNotFoundException
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -23,7 +25,8 @@ class JwtProvider(
     @Value("\${jwt.accessTokenExpiration}") private val accessTokenExpiration: Long,
     @Value("\${jwt.refreshTokenExpiration}") private val refreshTokenExpiration: Long,
     @Value("\${jwt.redis.expiration}") private val redisExpiration: Long,
-    @Autowired private val redisTemplate: RedisTemplate<String, Any>
+    @Autowired private val redisTemplate: RedisTemplate<String, Any>,
+    private val accountRepository: AccountRepository
 ) {
     companion object {
         const val BEARER_PREFIX = "Bearer "
@@ -99,6 +102,14 @@ class JwtProvider(
 
     fun getExpirationDateFromToken(token: String): Date {
         return getClaimFromToken(token) { obj: Claims -> obj.expiration }
+    }
+
+    fun getAccountFromToken(token: String): Account {
+        val idFromToken = getIdFromToken(token)
+        return when(val account = accountRepository.findAccountById(idFromToken)) {
+            null -> throw AccountNotFoundException()
+            else -> account
+        }
     }
 
     fun getIdFromToken(token: String): Long {

@@ -53,7 +53,6 @@ open class DummyDataInsertRunner(
                     bookmarkRepository.save(testTrashBookmark)
                 }
                 parentFolder.children!!.add(childFolder)
-
             }
             folderRepository.save(parentFolder)
         }

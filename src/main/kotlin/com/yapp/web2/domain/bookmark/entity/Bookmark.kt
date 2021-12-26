@@ -23,16 +23,22 @@ class Bookmark(
         this.remindTime = remindTime
     }
 
-    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDate?, image: String?, description: String?): this(userId, folderId, link, title, remindTime) {
+    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDate?, image: String?, description: String?) : this(userId, folderId, link, title, remindTime) {
         this.description = description
         this.image = image
     }
 
-    constructor(userId: Long, folderId: Long,
-                folderEmoji: String, folderName: String,
-                link: String, title: String?,
-                remindTime: LocalDate?, image: String?,
-                description: String?): this(userId, folderId, link, title, remindTime) {
+    constructor(
+        userId: Long,
+        folderId: Long,
+        folderEmoji: String,
+        folderName: String,
+        link: String,
+        title: String?,
+        remindTime: LocalDate?,
+        image: String?,
+        description: String?
+    ) : this(userId, folderId, link, title, remindTime) {
         this.folderEmoji = folderEmoji
         this.folderName = folderName
         this.description = description
@@ -55,7 +61,9 @@ class Bookmark(
     var fcmToken = mutableListOf<String>()
 
     var saveTime: LocalDateTime = LocalDateTime.now()
-    
+    var remindCheck: Boolean = false
+    var remindStatus: Boolean = false
+
     @ApiModel(description = "북마크 수정 DTO")
     class UpdateBookmarkDto(
         @ApiModelProperty(value = "북마크 이름", required = true, example = "Change Bookmark")
@@ -134,4 +142,7 @@ class Bookmark(
         this.remindTime = null
     }
 
+    fun updateRemindCheck() {
+        this.remindCheck = true
+    }
 }

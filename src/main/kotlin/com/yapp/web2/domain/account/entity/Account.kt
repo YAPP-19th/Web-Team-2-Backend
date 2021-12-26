@@ -7,8 +7,8 @@ import com.yapp.web2.security.jwt.TokenDto
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import javax.persistence.*
+import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.Size
 
 @Entity
 class Account(
@@ -93,7 +93,9 @@ class Account(
     )
 
     class AccountLoginSuccess(
-        tokenDto: TokenDto, account: Account, isRegistered: Boolean
+        tokenDto: TokenDto,
+        account: Account,
+        isRegistered: Boolean
     ) {
         val accessToken = tokenDto.accessToken
         val refreshToken = tokenDto.refreshToken
@@ -104,11 +106,11 @@ class Account(
         val remindCycle = account.remindCycle
         val remindToggle = account.remindToggle
         var isRegistered = isRegistered
-        val fcmToken = account.fcmToken
     }
 
     class ProfileChanged(
         val profileImageUrl: String,
+        @field: NotBlank(message = "이름을 입력해주세요")
         val name: String
     )
 
@@ -117,7 +119,7 @@ class Account(
     )
 
     class NextNickName(
-        @field: Size(max = 20)
+        @field: NotBlank(message = "이름을 입력해주세요")
         val nickName: String
     )
 }

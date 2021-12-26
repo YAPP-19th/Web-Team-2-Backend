@@ -37,7 +37,7 @@ class BookmarkController(
 
     @ApiOperation(value = "북마크 삭제 API")
     @PostMapping("/delete")
-    fun deleteBookmark(@RequestBody bookmarkList:Bookmark.BookmarkIdList): ResponseEntity<String> {
+    fun deleteBookmark(@RequestBody bookmarkList: Bookmark.BookmarkIdList): ResponseEntity<String> {
         bookmarkService.deleteBookmark(bookmarkList)
         return ResponseEntity.status(HttpStatus.OK).body(Message.DELETED)
     }
@@ -71,7 +71,6 @@ class BookmarkController(
         bookmarkService.moveBookmark(bookmarkId, bookmark)
         return ResponseEntity.status(HttpStatus.OK).body(Message.MOVED)
     }
-
 
     @DeleteMapping("/remind/{bookmarkId}")
     fun releaseRemindBookmark(@PathVariable bookmarkId: String): ResponseEntity<String> {

@@ -21,7 +21,8 @@ class BookmarkPageController(
     fun getBookmarkPage(
         @PathVariable folderId: Long,
         pageable: Pageable,
-        @RequestParam remind: Boolean): ResponseEntity<Page<Bookmark>> {
+        @RequestParam remind: Boolean
+    ): ResponseEntity<Page<Bookmark>> {
         return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByFolderId(folderId, pageable, remind))
     }
 

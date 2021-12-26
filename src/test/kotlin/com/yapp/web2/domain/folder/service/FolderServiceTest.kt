@@ -163,7 +163,8 @@ internal open class FolderServiceTest {
             { assertDoesNotThrow { folderService.deleteFolderRecursive(folder) } },
             { verify(exactly = 1) { bookmarkRepository.findByFolderId(any()) } },
             { verify(exactly = bookmarks.size) { bookmarkRepository.save(any()) } },
-            { bookmarks.forEach {
+            {
+                bookmarks.forEach {
                     assertThat(it.deleted).isEqualTo(true)
                     assertThat(it.folderId).isNull()
                 }
@@ -230,7 +231,7 @@ internal open class FolderServiceTest {
         every { bookmarkRepository.findByFolderId(1) } returns bookmarks1
         every { bookmarkRepository.findByFolderId(2) } returns bookmarks2
         every { folderRepository.deleteById(any()) } returns Unit
-        every {bookmarkRepository.save(any()) } returns bookmarks1[0]
+        every { bookmarkRepository.save(any()) } returns bookmarks1[0]
 
         // when
         folderService.deleteFolderList(deleteList)
@@ -238,12 +239,14 @@ internal open class FolderServiceTest {
         // then
         assertAll(
             { verify(exactly = deleteList.deleteFolderIdList.size) { folderRepository.deleteById(any()) } },
-            { bookmarks1.forEach {
+            {
+                bookmarks1.forEach {
                     assertThat(it.folderId).isNull()
                     assertThat(it.deleted).isTrue()
                 }
             },
-            { bookmarks2.forEach {
+            {
+                bookmarks2.forEach {
                     assertThat(it.folderId).isNull()
                     assertThat(it.deleted).isTrue()
                 }
@@ -334,5 +337,4 @@ internal open class FolderServiceTest {
 
         return folders
     }
-
 }

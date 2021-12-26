@@ -44,6 +44,4 @@ class FolderMoveFromFolderToFolder(
         nextParentFolder.children?.add(request.nextIndex, moveFolder)
         moveFolder.parentFolder = nextParentFolder
     }
-
-
 }

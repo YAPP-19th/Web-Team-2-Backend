@@ -21,4 +21,3 @@ open class BaseTimeEntity {
     @LastModifiedDate
     var updatedAt: LocalDateTime? = null
 }
-

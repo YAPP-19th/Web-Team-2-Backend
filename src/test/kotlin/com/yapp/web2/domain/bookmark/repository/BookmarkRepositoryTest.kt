@@ -10,7 +10,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.junit.jupiter.api.Assertions.*
 
-
 @DataMongoTest
 internal open class BookmarkRepositoryTest {
     @Autowired
@@ -64,7 +63,8 @@ internal open class BookmarkRepositoryTest {
                 testKeyword,
                 testKeyword,
                 testUserId,
-                pageAble)
+                pageAble
+            )
 
             //then
             for (page in actualPages) {
