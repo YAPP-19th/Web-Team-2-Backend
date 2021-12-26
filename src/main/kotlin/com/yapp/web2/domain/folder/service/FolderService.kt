@@ -11,6 +11,7 @@ import com.yapp.web2.domain.folder.service.move.inner.FolderMoveInnerStrategy
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveWithEqualParentOrTopFolder
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.FolderNotFoundException
+import com.yapp.web2.exception.custom.FolderSizeExceedException
 import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -26,6 +27,7 @@ class FolderService(
 ) {
     companion object {
         private val folderNotFoundException = FolderNotFoundException()
+        private val folderSizeExceedException = FolderSizeExceedException()
     }
 
     fun createDefaultFolder(account: Account) {
@@ -53,7 +55,7 @@ class FolderService(
 
                 childrenFolderList?.let {
                     if (isMaxFolderCount(it.size)) {
-                        throw BusinessException("하위 폴더는 최대 8개까지 생성을 할 수 있습니다.")
+                        throw folderSizeExceedException
                     }
                 }
                 folder = Folder.dtoToEntity(request, parentFolder)
