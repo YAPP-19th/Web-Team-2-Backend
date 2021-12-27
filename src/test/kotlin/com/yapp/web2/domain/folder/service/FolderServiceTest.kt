@@ -147,8 +147,7 @@ internal open class FolderServiceTest {
         )
     }
 
-    // TODO: 2021/12/18 폴더 수정 -> 폴더에 존재하는 북마크의 폴더 데이터 수정 테스트 
-
+    // TODO: 2021/12/18 폴더 수정 -> 폴더에 존재하는 북마크의 폴더 데이터 수정 테스트
     @Test
     fun `폴더에 존재하는 모든 북마크를 제거한다`() {
         // given & when
@@ -160,7 +159,6 @@ internal open class FolderServiceTest {
 
         // then
         assertAll(
-            { assertDoesNotThrow { folderService.deleteFolderRecursive(folder) } },
             { verify(exactly = 1) { bookmarkRepository.findByFolderId(any()) } },
             { verify(exactly = bookmarks.size) { bookmarkRepository.save(any()) } },
             {
@@ -183,7 +181,7 @@ internal open class FolderServiceTest {
 
         // then
         assertAll(
-            { verify(exactly = 1) { folderRepository.deleteByFolder(any()) } },
+            { verify(exactly = 1) { folderRepository.deleteByFolder(any()) } }
         )
     }
 
