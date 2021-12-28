@@ -22,7 +22,7 @@
 <br>
 
 ## 🛠 기술 스택
-![](https://user-images.githubusercontent.com/42018023/147543426-58593f1c-2eba-4a6f-8fa1-357b9270a8bb.png)
+![스크린샷 2021-12-28 오후 5 07 16](https://user-images.githubusercontent.com/42018023/147543770-8c2ce9cc-b65c-4378-ba74-6f2755715c78.png)
 
 <br>
 
