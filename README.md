@@ -22,7 +22,7 @@
 <br>
 
 ## 🛠 기술 스택
-- TODO: image
+![](https://user-images.githubusercontent.com/42018023/147543426-58593f1c-2eba-4a6f-8fa1-357b9270a8bb.png)
 
 <br>
 
@@ -38,6 +38,7 @@
 
 ## 💡 트러블 슈팅
 - TODO: [wiki](https://github.com/YAPP-19th/Web-Team-2-Backend/wiki)
+
 
 <br>
 
