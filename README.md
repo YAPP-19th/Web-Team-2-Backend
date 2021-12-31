@@ -28,7 +28,7 @@
 <br>
 
 ## 프로젝트 구성도
-<img width="838" alt="프로젝트 구조도" src="https://user-images.githubusercontent.com/42018023/147669177-6f18b7b0-c2e9-4e90-bb72-b8318097b1ad.png">
+<img width="838" alt="프로젝트 구조도" src="https://user-images.githubusercontent.com/50076031/147803664-473afc5e-9957-4fb0-be65-0a850c0914f9.png">
 
 <br>
 
