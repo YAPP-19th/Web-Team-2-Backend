@@ -1,10 +1,12 @@
 package com.yapp.web2.domain.bookmark.service
 
+import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.bookmark.entity.*
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.*
+import com.yapp.web2.exception.custom.BookmarkNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
@@ -40,6 +42,7 @@ internal class BookmarkServiceTest {
         private var folderId: Long = 0
         private lateinit var bookmarkDto: Bookmark.AddBookmarkDto
         private lateinit var token: String
+        private lateinit var account: Account
 
         @BeforeEach
         internal fun setUp() {
@@ -49,6 +52,7 @@ internal class BookmarkServiceTest {
             folder.id = folderId
             bookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", null, false, null, null)
             bookmark = Bookmark(1, 1, "www.naver.com")
+            account = Account("testEmail")
         }
 
         @Test
@@ -57,7 +61,7 @@ internal class BookmarkServiceTest {
             every { bookmarkRepository.save(any()) } returns bookmark
             every { folderRepository.findById(folderId) } returns Optional.of(folder)
             every { bookmarkRepository.findAllByFolderId(folderId) } returns emptyList()
-            every { jwtProvider.getIdFromToken(token) } returns 1
+            every { jwtProvider.getAccountFromToken(token) } returns account
 
             // when
             val addBookmark = bookmarkService.addBookmark(token, folderId, bookmarkDto)
@@ -104,7 +108,7 @@ internal class BookmarkServiceTest {
     @Nested
     inner class DeleteBookmark {
         private lateinit var bookmark: Bookmark
-        private val bookmarkId: String = "1"
+        private val bookmarkIdList = Bookmark.BookmarkIdList(mutableListOf(bookmark.id))
         private lateinit var folder: Folder
         private var folderId: Long = 0
 
@@ -118,12 +122,12 @@ internal class BookmarkServiceTest {
         @Test
         fun `북마크가 존재하지 않으면 예외를 던진다`() {
             //given
-            val predictException = BusinessException("없어요")
-            every { bookmarkRepository.findById(bookmarkId) } returns Optional.empty()
+            val predictException = BookmarkNotFoundException()
+            every { bookmarkRepository.findById(bookmark.id) } returns Optional.empty()
 
             //when
             val actualException = Assertions.assertThrows(BusinessException::class.java) {
-                bookmarkService.deleteBookmark(bookmarkId)
+                bookmarkService.deleteBookmark(bookmarkIdList)
             }
 
             //then
@@ -133,12 +137,12 @@ internal class BookmarkServiceTest {
         @Test
         fun `폴더가 존재하고, 삭제하고자하는 북마크를 삭제한다`() {
             //given
-            every { bookmarkRepository.findById(bookmarkId) } returns Optional.of(bookmark)
+            every { bookmarkRepository.findById(bookmark.id) } returns Optional.of(bookmark)
             every { folderRepository.findById(folderId) } returns Optional.of(folder)
             every { bookmarkRepository.save(any()) } returns bookmark
 
             //when+then
-            assertDoesNotThrow { bookmarkService.deleteBookmark(bookmarkId) }
+            assertDoesNotThrow { bookmarkService.deleteBookmark(bookmarkIdList) }
         }
     }
 
@@ -152,6 +156,7 @@ internal class BookmarkServiceTest {
         @BeforeEach
         internal fun setUp() {
             bookmark = Bookmark(1, 1, "www.naver.com")
+            updateBookmarkDto = Bookmark.UpdateBookmarkDto("제목", false)
         }
 
         @Test
@@ -163,7 +168,7 @@ internal class BookmarkServiceTest {
 
             //when
             val actualException = Assertions.assertThrows(BusinessException::class.java) {
-                bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
+                bookmarkService.updateBookmark(testBookmarkId, bookmark.id, updateBookmarkDto)
             }
 
             //then
@@ -179,7 +184,7 @@ internal class BookmarkServiceTest {
             every { bookmarkRepository.save(any()) } returns bookmark
 
             //when
-            val actualBookmark = bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
+            val actualBookmark = bookmarkService.updateBookmark(testBookmarkId, bookmark.id, updateBookmarkDto)
 
             //then
             assertEquals(predictBookmark.title, actualBookmark.title)
@@ -194,7 +199,7 @@ internal class BookmarkServiceTest {
             every { bookmarkRepository.save(any()) } returns bookmark
 
             //when
-            val actualBookmark = bookmarkService.updateBookmark(testBookmarkId, updateBookmarkDto)
+            val actualBookmark = bookmarkService.updateBookmark(testBookmarkId, bookmark.id, updateBookmarkDto)
 
             //then
             assertEquals(predictBookmark.remindTime, actualBookmark.remindTime)
@@ -221,7 +226,7 @@ internal class BookmarkServiceTest {
         private var testBookmarkId: String = "0"
         private var prevFolderId: Long = 0
         private var nextFolderId: Long = 1
-        private var moveBookmarkDto = Bookmark.MoveBookmarkDto(prevFolderId, nextFolderId)
+        private var moveBookmarkDto = Bookmark.MoveBookmarkDto(mutableListOf(testBookmarkId), nextFolderId)
 
         @BeforeEach
         fun init() {
@@ -248,7 +253,7 @@ internal class BookmarkServiceTest {
             //given
             var sameFolderId: Long = 0
             var bookmark1 = Bookmark(1, 0, "www.naver.com")
-            var testMoveBookmarkDto = Bookmark.MoveBookmarkDto(prevFolderId, sameFolderId)
+            var testMoveBookmarkDto = Bookmark.MoveBookmarkDto(mutableListOf(testBookmarkId), sameFolderId)
             every { bookmarkRepository.findById(testBookmarkId) } returns Optional.of(bookmark1)
             every { folderRepository.findById(prevFolderId) } returns Optional.of(folder)
             every { folderRepository.findById(nextFolderId) } returns Optional.of(folder)

@@ -19,7 +19,6 @@ import java.time.LocalDateTime
 class BookmarkService(
     private val bookmarkRepository: BookmarkRepository,
     private val folderRepository: FolderRepository,
-    private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider
 ) {
 
