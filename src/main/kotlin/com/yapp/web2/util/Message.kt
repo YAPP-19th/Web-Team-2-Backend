@@ -31,5 +31,9 @@ class Message {
         var MOVED = "이동 되었습니다"
 
         var IMAGE_NOT_FOUND = "이미지가 존재하지 않습니다"
+
+        var SAME_BOOKMARK_EXIST = "똑같은 북마크가 존재합니다"
+
+        var OBJECT_NOT_FOUND = "개체가 존재하지 않습니다"
     }
 }
