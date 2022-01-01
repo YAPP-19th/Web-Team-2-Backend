@@ -7,6 +7,7 @@ import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.*
 import com.yapp.web2.exception.custom.BookmarkNotFoundException
+import com.yapp.web2.exception.custom.SameBookmarkException
 import com.yapp.web2.security.jwt.JwtProvider
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
@@ -39,7 +40,6 @@ internal class BookmarkServiceTest {
         private lateinit var bookmark: Bookmark
 
         private lateinit var folder: Folder
-        private var folderId: Long = 0
         private lateinit var bookmarkDto: Bookmark.AddBookmarkDto
         private lateinit var token: String
         private lateinit var account: Account
@@ -47,39 +47,25 @@ internal class BookmarkServiceTest {
         @BeforeEach
         internal fun setUp() {
             folder = Folder("Folder", 0, parentFolder = null)
-            folderId = 1
-            token = "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNjM4MzU3ODEyLCJleHAiOjE2Mzg0NDQyMTJ9.pJcjPqHFudkT5YAblaSFZue455YAndRtxO9y7bf5f0zVM6iiTWs-qP2YmIeKhZIeqsOsa6X3wdN0cm7o3MScrA"
-            folder.id = folderId
-            bookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", null, false, null, null)
-            bookmark = Bookmark(1, 1, "www.naver.com")
+            folder.id = 0
+            token = "testToken"
+            bookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", "test", false, null, null)
+            bookmark = Bookmark(0, 0, "www.naver.com")
+            bookmark.id = "0"
             account = Account("testEmail")
-        }
-
-        @Test
-        fun `폴더가 존재하고, 북마크를 추가한다`() {
-            // given
-            every { bookmarkRepository.save(any()) } returns bookmark
-            every { folderRepository.findById(folderId) } returns Optional.of(folder)
-            every { bookmarkRepository.findAllByFolderId(folderId) } returns emptyList()
+            account.id = 0
             every { jwtProvider.getAccountFromToken(token) } returns account
-
-            // when
-            val addBookmark = bookmarkService.addBookmark(token, folderId, bookmarkDto)
-
-            // then
-            assertThat(addBookmark).isEqualTo(bookmark)
         }
 
         @Test
         fun `북마크를 추가할 때, 폴더가 존재하지 않으면 예외를 던진다`() {
             //given
-            every { folderRepository.findById(folderId) } returns Optional.empty()
-            every { jwtProvider.getIdFromToken(token) } returns 1
-            val predictException = ObjectNotFoundException("해당 폴더가 존재하지 않습니다.")
+            every { folderRepository.findFolderById(folder.id!!) } returns null
+            val predictException = ObjectNotFoundException()
 
             //when
             val actualException = Assertions.assertThrows(ObjectNotFoundException::class.java) {
-                bookmarkService.addBookmark(token, folderId, bookmarkDto)
+                bookmarkService.addBookmark(token, folder.id!!, bookmarkDto)
             }
 
             //then
@@ -89,15 +75,14 @@ internal class BookmarkServiceTest {
         @Test
         fun `같은 폴더에 같은 북마크가 존재한다면, 예외를 던진다`() {
             //given
-            val sameBookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", null, false, null, null)
-            val predictException = BusinessException("똑같은 게 있어요.")
-            every { folderRepository.findById(folderId) } returns Optional.of(folder)
-            every { bookmarkRepository.findAllByFolderId(folderId) } returns listOf(bookmark)
-            every { jwtProvider.getIdFromToken(token) } returns 1
+            val sameBookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", "test", false, null, null)
+            val predictException = SameBookmarkException()
+            every { folderRepository.findFolderById(folder.id!!) } returns folder
+            every { bookmarkRepository.findAllByFolderId(folder.id!!) } returns listOf(bookmark)
 
             //when
             val actualException = Assertions.assertThrows(BusinessException::class.java) {
-                bookmarkService.addBookmark(token, 1, sameBookmarkDto)
+                bookmarkService.addBookmark(token, 0, sameBookmarkDto)
             }
 
             //then
