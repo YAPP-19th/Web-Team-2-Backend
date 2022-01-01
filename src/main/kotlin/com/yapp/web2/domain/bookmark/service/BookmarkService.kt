@@ -8,6 +8,7 @@ import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.ObjectNotFoundException
 import com.yapp.web2.exception.custom.BookmarkNotFoundException
+import com.yapp.web2.exception.custom.SameBookmarkException
 import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -31,22 +32,23 @@ class BookmarkService(
         val account = jwtProvider.getAccountFromToken(token)
         val folder = checkFolderAbsence(folderId)
         val toSaveBookmark = bookmarkAddDtoToBookmark(bookmarkDto, folder, account.id!!, account.remindCycle!!)
-        checkSameBookmark(toSaveBookmark, folderId)
 
+        checkSameBookmark(toSaveBookmark, folderId)
         folder.bookmarkCount++
         return bookmarkRepository.save(toSaveBookmark)
     }
 
     private fun checkFolderAbsence(folderId: Long): Folder {
-        val folder = folderRepository.findById(folderId)
-        if (folder.isEmpty) throw ObjectNotFoundException("해당 폴더가 존재하지 않습니다.")
-        return folder.get()
+        return when(val folder = folderRepository.findFolderById(folderId)) {
+            null -> throw ObjectNotFoundException()
+            else -> folder
+        }
     }
 
     private fun checkSameBookmark(bookmark: Bookmark, folderId: Long) {
         val bookmarkList = bookmarkRepository.findAllByFolderId(folderId)
         for (savedBookmark in bookmarkList) {
-            if (savedBookmark.link == bookmark.link) throw BusinessException("똑같은 게 있어요.")
+            if (savedBookmark.link == bookmark.link) throw SameBookmarkException()
         }
     }
 
