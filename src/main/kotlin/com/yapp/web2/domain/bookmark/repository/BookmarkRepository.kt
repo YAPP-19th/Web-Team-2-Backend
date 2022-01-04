@@ -12,6 +12,8 @@ import java.time.LocalDate
 
 @Repository
 interface BookmarkRepository : MongoRepository<Bookmark, String> {
+    fun findBookmarkById(id: String): Bookmark?
+
     fun findAllByFolderId(folderId: Long): List<Bookmark>
 
     fun findAllByFolderIdAndDeleteTimeIsNullAndRemindTimeIsNotNull(folderId: Long, pageable: Pageable): Page<Bookmark>

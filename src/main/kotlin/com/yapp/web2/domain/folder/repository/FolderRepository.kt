@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository
 @Repository
 interface FolderRepository : JpaRepository<Folder, Long> {
 
+    fun findFolderById(id: Long): Folder?
+
     @Query("SELECT f FROM Folder f WHERE f.parentFolder = ?1 and f.index > ?2")
     fun findByIndexGreaterThanPrevFolder(parent: Folder, index: Int): MutableList<Folder>?
 

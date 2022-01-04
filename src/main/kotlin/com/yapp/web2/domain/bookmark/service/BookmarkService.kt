@@ -1,13 +1,12 @@
 package com.yapp.web2.domain.bookmark.service
 
-import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
-import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.ObjectNotFoundException
 import com.yapp.web2.exception.custom.BookmarkNotFoundException
+import com.yapp.web2.exception.custom.SameBookmarkException
 import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -19,7 +18,6 @@ import java.time.LocalDateTime
 class BookmarkService(
     private val bookmarkRepository: BookmarkRepository,
     private val folderRepository: FolderRepository,
-    private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider
 ) {
 
@@ -32,22 +30,23 @@ class BookmarkService(
         val account = jwtProvider.getAccountFromToken(token)
         val folder = checkFolderAbsence(folderId)
         val toSaveBookmark = bookmarkAddDtoToBookmark(bookmarkDto, folder, account.id!!, account.remindCycle!!)
-        checkSameBookmark(toSaveBookmark, folderId)
 
+        checkSameBookmark(toSaveBookmark, folderId)
         folder.bookmarkCount++
         return bookmarkRepository.save(toSaveBookmark)
     }
 
     private fun checkFolderAbsence(folderId: Long): Folder {
-        val folder = folderRepository.findById(folderId)
-        if (folder.isEmpty) throw ObjectNotFoundException("해당 폴더가 존재하지 않습니다.")
-        return folder.get()
+        return when(val folder = folderRepository.findFolderById(folderId)) {
+            null -> throw ObjectNotFoundException()
+            else -> folder
+        }
     }
 
     private fun checkSameBookmark(bookmark: Bookmark, folderId: Long) {
         val bookmarkList = bookmarkRepository.findAllByFolderId(folderId)
         for (savedBookmark in bookmarkList) {
-            if (savedBookmark.link == bookmark.link) throw BusinessException("똑같은 게 있어요.")
+            if (savedBookmark.link == bookmark.link) throw SameBookmarkException()
         }
     }
 
@@ -79,7 +78,7 @@ class BookmarkService(
     }
 
     private fun getBookmarkIfPresent(bookmarkId: String): Bookmark {
-        return bookmarkRepository.findByIdOrNull(bookmarkId)
+        return bookmarkRepository.findBookmarkById(bookmarkId)
             ?: throw bookmarkNotFoundException
     }
 
@@ -106,26 +105,29 @@ class BookmarkService(
 
     @Transactional
     fun moveBookmark(bookmarkId: String, moveBookmarkDto: Bookmark.MoveBookmarkDto) {
-        val bookmark = getBookmarkIfPresent(bookmarkId)
-        when(bookmark.folderId) {
+        var bookmark = getBookmarkIfPresent(bookmarkId)
+        val nextFolder = checkFolderAbsence(moveBookmarkDto.nextFolderId)
+
+        bookmark = when(bookmark.folderId) {
             null -> {
-                val folder = folderRepository.findById(moveBookmarkDto.nextFolderId)
-                bookmark.folderId = moveBookmarkDto.nextFolderId
-                bookmark.folderName = folder.get().name
-                bookmark.folderEmoji = folder.get().emoji!!
-                updateClickCountByFolderId(bookmark.folderId!!, 1)
+                changeBookmarkInfo(bookmark, nextFolder)
             }
             else -> {
-                val folder = folderRepository.findById(moveBookmarkDto.nextFolderId)
                 if (isSameFolder(bookmark.folderId!!, moveBookmarkDto.nextFolderId)) return
-                updateClickCountByFolderId(bookmark.folderId!!, -1)
-                bookmark.folderId = moveBookmarkDto.nextFolderId
-                bookmark.folderName = folder.get().name
-                bookmark.folderEmoji = folder.get().emoji!!
-                updateClickCountByFolderId(bookmark.folderId!!, 1)
+                val nowFolder = checkFolderAbsence(bookmark.folderId!!)
+                updateClickCountByFolderId(nowFolder, -1)
+                changeBookmarkInfo(bookmark, nextFolder)
             }
         }
         bookmarkRepository.save(bookmark)
+    }
+
+    private fun changeBookmarkInfo(bookmark:Bookmark, folder:Folder):Bookmark {
+        bookmark.folderId = folder.id
+        bookmark.folderName = folder.name
+        bookmark.folderEmoji = folder.emoji!!
+        updateClickCountByFolderId(folder, 1)
+        return bookmark
     }
 
     fun moveBookmarkList(moveBookmarkDto: Bookmark.MoveBookmarkDto) {
@@ -135,8 +137,7 @@ class BookmarkService(
     }
 
     @Transactional
-    protected fun updateClickCountByFolderId(folderId: Long, count: Int) {
-        val folder = checkFolderAbsence(folderId)
+    protected fun updateClickCountByFolderId(folder:Folder, count: Int) {
         folder.bookmarkCount += count
     }
 
