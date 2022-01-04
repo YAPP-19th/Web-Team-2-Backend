@@ -42,14 +42,13 @@ class BookmarkPageService(
     }
 
     private fun checkFolderAbsence(folderId: Long) {
-        val folder = folderRepository.findById(folderId)
-        if (folder.isEmpty) throw ObjectNotFoundException()
+        folderRepository.findById(folderId).orElseThrow { ObjectNotFoundException() }
     }
 
     fun getTodayRemindBookmark(token: String): Bookmark.RemindList {
         val idFromToken = jwtProvider.getIdFromToken(token)
-        val yesterDay = LocalDate.now().minusDays(1)
+        val yesterday = LocalDate.now().minusDays(1)
 
-        return Bookmark.RemindList(bookmarkRepository.findAllByRemindTimeAfterAndUserIdAndDeleteTimeIsNull(yesterDay, idFromToken))
+        return Bookmark.RemindList(bookmarkRepository.findAllByRemindTimeAfterAndUserIdAndDeleteTimeIsNull(yesterday, idFromToken))
     }
 }
