@@ -2,14 +2,12 @@ package com.yapp.web2.domain.account.entity
 
 import com.yapp.web2.domain.BaseTimeEntity
 import com.yapp.web2.domain.folder.entity.AccountFolder
-import com.yapp.web2.domain.remind.entity.Remind
 import com.yapp.web2.security.jwt.TokenDto
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import javax.persistence.*
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.Size
 
 @Entity
 class Account(
@@ -67,9 +65,6 @@ class Account(
 
     @OneToMany(mappedBy = "account")
     var accountFolderList: MutableList<AccountFolder>? = mutableListOf()
-
-    @OneToMany(mappedBy = "account")
-    var notifications: MutableList<Remind>? = mutableListOf()
 
     @ApiModel(description = "소셜로그인 DTO")
     class AccountLoginRequest(
