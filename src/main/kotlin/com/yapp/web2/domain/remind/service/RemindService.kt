@@ -30,14 +30,15 @@ class RemindService(
     }
 
     fun getRemindBookmark(): List<Bookmark> {
-        val now = LocalDate.now().toString()
-        return bookmarkRepository.findAllByRemindTimeAndDeleteTimeIsNull(now)
+        val today = LocalDate.now().toString()
+        return bookmarkRepository.findAllByRemindTimeAndDeleteTimeIsNull(today)
     }
 
-    // notificaiton 부분 추가
-    fun sendNotification(userId: Long) {
-        // userId에 해당하는 account를 들고와서 전송시켜야한다.
+    fun sendNotification(bookmark: Bookmark) {
+        val user = accountRepository.findAccountById(bookmark.userId)
+        val fcmToken = user?.fcmToken ?: throw IllegalStateException("${user!!.name} 님은 FCM Token을 가지고 있지 않습니다.")
 
+        firebaseService.sendMessage(fcmToken, bookmark.title!!, bookmark.title!!)
     }
 
     @Transactional
@@ -101,5 +102,9 @@ class RemindService(
                     bookmarkRepository.save(bookmark)
                 } ?: bookmarkNotFoundException
             }
+    }
+
+    fun save(entity: Bookmark) {
+        bookmarkRepository.save(entity)
     }
 }
