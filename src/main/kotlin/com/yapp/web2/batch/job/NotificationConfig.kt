@@ -55,7 +55,7 @@ class NotificationConfig(
     @Bean
     fun remindBookmarkProcessor(): ItemProcessor<Bookmark, Bookmark> {
         return ItemProcessor {
-            notificationService.sendNotification(it.userId)
+            notificationService.sendNotification(it)
             it
         }
     }
