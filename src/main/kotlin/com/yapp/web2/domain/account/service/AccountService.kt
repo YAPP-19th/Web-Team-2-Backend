@@ -53,9 +53,9 @@ class AccountService(
     }
 
     fun checkNickNameDuplication(nickNameDto: Account.NextNickName): String {
-        return when (accountRepository.findAccountByName(nickNameDto.nickName)) {
-            null -> Message.AVAILABLE_NAME
-            else -> throw ExistNameException()
+        return when (accountRepository.findAccountByName(nickNameDto.nickName).isEmpty()) {
+            true -> Message.AVAILABLE_NAME
+            false -> throw ExistNameException()
         }
     }
 

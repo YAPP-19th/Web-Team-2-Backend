@@ -102,7 +102,6 @@ class Account(
         val remindCycle = account.remindCycle
         val remindToggle = account.remindToggle
         var isRegistered = isRegistered
-        val fcmToken = account.fcmToken
     }
 
     class ProfileChanged(
