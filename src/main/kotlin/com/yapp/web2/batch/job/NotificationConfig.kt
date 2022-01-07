@@ -2,6 +2,7 @@ package com.yapp.web2.batch.job
 
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.remind.service.RemindService
+import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing
@@ -22,6 +23,9 @@ class NotificationConfig(
     private val stepBuilderFactory: StepBuilderFactory,
     private val notificationService: RemindService
 ) {
+
+    private val log = LoggerFactory.getLogger(javaClass)
+
     @Bean(name = ["bookmarkNotificationJob"])
     fun bookmarkNotificationJob(): Job {
         return jobBuilderFactory.get("bookmarkNotificationJob")
@@ -51,7 +55,6 @@ class NotificationConfig(
     @Bean
     fun remindBookmarkProcessor(): ItemProcessor<Bookmark, Bookmark> {
         return ItemProcessor {
-            // bookmark에 존재하는 userId로 Account를 찾아서 알림이 발송시킴
             notificationService.sendNotification(it.userId)
             it
         }
@@ -59,7 +62,11 @@ class NotificationConfig(
 
     fun remindBookmarkWriter(): ItemWriter<Bookmark> {
         return ItemWriter {
-            println("Complete Bookmark Chunk")
+            it.stream().forEach { bookmark ->
+                bookmark.successRemind()
+                notificationService.save(bookmark)
+                log.info("Notification Send ... userId - ${bookmark.userId}, title - ${bookmark.title}")
+            }
         }
     }
 }
