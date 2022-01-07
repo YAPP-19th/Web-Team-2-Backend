@@ -143,4 +143,8 @@ class Bookmark(
     fun updateRemindCheck() {
         this.remindCheck = true
     }
+
+    fun successRemind() {
+        this.remindStatus = true
+    }
 }
