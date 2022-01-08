@@ -146,5 +146,6 @@ class Bookmark(
 
     fun successRemind() {
         this.remindStatus = true
+        this.remindTime = null
     }
 }
