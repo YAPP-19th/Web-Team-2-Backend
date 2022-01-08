@@ -106,4 +106,10 @@ class RemindService(
     fun save(entity: Bookmark) {
         bookmarkRepository.save(entity)
     }
+
+    fun temp() {
+        val bookmark = bookmarkRepository.findBookmarkById("61d93b451af6fb65b4aa74b1")
+        bookmark?.remindCheck = false
+        bookmarkRepository.save(bookmark!!)
+    }
 }
