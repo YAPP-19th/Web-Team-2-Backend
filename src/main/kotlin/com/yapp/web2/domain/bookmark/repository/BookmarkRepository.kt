@@ -38,5 +38,5 @@ interface BookmarkRepository : MongoRepository<Bookmark, String> {
 
     fun findAllByUserId(userId: Long): List<Bookmark>
 
-    fun findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrue(userId: Long): List<Bookmark>
+    fun findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrueAndRemindTimeIsNotNull(userId: Long): List<Bookmark>
 }
