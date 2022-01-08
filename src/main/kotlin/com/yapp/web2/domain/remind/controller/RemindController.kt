@@ -2,7 +2,7 @@ package com.yapp.web2.domain.remind.controller
 
 import com.yapp.web2.domain.remind.entity.dto.ReadRemindListRequest
 import com.yapp.web2.domain.remind.entity.dto.RemindCycleRequest
-import com.yapp.web2.domain.remind.entity.dto.RemindListResponse
+import com.yapp.web2.domain.remind.entity.dto.RemindListResponseWrapper
 import com.yapp.web2.domain.remind.entity.dto.RemindToggleRequest
 import com.yapp.web2.domain.remind.service.RemindService
 import com.yapp.web2.util.ControllerUtil
@@ -53,7 +53,7 @@ class RemindController(
 
     @ApiOperation(value = "리마인드 리스트 조회 API")
     @GetMapping("/remind")
-    fun getRemindList(servletRequest: HttpServletRequest): ResponseEntity<MutableList<RemindListResponse>> {
+    fun getRemindList(servletRequest: HttpServletRequest): ResponseEntity<RemindListResponseWrapper> {
         val accessToken = ControllerUtil.extractAccessToken(servletRequest)
         return ResponseEntity.status(HttpStatus.OK).body(remindService.getRemindList(accessToken))
     }
