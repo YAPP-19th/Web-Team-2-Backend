@@ -36,7 +36,10 @@ class AccountService(
                 folderService.createDefaultFolder(account)
                 account2
             }
-            else -> savedAccount
+            else -> {
+                savedAccount.fcmToken = account.fcmToken
+                createUser(savedAccount)
+            }
         }
         val tokenDto = jwtProvider.createToken(account)
 
