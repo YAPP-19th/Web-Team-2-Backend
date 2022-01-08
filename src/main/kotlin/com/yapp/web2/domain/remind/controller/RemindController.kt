@@ -67,4 +67,9 @@ class RemindController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
+    @PostMapping("/temp")
+    fun temp() {
+        remindService.temp()
+    }
+
 }
