@@ -18,9 +18,8 @@ class FirebaseInit {
 
     @PostConstruct
     fun init() {
-        val options: FirebaseOptions = FirebaseOptions.Builder()
-            .setCredentials(GoogleCredentials.fromStream(ClassPathResource(FIREBASE_CONFIG_PATH).inputStream))
-            .build()
+        val options: FirebaseOptions = FirebaseOptions.builder()
+            .setCredentials(GoogleCredentials.fromStream(ClassPathResource(FIREBASE_CONFIG_PATH).inputStream)).build()
 
         if (FirebaseApp.getApps().isEmpty()) {
             FirebaseApp.initializeApp(options)
@@ -36,8 +35,8 @@ class FirebaseInit {
         return FirebaseApp.initializeApp(option, "app")
     }
 
-    @Bean
-    fun firebaseAppExecutor(): ListeningExecutorService {
-        return MoreExecutors.newDirectExecutorService()
-    }
+//    @Bean
+//    fun firebaseAppExecutor(): ListeningExecutorService {
+//        return MoreExecutors.newDirectExecutorService()
+//    }
 }

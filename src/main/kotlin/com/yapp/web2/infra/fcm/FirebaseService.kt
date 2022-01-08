@@ -19,7 +19,7 @@ class FirebaseService {
 
         val notification = makeNotification(title, body)
         val message = makeMessage(targetToken, notification)
-        val firebaseApp = FirebaseApp.getInstance()
+        val firebaseApp = FirebaseApp.getInstance("app")
         val response = FirebaseMessaging.getInstance(firebaseApp).send(message)
         log.info("Firebase Cloud Messaging Response : $response")
     }
