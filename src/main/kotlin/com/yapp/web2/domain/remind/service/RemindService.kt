@@ -81,7 +81,7 @@ class RemindService(
         val userId = jwtProvider.getIdFromToken(accessToken)
         val responseWrapper = RemindListResponseWrapper()
         val remindList = responseWrapper.contents
-        val bookmarks = bookmarkRepository.findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrue(userId)
+        val bookmarks = bookmarkRepository.findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrueAndRemindTimeIsNotNull(userId)
 
         bookmarks.stream()
             .forEach { bookmark ->
