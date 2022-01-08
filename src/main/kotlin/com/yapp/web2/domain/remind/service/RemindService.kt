@@ -3,13 +3,11 @@ package com.yapp.web2.domain.remind.service
 import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
-import com.yapp.web2.domain.remind.entity.dto.ReadRemindListRequest
-import com.yapp.web2.domain.remind.entity.dto.RemindCycleRequest
-import com.yapp.web2.domain.remind.entity.dto.RemindListResponse
-import com.yapp.web2.domain.remind.entity.dto.RemindToggleRequest
+import com.yapp.web2.domain.remind.entity.dto.*
 import com.yapp.web2.exception.custom.BookmarkNotFoundException
 import com.yapp.web2.infra.fcm.FirebaseService
 import com.yapp.web2.security.jwt.JwtProvider
+import com.yapp.web2.util.Message
 import com.yapp.web2.util.RemindCycleUtil
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -31,14 +29,14 @@ class RemindService(
 
     fun getRemindBookmark(): List<Bookmark> {
         val today = LocalDate.now().toString()
-        return bookmarkRepository.findAllByRemindTimeAndDeleteTimeIsNull(today)
+        return bookmarkRepository.findAllByRemindTimeAndDeleteTimeIsNullAndRemindStatusIsFalse(today)
     }
 
     fun sendNotification(bookmark: Bookmark) {
         val user = accountRepository.findAccountById(bookmark.userId)
         val fcmToken = user?.fcmToken ?: throw IllegalStateException("${user!!.name} 님은 FCM Token을 가지고 있지 않습니다.")
 
-        firebaseService.sendMessage(fcmToken, bookmark.title!!, bookmark.title!!)
+        firebaseService.sendMessage(fcmToken, Message.NOTIFICATION_MESSAGE, bookmark.title!!)
     }
 
     @Transactional
@@ -79,9 +77,10 @@ class RemindService(
         }
     }
 
-    fun getRemindList(accessToken: String): MutableList<RemindListResponse> {
+    fun getRemindList(accessToken: String): RemindListResponseWrapper {
         val userId = jwtProvider.getIdFromToken(accessToken)
-        val remindList: MutableList<RemindListResponse> = mutableListOf()
+        val responseWrapper = RemindListResponseWrapper()
+        val remindList = responseWrapper.contents
         val bookmarks = bookmarkRepository.findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrue(userId)
 
         bookmarks.stream()
@@ -91,7 +90,7 @@ class RemindService(
                 val remindResponse = RemindListResponse(bookmark.id, bookmark.title!!, pushTime!!)
                 remindList.add(remindResponse)
             }
-        return remindList
+        return responseWrapper
     }
 
     fun remindCheckUpdate(request: ReadRemindListRequest) {

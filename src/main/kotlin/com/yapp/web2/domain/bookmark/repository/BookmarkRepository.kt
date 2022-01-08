@@ -32,7 +32,7 @@ interface BookmarkRepository : MongoRepository<Bookmark, String> {
 
     fun findByFolderId(id: Long): List<Bookmark>
 
-    fun findAllByRemindTimeAndDeleteTimeIsNull(remindTime: String): List<Bookmark>
+    fun findAllByRemindTimeAndDeleteTimeIsNullAndRemindStatusIsFalse(remindTime: String): List<Bookmark>
 
     fun findAllByRemindTimeAfterAndUserIdAndDeleteTimeIsNull(now: String, userId: Long): List<Bookmark>
 

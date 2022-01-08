@@ -35,5 +35,7 @@ class Message {
         var SAME_BOOKMARK_EXIST = "똑같은 북마크가 존재합니다"
 
         var OBJECT_NOT_FOUND = "개체가 존재하지 않습니다"
+
+        var NOTIFICATION_MESSAGE = "깜빡한 도토리가 있지 않나요?"
     }
 }
