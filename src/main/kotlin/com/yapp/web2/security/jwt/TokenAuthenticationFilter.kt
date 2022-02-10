@@ -19,21 +19,27 @@ class TokenAuthenticationFilter(
 ) : GenericFilterBean() {
 
     companion object {
-        const val AUTHORIZATION_HEADER: String = "AccessToken"
+        const val AUTHORIZATION_ACCESS_HEADER: String = "AccessToken"
+        const val AUTHORIZATION_REFRESH_HEADER: String = "RefreshToken"
         const val BEARER_PREFIX = "Bearer "
     }
 
     override fun doFilter(request: ServletRequest?, response: ServletResponse?, chain: FilterChain?) {
         val httpServletResponse = response as HttpServletResponse
         try {
-            val token = resolveToken(request as HttpServletRequest)
-            if (!jwtProvider.validateToken(token))
-                SecurityContextHolder.getContext().authentication = jwtProvider.getAuthentication(token)
+            val accessToken = resolveAccessToken(request as HttpServletRequest)
+            if(isRefreshToken(request)) {
+                val refreshToken = resolveRefreshToken(request)
+                jwtProvider.validateToken(refreshToken)
+            }
+            if (!jwtProvider.validateToken(accessToken))
+                SecurityContextHolder.getContext().authentication = jwtProvider.getAuthentication(accessToken)
+
             chain!!.doFilter(request, response)
         } catch (e: ExpiredJwtException) {
             httpServletResponse.contentType = "application/json;charset=UTF-8"
             httpServletResponse.status = HttpStatus.UNAUTHORIZED.value()
-            httpServletResponse.writer.println(Message.ACCESS_TOKEN_EXPIRED)
+            httpServletResponse.writer.println(Message.TOKEN_EXPIRED)
         } catch (e: PrefixMisMatchException) {
             httpServletResponse.contentType = "application/json;charset=UTF-8"
             httpServletResponse.status = HttpStatus.UNAUTHORIZED.value()
@@ -49,8 +55,20 @@ class TokenAuthenticationFilter(
         }
     }
 
-    private fun resolveToken(request: HttpServletRequest): String {
-        val bearerToken: String = request.getHeader(AUTHORIZATION_HEADER)
+    private fun resolveRefreshToken(request: HttpServletRequest): String {
+        val bearerToken: String = request.getHeader(AUTHORIZATION_REFRESH_HEADER)
+        if (!bearerToken.startsWith(BEARER_PREFIX)) throw PrefixMisMatchException()
+        return bearerToken.removePrefix(BEARER_PREFIX)
+    }
+
+    private fun isRefreshToken(request: HttpServletRequest): Boolean {
+        val token = request.getHeader(AUTHORIZATION_REFRESH_HEADER)
+        if(token.isNullOrBlank()) return false
+        return true
+    }
+
+    private fun resolveAccessToken(request: HttpServletRequest): String {
+        val bearerToken: String = request.getHeader(AUTHORIZATION_ACCESS_HEADER)
         if (!bearerToken.startsWith(BEARER_PREFIX)) throw PrefixMisMatchException()
         return bearerToken.removePrefix(BEARER_PREFIX)
     }
