@@ -32,8 +32,9 @@ class AccountController(
     }
 
     @GetMapping("/remindInfo")
-    fun getRemind(request: HttpServletRequest) {
+    fun getRemind(request: HttpServletRequest): ResponseEntity<Account.RemindElements> {
         val token = ControllerUtil.extractAccessToken(request)
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.getRemindElements(token))
     }
 
     @PostMapping("/oauth2Login")

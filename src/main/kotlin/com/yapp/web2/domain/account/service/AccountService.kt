@@ -26,6 +26,11 @@ class AccountService(
         private const val DIR_NAME = "static"
     }
 
+    fun getRemindElements(token: String): Account.RemindElements {
+        val account = jwtProvider.getAccountFromToken(token)
+        return Account.accountToRemindElements(account)
+    }
+
     fun getProfile(token: String): Account.AccountProfile {
         val account = jwtProvider.getAccountFromToken(token)
         return Account.accountToProfile(account)

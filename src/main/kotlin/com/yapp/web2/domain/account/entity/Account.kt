@@ -24,6 +24,10 @@ class Account(
             return AccountProfile(account.email, account.name, account.image, account.socialType, account.fcmToken ?: "")
         }
 
+        fun accountToRemindElements(account: Account): RemindElements {
+            return RemindElements(account.remindCycle, account.remindToggle)
+        }
+
         const val BASIC_IMAGE_URL: String = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png"
     }
 
@@ -107,6 +111,11 @@ class Account(
         val remindToggle = account.remindToggle
         var isRegistered = isRegistered
     }
+
+    class RemindElements(
+        val remindCycle: Int?,
+        val remindToggle: Boolean
+    )
 
     class ProfileChanged(
         val profileImageUrl: String,
