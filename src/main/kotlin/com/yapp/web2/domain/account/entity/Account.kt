@@ -16,8 +16,12 @@ class Account(
 ) : BaseTimeEntity() {
 
     companion object {
-        fun requestToAccount(dto: AccountLoginRequest): Account {
+        fun profileToAccount(dto: AccountProfile): Account {
             return Account(dto.email, dto.image, dto.name, dto.socialType, dto.fcmToken)
+        }
+
+        fun accountToProfile(account: Account): AccountProfile {
+            return AccountProfile(account.email, account.name, account.image, account.socialType, account.fcmToken ?: "")
         }
 
         const val BASIC_IMAGE_URL: String = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png"
@@ -67,7 +71,7 @@ class Account(
     var accountFolderList: MutableList<AccountFolder>? = mutableListOf()
 
     @ApiModel(description = "소셜로그인 DTO")
-    class AccountLoginRequest(
+    class AccountProfile(
         @ApiModelProperty(value = "이메일", required = true, example = "test@gmail.com")
         @field: NotEmpty(message = "이메일을 입력해주세요")
         val email: String,

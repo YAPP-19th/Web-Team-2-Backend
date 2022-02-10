@@ -25,9 +25,20 @@ class AccountController(
         private const val DIR_NAME = "static"
     }
 
+    @GetMapping("/profileInfo")
+    fun getProfile(request: HttpServletRequest): ResponseEntity<Account.AccountProfile> {
+        val token = ControllerUtil.extractAccessToken(request)
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.getProfile(token))
+    }
+
+    @GetMapping("/remindInfo")
+    fun getRemind(request: HttpServletRequest) {
+        val token = ControllerUtil.extractAccessToken(request)
+    }
+
     @PostMapping("/oauth2Login")
     fun oauth2Login(
-        @RequestBody @ApiParam(value = "회원 정보", required = true) request: Account.AccountLoginRequest
+        @RequestBody @ApiParam(value = "회원 정보", required = true) request: Account.AccountProfile
     ): ResponseEntity<Account.AccountLoginSuccess> {
         val loginSuccess = accountService.oauth2LoginUser(request)
         return ResponseEntity.status(HttpStatus.OK).body(loginSuccess)
