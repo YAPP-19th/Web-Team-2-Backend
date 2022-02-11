@@ -4,6 +4,7 @@ import com.yapp.web2.exception.custom.PrefixMisMatchException
 import com.yapp.web2.util.Message
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.MalformedJwtException
+import net.minidev.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.context.SecurityContextHolder
@@ -22,13 +23,16 @@ class TokenAuthenticationFilter(
         const val AUTHORIZATION_ACCESS_HEADER: String = "AccessToken"
         const val AUTHORIZATION_REFRESH_HEADER: String = "RefreshToken"
         const val BEARER_PREFIX = "Bearer "
+        const val MESSAGE = "message"
+        const val ERRORS = "errors"
+        const val CONTENT_TYPE = "application/json;charset=UTF-8"
     }
 
     override fun doFilter(request: ServletRequest?, response: ServletResponse?, chain: FilterChain?) {
         val httpServletResponse = response as HttpServletResponse
         try {
             val accessToken = resolveAccessToken(request as HttpServletRequest)
-            if(isRefreshToken(request)) {
+            if (isRefreshToken(request)) {
                 val refreshToken = resolveRefreshToken(request)
                 jwtProvider.validateToken(refreshToken)
             }
@@ -37,21 +41,13 @@ class TokenAuthenticationFilter(
 
             chain!!.doFilter(request, response)
         } catch (e: ExpiredJwtException) {
-            httpServletResponse.contentType = "application/json;charset=UTF-8"
-            httpServletResponse.status = HttpStatus.UNAUTHORIZED.value()
-            httpServletResponse.writer.println(Message.TOKEN_EXPIRED)
+            setResponse(httpServletResponse, Message.TOKEN_EXPIRED, HttpStatus.UNAUTHORIZED.value())
         } catch (e: PrefixMisMatchException) {
-            httpServletResponse.contentType = "application/json;charset=UTF-8"
-            httpServletResponse.status = HttpStatus.UNAUTHORIZED.value()
-            httpServletResponse.writer.println(Message.PREFIX_MISMATCH)
+            setResponse(httpServletResponse, Message.PREFIX_MISMATCH, HttpStatus.UNAUTHORIZED.value())
         } catch (e: MalformedJwtException) {
-            httpServletResponse.contentType = "application/json;charset=UTF-8"
-            httpServletResponse.status = HttpStatus.UNAUTHORIZED.value()
-            httpServletResponse.writer.println(Message.WRONG_TOKEN_FORM)
+            setResponse(httpServletResponse, Message.WRONG_TOKEN_FORM, HttpStatus.UNAUTHORIZED.value())
         } catch (e: NullPointerException) {
-            httpServletResponse.contentType = "application/json;charset=UTF-8"
-            httpServletResponse.status = HttpStatus.UNAUTHORIZED.value()
-            httpServletResponse.writer.println(Message.NULL_TOKEN)
+            setResponse(httpServletResponse, Message.NULL_TOKEN, HttpStatus.UNAUTHORIZED.value())
         }
     }
 
@@ -63,7 +59,7 @@ class TokenAuthenticationFilter(
 
     private fun isRefreshToken(request: HttpServletRequest): Boolean {
         val token = request.getHeader(AUTHORIZATION_REFRESH_HEADER)
-        if(token.isNullOrBlank()) return false
+        if (token.isNullOrBlank()) return false
         return true
     }
 
@@ -71,5 +67,15 @@ class TokenAuthenticationFilter(
         val bearerToken: String = request.getHeader(AUTHORIZATION_ACCESS_HEADER)
         if (!bearerToken.startsWith(BEARER_PREFIX)) throw PrefixMisMatchException()
         return bearerToken.removePrefix(BEARER_PREFIX)
+    }
+
+    private fun setResponse(response: HttpServletResponse, message: String, code: Int) {
+        val responseJson = JSONObject()
+        responseJson[MESSAGE] = message
+        responseJson[ERRORS] = emptyList<String>()
+
+        response.status = code
+        response.contentType = CONTENT_TYPE
+        response.writer.print(responseJson)
     }
 }
