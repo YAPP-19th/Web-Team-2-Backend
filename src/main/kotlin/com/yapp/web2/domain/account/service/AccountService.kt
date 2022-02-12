@@ -6,6 +6,7 @@ import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.config.S3Uploader
 import com.yapp.web2.domain.folder.service.FolderService
+import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.ExistNameException
 import com.yapp.web2.exception.custom.ImageNotFoundException
 import com.yapp.web2.util.Message
@@ -55,7 +56,10 @@ class AccountService(
         return jwtProvider.reIssuedAccessToken(accessToken, refreshToken)
     }
 
-    fun checkNickNameDuplication(nickNameDto: Account.NextNickName): String {
+    fun checkNickNameDuplication(token:String, nickNameDto: Account.NextNickName): String {
+        val account = jwtProvider.getAccountFromToken(token)
+        if(nickNameDto.nickName.isEmpty()) throw BusinessException("닉네임을 입력해주세요!")
+        if(account.name == nickNameDto.nickName) return "본인의 닉네임입니다!"
         return when (accountRepository.findAccountByName(nickNameDto.nickName).isEmpty()) {
             true -> Message.AVAILABLE_NAME
             false -> throw ExistNameException()

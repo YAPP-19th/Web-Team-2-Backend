@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.data.mongodb.repository.Query
 import org.springframework.stereotype.Repository
-import java.time.LocalDate
 
 @Repository
 interface BookmarkRepository : MongoRepository<Bookmark, String> {
@@ -33,11 +32,11 @@ interface BookmarkRepository : MongoRepository<Bookmark, String> {
 
     fun findByFolderId(id: Long): List<Bookmark>
 
-    fun findAllByRemindTimeAndDeleteTimeIsNull(remindTime: LocalDate): List<Bookmark>
+    fun findAllByRemindTimeAndDeleteTimeIsNullAndRemindStatusIsFalse(remindTime: String): List<Bookmark>
 
-    fun findAllByRemindTimeAfterAndUserIdAndDeleteTimeIsNull(now: LocalDate, userId: Long): List<Bookmark>
+    fun findAllByRemindTimeAfterAndUserIdAndDeleteTimeIsNull(now: String, userId: Long): List<Bookmark>
 
     fun findAllByUserId(userId: Long): List<Bookmark>
 
-    fun findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrue(userId: Long): List<Bookmark>
+    fun findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrueAndRemindTimeIsNotNull(userId: Long): List<Bookmark>
 }
