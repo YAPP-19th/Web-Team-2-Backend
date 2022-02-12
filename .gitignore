@@ -37,7 +37,7 @@ out/
 .vscode/
 
 ### properties ###
-/src/main/resources/application.properties
+/src/main/resources/*.properties
 
 ## FCM
 /src/main/resources/firebase-service-key.json
