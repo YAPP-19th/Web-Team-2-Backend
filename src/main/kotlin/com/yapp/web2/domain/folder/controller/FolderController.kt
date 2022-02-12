@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 
-// TODO: 2021/12/07 AccessToken -> Custom HandlerMethodArgumentResolver
 @RestController
 @RequestMapping("/api/v1/folder")
 class FolderController(

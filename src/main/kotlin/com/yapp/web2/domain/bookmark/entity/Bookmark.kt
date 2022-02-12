@@ -3,7 +3,6 @@ package com.yapp.web2.domain.bookmark.entity
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import org.springframework.data.mongodb.core.mapping.Document
-import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.Id
 import javax.validation.constraints.NotEmpty
@@ -19,11 +18,11 @@ class Bookmark(
         this.title = title
     }
 
-    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDate?) : this(userId, folderId, link, title) {
+    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: String?) : this(userId, folderId, link, title) {
         this.remindTime = remindTime
     }
 
-    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: LocalDate?, image: String?, description: String?) : this(userId, folderId, link, title, remindTime) {
+    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: String?, image: String?, description: String?) : this(userId, folderId, link, title, remindTime) {
         this.description = description
         this.image = image
     }
@@ -35,7 +34,7 @@ class Bookmark(
         folderName: String,
         link: String,
         title: String?,
-        remindTime: LocalDate?,
+        remindTime: String?,
         image: String?,
         description: String?
     ) : this(userId, folderId, link, title, remindTime) {
@@ -52,15 +51,14 @@ class Bookmark(
     var folderEmoji: String = ""
     var folderName: String = ""
 
-    var remindTime: LocalDate? = null
     var clickCount: Int = 0
     var deleteTime: LocalDateTime? = null
     var deleted: Boolean = false
     var description: String? = null
     var image: String? = null
-    var fcmToken = mutableListOf<String>()
 
     var saveTime: LocalDateTime = LocalDateTime.now()
+    var remindTime: String? = null
     var remindCheck: Boolean = false
     var remindStatus: Boolean = false
 
@@ -144,5 +142,9 @@ class Bookmark(
 
     fun updateRemindCheck() {
         this.remindCheck = true
+    }
+
+    fun successRemind() {
+        this.remindStatus = true
     }
 }

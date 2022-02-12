@@ -52,7 +52,7 @@ class BookmarkService(
 
     private fun bookmarkAddDtoToBookmark(bookmarkDto: Bookmark.AddBookmarkDto, folder: Folder, userId: Long, remindCycle: Int): Bookmark {
         return when (bookmarkDto.remind) {
-            true -> Bookmark(userId, folder.id!!, folder.emoji!!, folder.name, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDate.now().plusDays(remindCycle.toLong()), bookmarkDto.image, bookmarkDto.description)
+            true -> Bookmark(userId, folder.id!!, folder.emoji!!, folder.name, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDate.now().plusDays(remindCycle.toLong()).toString(), bookmarkDto.image, bookmarkDto.description)
             false -> Bookmark(userId, folder.id!!, folder.emoji!!, folder.name, bookmarkDto.url, bookmarkDto.title, null, bookmarkDto.image, bookmarkDto.description)
         }
     }
@@ -89,7 +89,7 @@ class BookmarkService(
         updateBookmarkDto.let {
             toChangeBookmark.title = it.title
             when (updateBookmarkDto.remind) {
-                true -> toChangeBookmark.remindTime = LocalDate.now().plusDays(account.remindCycle!!.toLong())
+                true -> toChangeBookmark.remindTime = LocalDate.now().plusDays(account.remindCycle!!.toLong()).toString()
                 false -> toChangeBookmark.remindTime = null
             }
         }
@@ -137,7 +137,7 @@ class BookmarkService(
     }
 
     @Transactional
-    protected fun updateClickCountByFolderId(folder:Folder, count: Int) {
+    protected fun updateClickCountByFolderId(folder: Folder, count: Int) {
         folder.bookmarkCount += count
     }
 

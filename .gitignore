@@ -38,3 +38,6 @@ out/
 
 ### properties ###
 /src/main/resources/*.properties
+
+## FCM
+/src/main/resources/firebase-service-key.json

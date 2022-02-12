@@ -3,23 +3,24 @@ package com.yapp.web2.domain.remind.service
 import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
-import com.yapp.web2.domain.remind.entity.dto.ReadRemindListRequest
-import com.yapp.web2.domain.remind.entity.dto.RemindCycleRequest
-import com.yapp.web2.domain.remind.entity.dto.RemindListResponse
-import com.yapp.web2.domain.remind.entity.dto.RemindToggleRequest
+import com.yapp.web2.domain.remind.entity.dto.*
 import com.yapp.web2.exception.custom.BookmarkNotFoundException
+import com.yapp.web2.infra.fcm.FirebaseService
 import com.yapp.web2.security.jwt.JwtProvider
+import com.yapp.web2.util.Message
 import com.yapp.web2.util.RemindCycleUtil
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Service
 class RemindService(
     private val bookmarkRepository: BookmarkRepository,
     private val accountRepository: AccountRepository,
-    private val jwtProvider: JwtProvider
+    private val jwtProvider: JwtProvider,
+    private val firebaseService: FirebaseService
 ) {
 
     companion object {
@@ -27,14 +28,15 @@ class RemindService(
     }
 
     fun getRemindBookmark(): List<Bookmark> {
-        val now = LocalDate.now()
-        return bookmarkRepository.findAllByRemindTimeAndDeleteTimeIsNull(now)
+        val today = LocalDate.now().toString()
+        return bookmarkRepository.findAllByRemindTimeAndDeleteTimeIsNullAndRemindStatusIsFalse(today)
     }
 
-    // notificaiton 부분 추가
-    fun sendNotification(userId: Long) {
-        // userId에 해당하는 account를 들고와서 전송시켜야한다.
+    fun sendNotification(bookmark: Bookmark) {
+        val user = accountRepository.findAccountById(bookmark.userId)
+        val fcmToken = user?.fcmToken ?: throw IllegalStateException("${user!!.name} 님은 FCM Token을 가지고 있지 않습니다.")
 
+        firebaseService.sendMessage(fcmToken, Message.NOTIFICATION_MESSAGE, bookmark.title!!)
     }
 
     @Transactional
@@ -75,18 +77,20 @@ class RemindService(
         }
     }
 
-    fun getRemindList(accessToken: String): MutableList<RemindListResponse> {
+    fun getRemindList(accessToken: String): RemindListResponseWrapper {
         val userId = jwtProvider.getIdFromToken(accessToken)
-        val remindList: MutableList<RemindListResponse> = mutableListOf()
-        val bookmarks = bookmarkRepository.findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrue(userId)
+        val responseWrapper = RemindListResponseWrapper()
+        val remindList = responseWrapper.contents
+        val bookmarks = bookmarkRepository.findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrueAndRemindTimeIsNotNull(userId)
 
         bookmarks.stream()
             .forEach { bookmark ->
-                val pushTime = bookmark.remindTime?.atTime(13, 0, 0)
+                val date = LocalDate.parse(bookmark.remindTime, DateTimeFormatter.ISO_DATE) // yyyy-MM-dd
+                val pushTime = date.atTime(13, 0, 0)
                 val remindResponse = RemindListResponse(bookmark.id, bookmark.title!!, pushTime!!)
                 remindList.add(remindResponse)
             }
-        return remindList
+        return responseWrapper
     }
 
     fun remindCheckUpdate(request: ReadRemindListRequest) {
@@ -97,5 +101,15 @@ class RemindService(
                     bookmarkRepository.save(bookmark)
                 } ?: bookmarkNotFoundException
             }
+    }
+
+    fun save(entity: Bookmark) {
+        bookmarkRepository.save(entity)
+    }
+
+    fun temp() {
+        val bookmark = bookmarkRepository.findBookmarkById("61d93b451af6fb65b4aa74b1")
+        bookmark?.remindCheck = false
+        bookmarkRepository.save(bookmark!!)
     }
 }
