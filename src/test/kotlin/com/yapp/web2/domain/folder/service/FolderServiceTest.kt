@@ -61,13 +61,15 @@ internal open class FolderServiceTest {
     @Test
     fun `부모 폴더가 존재하지 않는 최상위 폴더 생성`() {
         // given
-        val request = Folder.FolderCreateRequest(name = "Root Folder", index = 1)
-        val expected = Folder.dtoToEntity(request)
+        val request = Folder.FolderCreateRequest(name = "Root Folder")
+        val expected = Folder.dtoToEntity(request, 0)
 
         // mock
         every { jwtProvider.getIdFromToken(any()) } returns 1L
         every { accountRepository.findByIdOrNull(any()) } returns user
         every { folderRepository.save(expected) } returns expected
+        every { folderRepository.findAllByFolderCount(any(), any()) } returns 0
+        every { folderRepository.findAllByParentFolderCount(any()) } returns 0
 
         // when
         val actual = folderService.createFolder(request, "test")
@@ -83,14 +85,15 @@ internal open class FolderServiceTest {
     fun `부모 폴더가 존재하는 하위 폴더 생성`() {
         // given
         val parentFolder = Folder("Parent Folder", 2, 0, null)
-        val request = Folder.FolderCreateRequest(2L, "Children Folder", 2)
-        val childFolder = Folder.dtoToEntity(request, parentFolder)
+        val request = Folder.FolderCreateRequest(2L, "Children Folder")
+        val childFolder = Folder.dtoToEntity(request, parentFolder, 2)
 
         // mock
         every { jwtProvider.getIdFromToken(any()) } returns 1L
         every { accountRepository.findByIdOrNull(any()) } returns user
         every { folderRepository.findById(request.parentId).get() } returns parentFolder
         every { folderRepository.save(childFolder) } returns childFolder
+        every { folderRepository.findAllByFolderCount(any(), any()) } returns 0
 
         // when
         val actual = folderService.createFolder(request, "test")
