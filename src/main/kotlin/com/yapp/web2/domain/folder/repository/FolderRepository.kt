@@ -13,10 +13,10 @@ interface FolderRepository : JpaRepository<Folder, Long> {
 
     fun findFolderById(id: Long): Folder?
 
-    @Query("SELECT f FROM Folder f WHERE f.parentFolder = ?1 and f.index > ?2")
+    @Query("SELECT f FROM Folder f WHERE f.parentFolder = :parent and f.index > :index")
     fun findByIndexGreaterThanPrevFolder(parent: Folder, index: Int): MutableList<Folder>?
 
-    @Query("SELECT f FROM Folder f WHERE f.parentFolder = ?1 and f.index >= ?2")
+    @Query("SELECT f FROM Folder f WHERE f.parentFolder = :parent and f.index >= :index")
     fun findByIndexGreaterThanNextFolder(parent: Folder, index: Int): MutableList<Folder>?
 
     //@Query("SELECT f FROM Folder f join fetch f.children WHERE f.parentFolder is null ")
@@ -29,7 +29,7 @@ interface FolderRepository : JpaRepository<Folder, Long> {
         "SELECT f FROM Folder f WHERE f.id in " +
             "(  SELECT af.folder " +
             "   FROM AccountFolder af " +
-            "   WHERE af.account = ?1)" +
+            "   WHERE af.account = :user)" +
             " AND f.parentFolder IS NULL " +
             " ORDER BY f.index"
     )
@@ -40,12 +40,26 @@ interface FolderRepository : JpaRepository<Folder, Long> {
         "SELECT f FROM Folder as f " +
             "JOIN AccountFolder as af " +
             "ON f.id = af.folder.id " +
-            "WHERE af.account = ?1"
+            "WHERE af.account = :user"
     )
     fun findAllByAccount(user: Account): MutableList<Folder>
 
     @EntityGraph(attributePaths = ["parentFolder", "children", "folders"])
     @Modifying
-    @Query("DELETE FROM Folder f WHERE f = ?1")
+    @Query("DELETE FROM Folder f WHERE f = :folder")
     fun deleteByFolder(folder: Folder)
+
+    @Query("SELECT COUNT(f) FROM Folder as f " +
+            "JOIN AccountFolder as af " +
+            "ON f.id = af.folder.id " +
+            "WHERE af.account.id = :userId " +
+            "AND f.parentFolder is null")
+    fun findAllByParentFolderCount(userId: Long): Int
+
+    @Query("SELECT COUNT(f) FROM Folder as f " +
+        "JOIN AccountFolder as af " +
+        "ON f.id = af.folder.id " +
+        "WHERE af.account.id = :userId " +
+        "AND f.parentFolder.id = :parentId")
+    fun findAllByFolderCount(userId: Long, parentId: Long): Int
 }
