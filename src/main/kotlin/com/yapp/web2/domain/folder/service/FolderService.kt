@@ -9,7 +9,6 @@ import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.domain.folder.service.move.factory.FolderMoveFactory
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveInnerStrategy
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveWithEqualParentOrTopFolder
-import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.exception.custom.FolderSizeExceedException
 import com.yapp.web2.security.jwt.JwtProvider
@@ -37,7 +36,6 @@ class FolderService(
         folder.folders?.add(accountFolder)
     }
 
-    // TODO: 리팩토링
     fun createFolder(request: Folder.FolderCreateRequest, accessToken: String): Folder {
         val userId = jwtProvider.getIdFromToken(accessToken)
         val user = accountRepository.findByIdOrNull(userId)
@@ -104,10 +102,7 @@ class FolderService(
         val moveFolder = folderRepository.findById(id).get()
         val nextParentId = request.nextParentId.toString().toLongOrNull()
         var nextParentFolder: Folder? = null
-
-        if (nextParentId != null) {
-            nextParentFolder = folderRepository.findById(nextParentId).get()
-        }
+        nextParentFolder = nextParentId?.let { folderRepository.findById(nextParentId).orElseThrow() }
 
         /* 최상위 -> 최상위 OR 상위 -> 상위(동일한 부모) */
         if (isMoveTopFolderToTopFolder(moveFolder, nextParentId) ||
