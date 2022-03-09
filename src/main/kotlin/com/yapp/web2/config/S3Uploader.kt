@@ -31,7 +31,6 @@ class S3Uploader(
         return putS3(uploadFile, fileName)
     }
 
-    // TODO: 2021/12/12 S3 업로드 실패 예외처리
     private fun putS3(uploadFile: File, fileName: String): String {
         amazonS3Client.putObject(PutObjectRequest(bucket, fileName, uploadFile).withCannedAcl(CannedAccessControlList.PublicRead))
         return amazonS3Client.getUrl(bucket, fileName).toString()
