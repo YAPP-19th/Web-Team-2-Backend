@@ -4,6 +4,7 @@ import com.yapp.web2.exception.custom.PrefixMisMatchException
 import com.yapp.web2.util.Message
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.MalformedJwtException
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.context.SecurityContextHolder
@@ -21,6 +22,7 @@ class TokenAuthenticationFilter(
     companion object {
         const val AUTHORIZATION_HEADER: String = "AccessToken"
         const val BEARER_PREFIX = "Bearer "
+        private val log = LoggerFactory.getLogger(TokenAuthenticationFilter::class.java)
     }
 
     override fun doFilter(request: ServletRequest?, response: ServletResponse?, chain: FilterChain?) {
@@ -34,14 +36,17 @@ class TokenAuthenticationFilter(
             httpServletResponse.contentType = "application/json;charset=UTF-8"
             httpServletResponse.status = HttpStatus.UNAUTHORIZED.value()
             httpServletResponse.writer.println(Message.ACCESS_TOKEN_EXPIRED)
+            log.debug("Jwt Expired: {}", e.message)
         } catch (e: PrefixMisMatchException) {
             httpServletResponse.contentType = "application/json;charset=UTF-8"
             httpServletResponse.status = HttpStatus.UNAUTHORIZED.value()
             httpServletResponse.writer.println(Message.PREFIX_MISMATCH)
+            log.debug("Jwt Prefix MisMatch: {}", e.message)
         } catch (e: MalformedJwtException) {
             httpServletResponse.contentType = "application/json;charset=UTF-8"
             httpServletResponse.status = HttpStatus.UNAUTHORIZED.value()
             httpServletResponse.writer.println(Message.WRONG_TOKEN_FORM)
+            log.debug("Jwt Wrong Configuration: {}", e.message)
         } catch (e: NullPointerException) {
             httpServletResponse.contentType = "application/json;charset=UTF-8"
             httpServletResponse.status = HttpStatus.UNAUTHORIZED.value()
