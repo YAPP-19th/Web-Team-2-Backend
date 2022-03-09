@@ -42,34 +42,26 @@ class FolderService(
         val folder: Folder
 
         when (isParentFolder(request.parentId)) {
-            true -> {
-                folder = Folder.dtoToEntity(request)
+            true -> { // 보관함(최상위 폴더일 때) -> index 설정만 진행
+                val index = folderRepository.findAllByParentFolderCount(userId)
+                folder = Folder.dtoToEntity(request, index)
                 val accountFolder = user?.let { AccountFolder(it, folder) }
                 folder.folders?.add(accountFolder!!)
             }
-            false -> {
+            false -> { // 폴더 일 때 -> index 설정, 부모 폴더 찾아서 설정
                 val parentFolder: Folder = folderRepository.findById(request.parentId).get()
-                val childrenFolderList: MutableList<Folder>? = parentFolder.children
+                val index = folderRepository.findAllByFolderCount(userId, request.parentId)
+                folder = Folder.dtoToEntity(request, parentFolder, index)
 
-                childrenFolderList?.let {
-                    if (isMaxFolderCount(it.size)) {
-                        throw folderSizeExceedException
-                    }
-                }
-                folder = Folder.dtoToEntity(request, parentFolder)
                 val accountFolder = user?.let { AccountFolder(it, folder) }
                 parentFolder.folders?.add(accountFolder!!)
-                childrenFolderList?.add(folder)
             }
         }
         return folderRepository.save(folder)
     }
 
-    private fun isMaxFolderCount(size: Int) = size >= 8
-
     private fun isParentFolder(parentId: Long) = parentId == 0L
 
-    @Transactional
     fun changeFolder(folderId: Long, request: Folder.FolderChangeRequest) {
         folderRepository.findByIdOrNull(folderId)?.let { folder ->
             request.name?.let { requestName ->

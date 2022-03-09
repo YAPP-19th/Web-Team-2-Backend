@@ -38,12 +38,12 @@ class Folder(
     var folders: MutableList<AccountFolder>? = mutableListOf()
 
     companion object {
-        fun dtoToEntity(dto: FolderCreateRequest): Folder {
-            return dtoToEntity(dto, null)
+        fun dtoToEntity(dto: FolderCreateRequest, index: Int): Folder {
+            return dtoToEntity(dto, null, index)
         }
 
-        fun dtoToEntity(dto: FolderCreateRequest, parentFolder: Folder?): Folder {
-            return Folder(dto.name, dto.index, 0, parentFolder)
+        fun dtoToEntity(dto: FolderCreateRequest, parentFolder: Folder?, index: Int): Folder {
+            return Folder(dto.name, index, 0, parentFolder)
         }
     }
 
@@ -55,11 +55,7 @@ class Folder(
 
         @ApiModelProperty(value = "폴더 이름", required = true, example = "부모 폴더")
         @field: NotEmpty(message = "폴더명을 입력해주세요")
-        val name: String,
-
-        @ApiModelProperty(value = "폴더 순서", required = true, example = "2")
-        @field: PositiveOrZero
-        val index: Int = 1
+        val name: String
     )
 
     @ApiModel(description = "폴더 생성 Response")

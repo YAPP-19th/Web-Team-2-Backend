@@ -19,6 +19,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
+import kotlin.properties.Delegates
 
 internal class AccountServiceTest {
 
@@ -42,6 +43,26 @@ internal class AccountServiceTest {
     }
 
     @Nested
+    inner class Profile {
+
+        private lateinit var testToken: String
+        private lateinit var testAccount: Account
+
+        @BeforeEach
+        internal fun setUp() {
+            testToken = "testToken"
+            testAccount = Account("test@naver.com", "imageUrl", "nickNameTest", "google", "testFcmToken")
+        }
+
+        @Test
+        fun `account가 존재하지 않으면 예외를 던진다`() {
+            // given
+            // when
+            // then
+        }
+    }
+
+    @Nested
     inner class ChangeNickName {
 
         private lateinit var testToken: String
@@ -59,12 +80,12 @@ internal class AccountServiceTest {
         @Test
         fun `해당 닉네임을 다른 유저가 사용하고 있다면 예외를 던진다`() {
             //given
-            every { accountRepository.findAccountByName(testNickName.nickName) } returns account
+            every { accountRepository.findAccountByName(testNickName.nickName) } returns listOf(account)
             val expectedException = BusinessException("이미 존재하는 닉네임입니다")
 
             //when
             val actualException = assertThrows(BusinessException::class.java) {
-                accountService.checkNickNameDuplication(testNickName)
+                accountService.checkNickNameDuplication(testToken, testNickName)
             }
 
             //then
@@ -160,25 +181,6 @@ internal class AccountServiceTest {
             //then
             assertEquals(account.image, Account.BASIC_IMAGE_URL)
         }
-
-        // S3 test로 진행
-//        @Test
-//        fun `이미지가 아니면 예외를 던진다`() {
-//            //given
-//            every { jwtProvider.getIdFromToken(testToken) } returns 1
-//            every { accountRepository.findById(any()) } returns Optional.of(account)
-//            every { s3Uploader.upload(any(), any()) } returns "good/test"
-//            testFile = MockMultipartFile("file", "asdf.pdf", "application/pdf", "<<jpeg data>>".encodeToByteArray())
-//            val expectedException = BusinessException("이미지가 아닙니다")
-//
-//            //when
-//            val actualException = assertThrows(BusinessException::class.java) {
-//                accountService.changeProfileImage(testToken, testFile)
-//            }
-//
-//            //then
-//            assertEquals(expectedException.message, actualException.message)
-//        }
     }
 
     @Nested

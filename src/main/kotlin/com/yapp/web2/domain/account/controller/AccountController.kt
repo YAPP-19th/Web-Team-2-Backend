@@ -28,9 +28,21 @@ class AccountController(
         private val log = LoggerFactory.getLogger(AccountController::class.java)
     }
 
+    @GetMapping("/profileInfo")
+    fun getProfile(request: HttpServletRequest): ResponseEntity<Account.AccountProfile> {
+        val token = ControllerUtil.extractAccessToken(request)
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.getProfile(token))
+    }
+
+    @GetMapping("/remindInfo")
+    fun getRemind(request: HttpServletRequest): ResponseEntity<Account.RemindElements> {
+        val token = ControllerUtil.extractAccessToken(request)
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.getRemindElements(token))
+    }
+
     @PostMapping("/oauth2Login")
     fun oauth2Login(
-        @RequestBody @ApiParam(value = "회원 정보", required = true) request: Account.AccountLoginRequest
+        @RequestBody @ApiParam(value = "회원 정보", required = true) request: Account.AccountProfile
     ): ResponseEntity<Account.AccountLoginSuccess> {
         val loginSuccess = accountService.oauth2LoginUser(request)
         return ResponseEntity.status(HttpStatus.OK).body(loginSuccess)

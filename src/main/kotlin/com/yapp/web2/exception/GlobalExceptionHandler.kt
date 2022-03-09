@@ -52,11 +52,13 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ExpiredJwtException::class)
-    fun handleExpiredJwtException(e: ExpiredJwtException): ResponseEntity<ErrorResponse> {
+    fun handleExpiredJwtException(e: ExpiredJwtException): ResponseEntity<String> {
+        // 임시방편으로 return을 String으로 하여 조건을 맞춰주었지만, 이건 아예 변경할 필요가 있어보임!
+        // fillter에서 걸리는 것들을 errorResponse로 바꾼다거나 하는 방향으로 가는게 좋을 거 같음.
         log.error("ExpiredJwtException", e)
         val response = ErrorResponse.of(Message.NO_REFRESH_TOKEN)
 
-        return getResponse(response, HttpStatus.UNAUTHORIZED.value())
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response.message)
     }
 
     @ExceptionHandler(BusinessException::class)

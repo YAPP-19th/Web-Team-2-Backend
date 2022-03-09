@@ -26,8 +26,18 @@ class AccountService(
         private const val DIR_NAME = "static"
     }
 
-    fun oauth2LoginUser(dto: Account.AccountLoginRequest): Account.AccountLoginSuccess {
-        var account = Account.requestToAccount(dto)
+    fun getRemindElements(token: String): Account.RemindElements {
+        val account = jwtProvider.getAccountFromToken(token)
+        return Account.accountToRemindElements(account)
+    }
+
+    fun getProfile(token: String): Account.AccountProfile {
+        val account = jwtProvider.getAccountFromToken(token)
+        return Account.accountToProfile(account)
+    }
+
+    fun oauth2LoginUser(dto: Account.AccountProfile): Account.AccountLoginSuccess {
+        var account = Account.profileToAccount(dto)
         var isRegistered = true
 
         account = when (val savedAccount = accountRepository.findByEmail(account.email)) {
@@ -56,10 +66,10 @@ class AccountService(
         return jwtProvider.reIssuedAccessToken(accessToken, refreshToken)
     }
 
-    fun checkNickNameDuplication(token:String, nickNameDto: Account.NextNickName): String {
+    fun checkNickNameDuplication(token: String, nickNameDto: Account.NextNickName): String {
         val account = jwtProvider.getAccountFromToken(token)
-        if(nickNameDto.nickName.isEmpty()) throw BusinessException("닉네임을 입력해주세요!")
-        if(account.name == nickNameDto.nickName) return "본인의 닉네임입니다!"
+        if (nickNameDto.nickName.isEmpty()) throw BusinessException("닉네임을 입력해주세요!")
+        if (account.name == nickNameDto.nickName) return "본인의 닉네임입니다!"
         return when (accountRepository.findAccountByName(nickNameDto.nickName).isEmpty()) {
             true -> Message.AVAILABLE_NAME
             false -> throw ExistNameException()

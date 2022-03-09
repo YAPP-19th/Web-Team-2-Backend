@@ -9,10 +9,12 @@ import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
+import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.just
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertAll
@@ -59,13 +61,15 @@ internal open class FolderServiceTest {
     @Test
     fun `부모 폴더가 존재하지 않는 최상위 폴더 생성`() {
         // given
-        val request = Folder.FolderCreateRequest(name = "Root Folder", index = 1)
-        val expected = Folder.dtoToEntity(request)
+        val request = Folder.FolderCreateRequest(name = "Root Folder")
+        val expected = Folder.dtoToEntity(request, 0)
 
         // mock
         every { jwtProvider.getIdFromToken(any()) } returns 1L
         every { accountRepository.findByIdOrNull(any()) } returns user
         every { folderRepository.save(expected) } returns expected
+        every { folderRepository.findAllByFolderCount(any(), any()) } returns 0
+        every { folderRepository.findAllByParentFolderCount(any()) } returns 0
 
         // when
         val actual = folderService.createFolder(request, "test")
@@ -81,14 +85,15 @@ internal open class FolderServiceTest {
     fun `부모 폴더가 존재하는 하위 폴더 생성`() {
         // given
         val parentFolder = Folder("Parent Folder", 2, 0, null)
-        val request = Folder.FolderCreateRequest(2L, "Children Folder", 2)
-        val childFolder = Folder.dtoToEntity(request, parentFolder)
+        val request = Folder.FolderCreateRequest(2L, "Children Folder")
+        val childFolder = Folder.dtoToEntity(request, parentFolder, 2)
 
         // mock
         every { jwtProvider.getIdFromToken(any()) } returns 1L
         every { accountRepository.findByIdOrNull(any()) } returns user
         every { folderRepository.findById(request.parentId).get() } returns parentFolder
         every { folderRepository.save(childFolder) } returns childFolder
+        every { folderRepository.findAllByFolderCount(any(), any()) } returns 0
 
         // when
         val actual = folderService.createFolder(request, "test")
@@ -102,39 +107,12 @@ internal open class FolderServiceTest {
     }
 
     @Test
-    fun `폴더 이름을 수정한다`() {
+    fun `폴더를 수정하면 하위의 모든 북마크들도 함께 수정된다`() {
         // given & mock
+        val bookmarkList: MutableList<Bookmark> = makeBookmarks()
+        every { bookmarkRepository.findByFolderId(any()) } returns bookmarkList
         every { folderRepository.findByIdOrNull(any()) } returns folder
-
-        // when
-        folderService.changeFolder(1L, changeRequest)
-
-        // then
-        assertAll(
-            { assertDoesNotThrow { folderService.changeFolder(10L, changeRequest) } },
-            { assertThat(folder.name).isEqualTo(changeName) }
-        )
-    }
-
-    @Test
-    fun `폴더 이모지를 수정한다`() {
-        // given & mock
-        every { folderRepository.findByIdOrNull(any()) } returns folder
-
-        // when
-        folderService.changeFolder(1L, changeRequest)
-
-        // then
-        assertAll(
-            { assertDoesNotThrow { folderService.changeFolder(10L, changeRequest) } },
-            { assertThat(folder.emoji).isEqualTo(changeEmoji) }
-        )
-    }
-
-    @Test
-    fun `폴더 이름과 이모지를 수정한다`() {
-        // given & mock
-        every { folderRepository.findByIdOrNull(any()) } returns folder
+        every { bookmarkRepository.save(any()) } returns bookmarkList[0]
 
         // when
         folderService.changeFolder(1L, changeRequest)
@@ -143,28 +121,11 @@ internal open class FolderServiceTest {
         assertAll(
             { assertDoesNotThrow { folderService.changeFolder(10L, changeRequest) } },
             { assertThat(folder.name).isEqualTo(changeName) },
-            { assertThat(folder.emoji).isEqualTo(changeEmoji) }
-        )
-    }
-
-    // TODO: 2021/12/18 폴더 수정 -> 폴더에 존재하는 북마크의 폴더 데이터 수정 테스트
-    @Test
-    fun `폴더에 존재하는 모든 북마크를 제거한다`() {
-        // given & when
-        val bookmarks: MutableList<Bookmark> = makeBookmarks()
-
-        // mock
-        every { bookmarkRepository.findByFolderId(1L) } returns bookmarks
-        every { bookmarkRepository.save(any()) } returns bookmarks[0]
-
-        // then
-        assertAll(
-            { verify(exactly = 1) { bookmarkRepository.findByFolderId(any()) } },
-            { verify(exactly = bookmarks.size) { bookmarkRepository.save(any()) } },
+            { assertThat(folder.emoji).isEqualTo(changeEmoji) },
             {
-                bookmarks.forEach {
-                    assertThat(it.deleted).isEqualTo(true)
-                    assertThat(it.folderId).isNull()
+                repeat(bookmarkList.size) {
+                    assertThat(bookmarkList[it].folderName).isEqualTo(changeRequest.name)
+                    assertThat(bookmarkList[it].folderEmoji).isEqualTo(changeRequest.emoji)
                 }
             }
         )
@@ -174,7 +135,7 @@ internal open class FolderServiceTest {
     fun `폴더를 삭제한다`() {
         // mock
         every { folderRepository.findByIdOrNull(any()) } returns folder
-        every { folderRepository.deleteByFolder(folder) } returns Unit
+        every { folderRepository.deleteByFolder(folder) } just Runs
 
         // when
         folderService.deleteFolder(folder)
@@ -228,7 +189,7 @@ internal open class FolderServiceTest {
         // mock
         every { bookmarkRepository.findByFolderId(1) } returns bookmarks1
         every { bookmarkRepository.findByFolderId(2) } returns bookmarks2
-        every { folderRepository.deleteById(any()) } returns Unit
+        every { folderRepository.deleteById(any()) } just Runs
         every { bookmarkRepository.save(any()) } returns bookmarks1[0]
 
         // when
@@ -274,8 +235,9 @@ internal open class FolderServiceTest {
         val rootParentFolder = getParentFolder("최상위 부모 폴더")
         val parentFolder = getParentFolder("부모 폴더")
         val folder = getParentFolder("자식 폴더")
-        rootParentFolder.id = 1L
-        parentFolder.id = 2L
+        rootParentFolder.id = 3L
+        parentFolder.id = 11L
+        folder.id = 1L
         folder.parentFolder = parentFolder
         parentFolder.parentFolder = rootParentFolder
 

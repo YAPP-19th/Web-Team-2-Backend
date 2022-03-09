@@ -10,7 +10,7 @@ class Message {
 
         var PREFIX_MISMATCH = "접미사가 존재하지 않습니다"
 
-        var ACCESS_TOKEN_EXPIRED = "AccessToken이 만료되었습니다"
+        var TOKEN_EXPIRED = "Token이 만료되었습니다"
 
         var WRONG_TOKEN_FORM = "형식에 어긋난 토큰입니다"
 
