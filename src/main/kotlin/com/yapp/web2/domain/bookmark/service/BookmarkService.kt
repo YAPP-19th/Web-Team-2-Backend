@@ -1,5 +1,6 @@
 package com.yapp.web2.domain.bookmark.service
 
+import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
@@ -26,18 +27,22 @@ class BookmarkService(
     }
 
     @Transactional
-    fun addBookmark(token: String, folderId: Long, bookmarkDto: Bookmark.AddBookmarkDto): Bookmark {
+    fun addBookmark(token: String, folderId: Long?, bookmarkDto: Bookmark.AddBookmarkDto): Bookmark {
         val account = jwtProvider.getAccountFromToken(token)
-        val folder = checkFolderAbsence(folderId)
-        val toSaveBookmark = bookmarkAddDtoToBookmark(bookmarkDto, folder, account.id!!, account.remindCycle!!)
+        var toSaveBookmark = bookmarkAddDtoToBookmarkWithNoFolder(bookmarkDto, account)
 
-        checkSameBookmark(toSaveBookmark, folderId)
-        folder.bookmarkCount++
+        folderId?.run {
+            val folder = checkFolderAbsence(folderId)
+            toSaveBookmark = bookmarkAddDtoToBookmark(bookmarkDto, folder, account)
+            checkSameBookmark(toSaveBookmark, folderId)
+            folder.bookmarkCount++
+        }
+
         return bookmarkRepository.save(toSaveBookmark)
     }
 
     private fun checkFolderAbsence(folderId: Long): Folder {
-        return when(val folder = folderRepository.findFolderById(folderId)) {
+        return when (val folder = folderRepository.findFolderById(folderId)) {
             null -> throw ObjectNotFoundException()
             else -> folder
         }
@@ -50,10 +55,61 @@ class BookmarkService(
         }
     }
 
-    private fun bookmarkAddDtoToBookmark(bookmarkDto: Bookmark.AddBookmarkDto, folder: Folder, userId: Long, remindCycle: Int): Bookmark {
+    private fun bookmarkAddDtoToBookmark(
+        bookmarkDto: Bookmark.AddBookmarkDto,
+        folder: Folder,
+        account: Account
+    ): Bookmark {
         return when (bookmarkDto.remind) {
-            true -> Bookmark(userId, folder.id!!, folder.emoji!!, folder.name, bookmarkDto.url, bookmarkDto.title, remindTime = LocalDate.now().plusDays(remindCycle.toLong()).toString(), bookmarkDto.image, bookmarkDto.description)
-            false -> Bookmark(userId, folder.id!!, folder.emoji!!, folder.name, bookmarkDto.url, bookmarkDto.title, null, bookmarkDto.image, bookmarkDto.description)
+            true -> Bookmark(
+                account.id!!,
+                folder.id!!,
+                folder.emoji!!,
+                folder.name,
+                bookmarkDto.url,
+                bookmarkDto.title,
+                remindTime = LocalDate.now().plusDays(account.remindCycle!!.toLong()).toString(),
+                bookmarkDto.image,
+                bookmarkDto.description
+            )
+            false -> Bookmark(
+                account.id!!,
+                folder.id!!,
+                folder.emoji!!,
+                folder.name,
+                bookmarkDto.url,
+                bookmarkDto.title,
+                null,
+                bookmarkDto.image,
+                bookmarkDto.description
+            )
+        }
+    }
+
+    private fun bookmarkAddDtoToBookmarkWithNoFolder(bookmarkDto: Bookmark.AddBookmarkDto, account: Account): Bookmark {
+        return when (bookmarkDto.remind) {
+            true -> Bookmark(
+                account.id!!,
+                null,
+                null,
+                null,
+                bookmarkDto.url,
+                bookmarkDto.title,
+                remindTime = LocalDate.now().plusDays(account.remindCycle!!.toLong()).toString(),
+                bookmarkDto.image,
+                bookmarkDto.description
+            )
+            false -> Bookmark(
+                account.id!!,
+                null,
+                null,
+                null,
+                bookmarkDto.url,
+                bookmarkDto.title,
+                null,
+                bookmarkDto.image,
+                bookmarkDto.description
+            )
         }
     }
 
@@ -89,7 +145,8 @@ class BookmarkService(
         updateBookmarkDto.let {
             toChangeBookmark.title = it.title
             when (updateBookmarkDto.remind) {
-                true -> toChangeBookmark.remindTime = LocalDate.now().plusDays(account.remindCycle!!.toLong()).toString()
+                true -> toChangeBookmark.remindTime =
+                    LocalDate.now().plusDays(account.remindCycle!!.toLong()).toString()
                 false -> toChangeBookmark.remindTime = null
             }
         }
@@ -108,7 +165,7 @@ class BookmarkService(
         var bookmark = getBookmarkIfPresent(bookmarkId)
         val nextFolder = checkFolderAbsence(moveBookmarkDto.nextFolderId)
 
-        bookmark = when(bookmark.folderId) {
+        bookmark = when (bookmark.folderId) {
             null -> {
                 changeBookmarkInfo(bookmark, nextFolder)
             }
@@ -122,7 +179,7 @@ class BookmarkService(
         bookmarkRepository.save(bookmark)
     }
 
-    private fun changeBookmarkInfo(bookmark:Bookmark, folder:Folder):Bookmark {
+    private fun changeBookmarkInfo(bookmark: Bookmark, folder: Folder): Bookmark {
         bookmark.folderId = folder.id
         bookmark.folderName = folder.name
         bookmark.folderEmoji = folder.emoji!!
