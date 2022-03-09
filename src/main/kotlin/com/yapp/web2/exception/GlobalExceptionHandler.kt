@@ -7,18 +7,21 @@ import com.yapp.web2.exception.custom.TokenMisMatchException
 import com.yapp.web2.util.Message
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.SignatureException
+import org.codehaus.jettison.json.JSONException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.TypeMismatchException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.validation.FieldError
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import javax.servlet.http.HttpServletRequest
 
-// TODO: 2021/12/09 Http StatusCode 추가 
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
@@ -42,7 +45,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(value = [Exception::class, RuntimeException::class])
     fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
-        log.error("handleException", e)
+        log.error("Unexpected exception occurred: {}", e.message, e)
         val response = ErrorResponse.of(e.message)
 
         return getResponse(response, HttpStatus.INTERNAL_SERVER_ERROR.value())
@@ -89,7 +92,10 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleMethodArgumentNotValidException(e: MethodArgumentNotValidException, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
+    fun handleMethodArgumentNotValidException(
+        e: MethodArgumentNotValidException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
         log.error("methodArgumentNotValidException", e)
         val errors = mutableListOf<Error>()
 
@@ -103,6 +109,20 @@ class GlobalExceptionHandler {
             errors.add(error)
         }
         val response = ErrorResponse.of(e.fieldError!!.defaultMessage, errors)
+        return getResponse(response, HttpStatus.BAD_REQUEST.value())
+    }
+
+    @ExceptionHandler(
+        value = [
+            IllegalStateException::class, IllegalArgumentException::class,
+            TypeMismatchException::class, HttpMessageNotReadableException::class,
+            MissingServletRequestParameterException::class, JSONException::class
+        ]
+    )
+    fun handleBadRequestException(e: Exception): ResponseEntity<ErrorResponse> {
+        log.debug("Bad request exception occurred: {}", e.message, e)
+        val response = ErrorResponse.of(e.message)
+
         return getResponse(response, HttpStatus.BAD_REQUEST.value())
     }
 
