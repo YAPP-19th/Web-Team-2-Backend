@@ -14,24 +14,24 @@ class Bookmark(
     var folderId: Long?,
     val link: String
 ) {
-    constructor(userId: Long, folderId: Long, link: String, title: String?) : this(userId, folderId, link) {
+    constructor(userId: Long, folderId: Long?, link: String, title: String?) : this(userId, folderId, link) {
         this.title = title
     }
 
-    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: String?) : this(userId, folderId, link, title) {
+    constructor(userId: Long, folderId: Long?, link: String, title: String?, remindTime: String?) : this(userId, folderId, link, title) {
         this.remindTime = remindTime
     }
 
-    constructor(userId: Long, folderId: Long, link: String, title: String?, remindTime: String?, image: String?, description: String?) : this(userId, folderId, link, title, remindTime) {
+    constructor(userId: Long, folderId: Long?, link: String, title: String?, remindTime: String?, image: String?, description: String?) : this(userId, folderId, link, title, remindTime) {
         this.description = description
         this.image = image
     }
 
     constructor(
         userId: Long,
-        folderId: Long,
-        folderEmoji: String,
-        folderName: String,
+        folderId: Long?,
+        folderEmoji: String?,
+        folderName: String?,
         link: String,
         title: String?,
         remindTime: String?,
@@ -48,8 +48,8 @@ class Bookmark(
     lateinit var id: String
 
     var title: String? = ""
-    var folderEmoji: String = ""
-    var folderName: String = ""
+    var folderEmoji: String? = ""
+    var folderName: String? = ""
 
     var clickCount: Int = 0
     var deleteTime: LocalDateTime? = null
