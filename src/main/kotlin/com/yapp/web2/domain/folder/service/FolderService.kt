@@ -94,10 +94,7 @@ class FolderService(
         val moveFolder = folderRepository.findById(id).get()
         val nextParentId = request.nextParentId.toString().toLongOrNull()
         var nextParentFolder: Folder? = null
-
-        if (nextParentId != null) {
-            nextParentFolder = folderRepository.findById(nextParentId).get()
-        }
+        nextParentFolder = nextParentId?.let { folderRepository.findById(nextParentId).orElseThrow() }
 
         /* 최상위 -> 최상위 OR 상위 -> 상위(동일한 부모) */
         if (isMoveTopFolderToTopFolder(moveFolder, nextParentId) ||

@@ -65,7 +65,7 @@ class NotificationConfig(
             it.stream().forEach { bookmark ->
                 bookmark.successRemind()
                 notificationService.save(bookmark)
-                log.info("Notification Send ... userId - ${bookmark.userId}, title - ${bookmark.title}")
+                log.info("{} -> {} 푸쉬 발송", bookmark.userId, bookmark.title)
             }
         }
     }
