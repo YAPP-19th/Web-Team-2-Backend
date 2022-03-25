@@ -23,8 +23,19 @@ class BookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.CLICK)
     }
 
+    @PostMapping("/{folderId}")
+    fun createBookmark(
+        request: HttpServletRequest,
+        @PathVariable @ApiParam(value = "북마크를 지정할 폴더 ID", example = "12", required = true) folderId: Long,
+        @RequestBody @ApiParam(value = "북마크 생성 정보", required = true) bookmark: Bookmark.AddBookmarkDto
+    ): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        bookmarkService.addBookmark(token, folderId, bookmark)
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SAVED)
+    }
+
     @ApiOperation(value = "북마크 생성 API")
-    @PostMapping()
+    @PostMapping
     fun createBookmark(
         request: HttpServletRequest,
         @RequestParam @ApiParam(value = "북마크를 지정할 폴더 ID", example = "12", required = true) folderId: Long?,
