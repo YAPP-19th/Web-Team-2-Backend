@@ -14,7 +14,7 @@ class SlackServiceImpl : SlackService {
     @Value("\${slack.bot.token}")
     lateinit var token: String
 
-    @Value("\${slack.monitor.channel.token}")
+    @Value("\${slack.monitor.channel.id}")
     lateinit var defaultChannel: String
 
     override fun sendMessage(text: String) {
