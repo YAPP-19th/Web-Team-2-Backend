@@ -8,6 +8,7 @@ import com.yapp.web2.domain.remind.entity.dto.ReadRemindListRequest
 import com.yapp.web2.domain.remind.entity.dto.RemindCycleRequest
 import com.yapp.web2.domain.remind.entity.dto.RemindToggleRequest
 import com.yapp.web2.exception.custom.RemindCycleValidException
+import com.yapp.web2.infra.fcm.FirebaseService
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.util.RemindCycleUtil
 import io.mockk.every
@@ -37,6 +38,9 @@ internal class RemindServiceTest {
 
     @MockK
     private lateinit var jwtProvider: JwtProvider
+
+    @MockK
+    private lateinit var firebaseService: FirebaseService
 
     private lateinit var account: Account
     private lateinit var bookmark1: Bookmark
