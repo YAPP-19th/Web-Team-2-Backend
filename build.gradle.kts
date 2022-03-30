@@ -1,4 +1,3 @@
-
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -41,8 +40,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
-    implementation ("org.springframework.boot:spring-boot-starter-data-redis")
-    implementation ("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springframework.boot:spring-boot-starter-batch")
@@ -79,6 +78,23 @@ tasks.withType<KotlinCompile> {
     }
 }
 
+/**
+ * Gradle에서는 기본적으로 하나의 source 디렉토리만 지원(src/main/java)
+ * 따라서 sourceSets 설정을 통해 여러 source 디렉토리 지원
+ */
+sourceSets {
+    main {
+        resources {
+            srcDirs(listOf("src/main/resources", "src/main/resources/profiles"))
+        }
+    }
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.withType<org.springframework.boot.gradle.tasks.run.BootRun> {
+    val profile = System.getProperty("spring.profiles.active")
+    systemProperty("spring.profiles.active", profile)
 }
