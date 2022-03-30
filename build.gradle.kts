@@ -51,6 +51,9 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("io.springfox:springfox-boot-starter:3.0.0")
 
+    // https://mvnrepository.com/artifact/com.slack.api/slack-api-client
+    implementation("com.slack.api:slack-api-client:1.20.2")
+
     // Spring Boot actuator, admin
     implementation("org.springframework.boot:spring-boot-starter-actuator:2.3.1.RELEASE")
     implementation("de.codecentric:spring-boot-admin-client:2.3.1")
