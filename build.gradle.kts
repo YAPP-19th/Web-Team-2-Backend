@@ -94,7 +94,6 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-tasks.withType<org.springframework.boot.gradle.tasks.run.BootRun> {
-    val profile = System.getProperty("spring.profiles.active")
-    systemProperty("spring.profiles.active", profile)
+tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
+    mainClass.set("com.yapp.web2.BookmarkersApplicationKt")
 }
