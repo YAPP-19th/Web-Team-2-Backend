@@ -37,5 +37,8 @@ class Message {
         var OBJECT_NOT_FOUND = "개체가 존재하지 않습니다"
 
         var NOTIFICATION_MESSAGE = "깜빡한 도토리가 있지 않나요?"
+
+        var OLD_EXTENSION_VERSION = "익스텐션 버전이 오래되었습니다!"
+        var LATEST_EXTENSION_VERSION = "최신 버전입니다."
     }
 }

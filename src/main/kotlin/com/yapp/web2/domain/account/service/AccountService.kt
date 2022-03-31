@@ -10,6 +10,7 @@ import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.ExistNameException
 import com.yapp.web2.exception.custom.ImageNotFoundException
 import com.yapp.web2.util.Message
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import javax.transaction.Transactional
@@ -21,6 +22,9 @@ class AccountService(
     private val jwtProvider: JwtProvider,
     private val s3Uploader: S3Uploader
 ) {
+
+    @Value("\${extension.version}")
+    private lateinit var extensionVersion: String
 
     companion object {
         private const val DIR_NAME = "static"
@@ -118,5 +122,10 @@ class AccountService(
     fun changeBackgroundColor(token: String, changeUrl: String) {
         val account = jwtProvider.getAccountFromToken(token)
         account.backgroundColor = changeUrl
+    }
+
+    fun checkExtension(userVersion: String): String {
+        return if(userVersion == extensionVersion) Message.LATEST_EXTENSION_VERSION
+        else Message.OLD_EXTENSION_VERSION
     }
 }
