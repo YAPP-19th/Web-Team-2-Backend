@@ -57,6 +57,23 @@ internal class FolderControllerTest {
     }
 
     @Test
+    fun `folderId가 null일 경우 아무것도 반환하지 않는다`() {
+        // given
+        val createFolderRequest = Folder.FolderCreateRequest(0L, "폴더")
+        val folder: BaseTimeEntity = Folder("New Folder", 1, 0, null)
+        every { folderService.createFolder(any(), any()) } returns folder as Folder
+
+        // when
+        val resultAction = postResultAction("/api/v1/folder", createFolderRequest)
+
+        // then
+        resultAction
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$").doesNotExist())
+    }
+
+    @Test
     fun `폴더를 수정한다`() {
         // given
         val changeFolderRequest = Folder.FolderChangeRequest("U+1F604", "Change Folder Name")
@@ -129,10 +146,19 @@ internal class FolderControllerTest {
         assertThat(response).isEqualTo(Message.SUCCESS)
     }
 
-    // TODO
     @Test
     fun `폴더를 조회한다`() {
+        // given
+        val folders: Map<String, Any> = HashMap()
+        every { folderService.findAll(any()) } returns folders
 
+        // when
+        val resultAction = getResultAction("/api/v1/folder")
+
+        // then
+        resultAction
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk)
     }
 
     @Test
