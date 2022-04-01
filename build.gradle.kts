@@ -82,6 +82,17 @@ tasks.withType<KotlinCompile> {
     }
 }
 
+/**
+ * Gradle에서는 기본적으로 하나의 source 디렉토리만 지원(src/main/java)
+ * 따라서 sourceSets 설정을 통해 여러 source 디렉토리 지원
+ */
+sourceSets {
+    main {
+        resources {
+            srcDirs(listOf("src/main/resources", "src/main/resources/profiles"))
+        }
+    }
+
 jacoco {
     toolVersion = "0.8.7"
 }
@@ -145,4 +156,8 @@ fun excludedClassFilesForReport(classDirectories: ConfigurableFileCollection) {
 tasks.withType<Test> {
     useJUnitPlatform()
     finalizedBy("jacocoTestReport")
+}
+
+tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
+    mainClass.set("com.yapp.web2.BookmarkersApplicationKt")
 }
