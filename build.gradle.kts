@@ -162,3 +162,9 @@ tasks.withType<Test> {
 tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
     mainClass.set("com.yapp.web2.BookmarkersApplicationKt")
 }
+
+tasks {
+    processResources {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
+}
