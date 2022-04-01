@@ -1,6 +1,6 @@
 package com.yapp.web2.batch.scheduler
 
-import com.yapp.web2.batch.job.NotificationConfig
+import com.yapp.web2.batch.job.NotificationJob
 import org.springframework.batch.core.JobParameter
 import org.springframework.batch.core.JobParameters
 import org.springframework.batch.core.launch.JobLauncher
@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat
 @Component
 class RemindNotificationScheduler(
     private val jobLauncher: JobLauncher,
-    private val notificationConfig: NotificationConfig
+    private val notificationJob: NotificationJob
 ) {
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
 
@@ -24,6 +24,6 @@ class RemindNotificationScheduler(
         jobConf["time"] = JobParameter(dateFormat.format(System.currentTimeMillis()))
         val jobParameters = JobParameters(jobConf)
 
-        jobLauncher.run(notificationConfig.bookmarkNotificationJob(), jobParameters)
+        jobLauncher.run(notificationJob.bookmarkNotificationJob(), jobParameters)
     }
 }

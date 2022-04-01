@@ -18,10 +18,11 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 @EnableBatchProcessing
-class NotificationConfig(
+class NotificationJob(
     private val jobBuilderFactory: JobBuilderFactory,
     private val stepBuilderFactory: StepBuilderFactory,
-    private val notificationService: RemindService
+    private val notificationService: RemindService,
+    private val jobCompletionListener: JobCompletionListener
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -31,6 +32,7 @@ class NotificationConfig(
         return jobBuilderFactory.get("bookmarkNotificationJob")
             .start(bookmarkNotificationStep())
             .incrementer(RunIdIncrementer())
+            .listener(jobCompletionListener)
             .build()
     }
 

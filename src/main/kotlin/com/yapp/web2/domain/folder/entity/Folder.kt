@@ -160,17 +160,7 @@ class Folder(
         this.parentFolder = null
     }
 
-    fun updateFolderToParent(index: Int) {
-        this.parentFolder = null
-        this.index = index
-    }
-
     fun updateIndex(nextIndex: Int) {
         this.index = nextIndex
-    }
-
-    fun updateIndexAndParentFolder(nextIndex: Int, nextParentFolder: Folder) {
-        this.index = nextIndex
-        this.parentFolder = nextParentFolder
     }
 }
