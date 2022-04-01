@@ -267,5 +267,4 @@ internal class FolderControllerTest {
     private fun getResponseBody(resultActions: ResultActions): String {
         return resultActions.andReturn().response.contentAsString
     }
-
 }

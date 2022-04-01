@@ -125,7 +125,7 @@ class AccountService(
     }
 
     fun checkExtension(userVersion: String): String {
-        return if(userVersion == extensionVersion) Message.LATEST_EXTENSION_VERSION
+        return if (userVersion == extensionVersion) Message.LATEST_EXTENSION_VERSION
         else Message.OLD_EXTENSION_VERSION
     }
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 import java.util.stream.Collectors
 
 @Component
-class JobCompletionListener: JobExecutionListenerSupport() {
+class JobCompletionListener : JobExecutionListenerSupport() {
 
     private val log = LoggerFactory.getLogger(javaClass)
     private val slackApi: SlackServiceImpl = SlackServiceImpl()

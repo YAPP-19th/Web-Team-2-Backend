@@ -96,7 +96,6 @@ class AccountController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
-
     @GetMapping("/{extensionVersion}")
     fun checkExtensionVersion(@PathVariable extensionVersion: String): ResponseEntity<String> {
         return ResponseEntity.status(HttpStatus.OK).body(accountService.checkExtension(extensionVersion))

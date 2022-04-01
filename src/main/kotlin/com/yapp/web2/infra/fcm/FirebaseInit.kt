@@ -1,8 +1,6 @@
 package com.yapp.web2.infra.fcm
 
 import com.google.auth.oauth2.GoogleCredentials
-import com.google.common.util.concurrent.ListeningExecutorService
-import com.google.common.util.concurrent.MoreExecutors
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import org.slf4j.LoggerFactory
