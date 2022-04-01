@@ -92,6 +92,7 @@ sourceSets {
             srcDirs(listOf("src/main/resources", "src/main/resources/profiles"))
         }
     }
+}
 
 jacoco {
     toolVersion = "0.8.7"
