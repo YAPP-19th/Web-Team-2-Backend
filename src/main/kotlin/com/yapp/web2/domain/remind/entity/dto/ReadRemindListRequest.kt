@@ -8,7 +8,8 @@ class ReadRemindListRequest(
 
     @ApiModelProperty(
         value = "북마크 ID 리스트",
-        required= true,
-        example = "bookmarkIdList : \"61bdbbaa72b0f85372ad57c8\", \"61bdbbaa72b0f8551ac8adn\" ... ")
+        required = true,
+        example = "bookmarkIdList : \"61bdbbaa72b0f85372ad57c8\", \"61bdbbaa72b0f8551ac8adn\" ... "
+    )
     val bookmarkIdList: MutableList<String>
 )

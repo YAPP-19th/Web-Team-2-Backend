@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 @ApiModel(description = "리마인드 리스트 조회 Response")
 class RemindListResponse(
 
-    @ApiModelProperty(value = "북마크 ID", required= true, example = "61bdbbaa72b0f85372ad57c8")
+    @ApiModelProperty(value = "북마크 ID", required = true, example = "61bdbbaa72b0f85372ad57c8")
     val id: String,
 
     @ApiModelProperty(value = "북마크 제목", required = true, example = "북마크 정보~")
