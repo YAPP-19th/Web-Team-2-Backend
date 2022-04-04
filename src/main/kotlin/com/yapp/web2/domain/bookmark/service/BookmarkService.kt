@@ -2,6 +2,7 @@ package com.yapp.web2.domain.bookmark.service
 
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.bookmark.entity.Bookmark
+import com.yapp.web2.domain.bookmark.entity.Remind
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
@@ -68,7 +69,7 @@ class BookmarkService(
                 folder.name,
                 bookmarkDto.url,
                 bookmarkDto.title,
-                remindTime = LocalDate.now().plusDays(account.remindCycle!!.toLong()).toString(),
+                remindTime = LocalDate.now().plusDays(account.remindCycle.toLong()).toString(),
                 bookmarkDto.image,
                 bookmarkDto.description
             )
@@ -95,7 +96,7 @@ class BookmarkService(
                 null,
                 bookmarkDto.url,
                 bookmarkDto.title,
-                remindTime = LocalDate.now().plusDays(account.remindCycle!!.toLong()).toString(),
+                remindTime = LocalDate.now().plusDays(account.remindCycle.toLong()).toString(),
                 bookmarkDto.image,
                 bookmarkDto.description
             )
@@ -139,19 +140,46 @@ class BookmarkService(
     }
 
     fun updateBookmark(token: String, bookmarkId: String, updateBookmarkDto: Bookmark.UpdateBookmarkDto): Bookmark {
-        val toChangeBookmark = getBookmarkIfPresent(bookmarkId)
         val account = jwtProvider.getAccountFromToken(token)
+        var toChangeBookmark = getBookmarkIfPresent(bookmarkId)
 
         updateBookmarkDto.let {
             toChangeBookmark.title = it.title
-            when (updateBookmarkDto.remind) {
-                true -> toChangeBookmark.remindTime =
-                    LocalDate.now().plusDays(account.remindCycle!!.toLong()).toString()
-                false -> toChangeBookmark.remindTime = null
-            }
+            toChangeBookmark = updateBookmarkRemind(account, toChangeBookmark, updateBookmarkDto)
         }
 
         return bookmarkRepository.save(toChangeBookmark)
+    }
+
+    private fun updateBookmarkRemind(
+        account: Account,
+        toChangeBookmark: Bookmark,
+        updateBookmarkDto: Bookmark.UpdateBookmarkDto
+    ): Bookmark {
+        val remindList = toChangeBookmark.remindList
+
+        when (updateBookmarkDto.remind) {
+            true -> {
+                val remind = Remind(
+                    remindTime = LocalDate.now().plusDays(account.remindCycle.toLong()).toString(),
+                    fcmToken = account.fcmToken!!
+                )
+                remindList.add(remind)
+            }
+            false -> {
+                // fcm 토큰이 존재하지 않으면 예외처리
+                if (!isFcmTokenExist(account.fcmToken, remindList)) throw RuntimeException()
+                for (remind in remindList)
+                    if (remind.fcmToken == account.fcmToken) remindList.remove(remind)
+            }
+        }
+
+        return toChangeBookmark
+    }
+
+    private fun isFcmTokenExist(token: String?, remindList: List<Remind>): Boolean {
+        for (remind in remindList) if (remind.fcmToken == token) return true
+        return false
     }
 
     fun increaseBookmarkClickCount(bookmarkId: String): Bookmark {
