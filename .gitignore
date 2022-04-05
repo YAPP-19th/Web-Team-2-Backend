@@ -39,5 +39,8 @@ out/
 ### properties ###
 /src/main/resources/profiles/*.properties
 
+### local-docker-env ###
+/src/main/resources/local-docker-env/*.yaml
+
 ## FCM
 /src/main/resources/firebase-service-key.json
