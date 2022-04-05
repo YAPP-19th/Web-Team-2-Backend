@@ -139,13 +139,15 @@ class BookmarkService(
             ?: throw bookmarkNotFoundException
     }
 
-    fun updateBookmark(token: String, bookmarkId: String, updateBookmarkDto: Bookmark.UpdateBookmarkDto): Bookmark {
-        val account = jwtProvider.getAccountFromToken(token)
+    // update는 제목과 description만 변경이 되도록 수정한다.
+    // 기존에 존재하던 remind toggle 변경 API를 따로 뺀다.
+    fun updateBookmark(bookmarkId: String, updateBookmarkDto: Bookmark.UpdateBookmarkDto): Bookmark {
+        // TODO: 2022/04/05 AOP를 통하여 접근 user의 권한에 따른 접근허용 범위 체크
         var toChangeBookmark = getBookmarkIfPresent(bookmarkId)
 
         updateBookmarkDto.let {
             toChangeBookmark.title = it.title
-            toChangeBookmark = updateBookmarkRemind(account, toChangeBookmark, updateBookmarkDto)
+            toChangeBookmark.description = it.description
         }
 
         return bookmarkRepository.save(toChangeBookmark)
@@ -158,21 +160,21 @@ class BookmarkService(
     ): Bookmark {
         val remindList = toChangeBookmark.remindList
 
-        when (updateBookmarkDto.remind) {
-            true -> {
-                val remind = Remind(
-                    remindTime = LocalDate.now().plusDays(account.remindCycle.toLong()).toString(),
-                    fcmToken = account.fcmToken!!
-                )
-                remindList.add(remind)
-            }
-            false -> {
-                // fcm 토큰이 존재하지 않으면 예외처리
-                if (!isFcmTokenExist(account.fcmToken, remindList)) throw RuntimeException()
-                for (remind in remindList)
-                    if (remind.fcmToken == account.fcmToken) remindList.remove(remind)
-            }
-        }
+//        when (updateBookmarkDto.remind) {
+//            true -> {
+//                val remind = Remind(
+//                    remindTime = LocalDate.now().plusDays(account.remindCycle.toLong()).toString(),
+//                    fcmToken = account.fcmToken!!
+//                )
+//                remindList.add(remind)
+//            }
+//            false -> {
+//                // fcm 토큰이 존재하지 않으면 예외처리
+//                if (!isFcmTokenExist(account.fcmToken, remindList)) throw RuntimeException()
+//                for (remind in remindList)
+//                    if (remind.fcmToken == account.fcmToken) remindList.remove(remind)
+//            }
+//        }
 
         return toChangeBookmark
     }
