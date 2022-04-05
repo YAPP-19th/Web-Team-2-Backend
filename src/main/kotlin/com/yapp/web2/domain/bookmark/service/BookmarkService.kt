@@ -139,8 +139,6 @@ class BookmarkService(
             ?: throw bookmarkNotFoundException
     }
 
-    // update는 제목과 description만 변경이 되도록 수정한다.
-    // 기존에 존재하던 remind toggle 변경 API를 따로 뺀다.
     fun updateBookmark(bookmarkId: String, updateBookmarkDto: Bookmark.UpdateBookmarkDto): Bookmark {
         // TODO: 2022/04/05 AOP를 통하여 접근 user의 권한에 따른 접근허용 범위 체크
         val toChangeBookmark = getBookmarkIfPresent(bookmarkId)
