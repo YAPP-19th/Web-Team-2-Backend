@@ -81,9 +81,17 @@ class BookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.MOVED)
     }
 
+    @PostMapping("/remind/{bookmarkId}")
+    fun toggleOnRemindBookmark(request: HttpServletRequest, @PathVariable bookmarkId: String): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        bookmarkService.toggleOnRemindBookmark(token, bookmarkId)
+        return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
+    }
+
     @DeleteMapping("/remind/{bookmarkId}")
-    fun releaseRemindBookmark(@PathVariable bookmarkId: String): ResponseEntity<String> {
-        bookmarkService.releaseRemindBookmark(bookmarkId)
+    fun toggleOffRemindBookmark(request: HttpServletRequest, @PathVariable bookmarkId: String): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        bookmarkService.toggleOffRemindBookmark(token, bookmarkId)
         return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
     }
 }

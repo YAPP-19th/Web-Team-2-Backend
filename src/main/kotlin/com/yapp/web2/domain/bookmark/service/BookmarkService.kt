@@ -143,7 +143,7 @@ class BookmarkService(
     // 기존에 존재하던 remind toggle 변경 API를 따로 뺀다.
     fun updateBookmark(bookmarkId: String, updateBookmarkDto: Bookmark.UpdateBookmarkDto): Bookmark {
         // TODO: 2022/04/05 AOP를 통하여 접근 user의 권한에 따른 접근허용 범위 체크
-        var toChangeBookmark = getBookmarkIfPresent(bookmarkId)
+        val toChangeBookmark = getBookmarkIfPresent(bookmarkId)
 
         updateBookmarkDto.let {
             toChangeBookmark.title = it.title
@@ -153,34 +153,43 @@ class BookmarkService(
         return bookmarkRepository.save(toChangeBookmark)
     }
 
-    private fun updateBookmarkRemind(
-        account: Account,
-        toChangeBookmark: Bookmark,
-        updateBookmarkDto: Bookmark.UpdateBookmarkDto
-    ): Bookmark {
-        val remindList = toChangeBookmark.remindList
+    fun toggleOnRemindBookmark(token: String, bookmarkId: String) {
+        val account = jwtProvider.getAccountFromToken(token)
+        val accountFcmToken = account.fcmToken ?: throw RuntimeException()
+        val bookmark = getBookmarkIfPresent(bookmarkId)
+        val remindList = bookmark.remindList
+        val remindNow = Remind(
+            remindTime = LocalDate.now().plusDays(account.remindCycle.toLong()).toString(),
+            fcmToken = accountFcmToken
+        )
 
-//        when (updateBookmarkDto.remind) {
-//            true -> {
-//                val remind = Remind(
-//                    remindTime = LocalDate.now().plusDays(account.remindCycle.toLong()).toString(),
-//                    fcmToken = account.fcmToken!!
-//                )
-//                remindList.add(remind)
-//            }
-//            false -> {
-//                // fcm 토큰이 존재하지 않으면 예외처리
-//                if (!isFcmTokenExist(account.fcmToken, remindList)) throw RuntimeException()
-//                for (remind in remindList)
-//                    if (remind.fcmToken == account.fcmToken) remindList.remove(remind)
-//            }
-//        }
+        if (isFcmTokenExistInTheList(accountFcmToken, remindList)) throw RuntimeException()
 
-        return toChangeBookmark
+        bookmark.remindList.add(remindNow)
+        bookmarkRepository.save(bookmark)
     }
 
-    private fun isFcmTokenExist(token: String?, remindList: List<Remind>): Boolean {
-        for (remind in remindList) if (remind.fcmToken == token) return true
+    fun toggleOffRemindBookmark(token: String, bookmarkId: String) {
+        val account = jwtProvider.getAccountFromToken(token)
+        val accountFcmToken = account.fcmToken ?: throw RuntimeException()
+        val bookmark = getBookmarkIfPresent(bookmarkId)
+        val remindList = bookmark.remindList
+
+        if (!isFcmTokenExistInTheList(accountFcmToken, remindList)) throw RuntimeException()
+
+        for (remind in remindList) {
+            if (remind.fcmToken == accountFcmToken) {
+                bookmark.remindList.remove(remind)
+                break
+            }
+        }
+
+        bookmarkRepository.save(bookmark)
+    }
+
+    private fun isFcmTokenExistInTheList(fcmToken: String?, remindList: List<Remind>): Boolean {
+        for (remind in remindList)
+            if (remind.fcmToken == fcmToken) return true
         return false
     }
 
@@ -249,13 +258,5 @@ class BookmarkService(
                 bookmark?.let { entity -> bookmarkRepository.delete(entity) }
             }
         }
-    }
-
-    fun releaseRemindBookmark(bookmarkId: String) {
-        bookmarkRepository.findByIdOrNull(bookmarkId)
-            ?.let {
-                it.remindTime = null
-                bookmarkRepository.save(it)
-            } ?: bookmarkNotFoundException
     }
 }
