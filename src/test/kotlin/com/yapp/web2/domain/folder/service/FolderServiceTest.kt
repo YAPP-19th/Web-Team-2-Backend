@@ -24,6 +24,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.repository.findByIdOrNull
+import java.util.Optional
 
 @ExtendWith(MockKExtension::class)
 internal open class FolderServiceTest {
@@ -59,17 +60,30 @@ internal open class FolderServiceTest {
     }
 
     @Test
-    fun `부모 폴더가 존재하지 않는 최상위 폴더 생성`() {
+    fun `기본 폴더를 생성한다`() {
+        // given
+        val defaultFolder = Folder("보관함", index = 0, parentFolder = null)
+        val account = Account("a@a.com")
+
+        every { folderRepository.save(any()) } returns defaultFolder
+
+        // when
+        folderService.createDefaultFolder(account)
+
+        // then
+        verify(exactly = 1) { folderRepository.save(any()) }
+    }
+
+    @Test
+    fun `부모 폴더가 존재하지 않는 최상위 폴더를 생성한다`() {
         // given
         val request = Folder.FolderCreateRequest(name = "Root Folder")
         val expected = Folder.dtoToEntity(request, 0)
 
-        // mock
         every { jwtProvider.getIdFromToken(any()) } returns 1L
-        every { accountRepository.findByIdOrNull(any()) } returns user
-        every { folderRepository.save(expected) } returns expected
-        every { folderRepository.findAllByFolderCount(any(), any()) } returns 0
+        every { accountRepository.findById(any()) } returns Optional.of(user)
         every { folderRepository.findAllByParentFolderCount(any()) } returns 0
+        every { folderRepository.save(expected) } returns expected
 
         // when
         val actual = folderService.createFolder(request, "test")
@@ -82,33 +96,32 @@ internal open class FolderServiceTest {
     }
 
     @Test
-    fun `부모 폴더가 존재하는 하위 폴더 생성`() {
+    fun `부모 폴더가 존재하는 하위 폴더를 생성한다`() {
         // given
         val parentFolder = Folder("Parent Folder", 2, 0, null)
+        parentFolder.id = 2L
         val request = Folder.FolderCreateRequest(2L, "Children Folder")
         val childFolder = Folder.dtoToEntity(request, parentFolder, 2)
 
-        // mock
         every { jwtProvider.getIdFromToken(any()) } returns 1L
-        every { accountRepository.findByIdOrNull(any()) } returns user
+        every { accountRepository.findById(any()) } returns Optional.of(user)
         every { folderRepository.findById(request.parentId).get() } returns parentFolder
         every { folderRepository.save(childFolder) } returns childFolder
         every { folderRepository.findAllByFolderCount(any(), any()) } returns 0
 
         // when
         val actual = folderService.createFolder(request, "test")
-        val actual2 = actual.parentFolder
 
         // then
         assertAll(
             { assertThat(actual).isEqualTo(childFolder) },
-            { assertThat(actual2).isEqualTo(parentFolder) }
+            { assertThat(actual.parentFolder).isEqualTo(parentFolder) }
         )
     }
 
     @Test
     fun `폴더를 수정하면 하위의 모든 북마크들도 함께 수정된다`() {
-        // given & mock
+        // given
         val bookmarkList: MutableList<Bookmark> = makeBookmarks()
         every { bookmarkRepository.findByFolderId(any()) } returns bookmarkList
         every { folderRepository.findByIdOrNull(any()) } returns folder
@@ -131,9 +144,21 @@ internal open class FolderServiceTest {
         )
     }
 
+    // TODO: 2022/04/03
+    @Test
+    fun `폴더를 드래그 앤 드랍 이동한다`() {
+
+    }
+
+    // TODO: 2022/04/03
+    @Test
+    fun `버튼 클릭에 의해 폴더가 이동된다`() {
+
+    }
+
     @Test
     fun `폴더를 삭제한다`() {
-        // mock
+        // given
         every { folderRepository.findByIdOrNull(any()) } returns folder
         every { folderRepository.deleteByFolder(folder) } just Runs
 
@@ -148,7 +173,7 @@ internal open class FolderServiceTest {
 
     @Test
     fun `존재하지 않는 폴더는 예외가 발생한다`() {
-        // given & when
+        // given
         every { folderRepository.findByIdOrNull(any()) }.throws(FolderNotFoundException())
 
         // then
@@ -166,7 +191,6 @@ internal open class FolderServiceTest {
         rootFolder2.children = getChildFolders(rootFolder2, 0, 6)
         val allFolder: MutableList<Folder> = mutableListOf(rootFolder1, rootFolder2)
 
-        // mock
         every { jwtProvider.getIdFromToken(any()) } returns 1L
         every { accountRepository.findById(any()).get() } returns user
         every { folderRepository.findAllByParentFolderIsNull(user) } returns allFolder
@@ -186,7 +210,6 @@ internal open class FolderServiceTest {
         val bookmarks2: MutableList<Bookmark> = makeBookmarks(5, 9)
         val deleteList = Folder.FolderListDeleteRequest(mutableListOf(1, 2))
 
-        // mock
         every { bookmarkRepository.findByFolderId(1) } returns bookmarks1
         every { bookmarkRepository.findByFolderId(2) } returns bookmarks2
         every { folderRepository.deleteById(any()) } just Runs
@@ -219,7 +242,6 @@ internal open class FolderServiceTest {
         val parentFolder = getParentFolder("부모 폴더")
         parentFolder.children = getChildFolders(parentFolder, 0, 4)
 
-        // mock
         every { folderRepository.findByIdOrNull(any()) } returns parentFolder
 
         // when
@@ -236,12 +258,11 @@ internal open class FolderServiceTest {
         val parentFolder = getParentFolder("부모 폴더")
         val folder = getParentFolder("자식 폴더")
         rootParentFolder.id = 3L
-        parentFolder.id = 11L
+        parentFolder.id = 2L
         folder.id = 1L
         folder.parentFolder = parentFolder
         parentFolder.parentFolder = rootParentFolder
 
-        // mock
         every { folderRepository.findByIdOrNull(any()) } returns folder
 
         // when
