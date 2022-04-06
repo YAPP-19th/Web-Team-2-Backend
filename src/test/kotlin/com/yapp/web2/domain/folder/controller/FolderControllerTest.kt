@@ -95,7 +95,7 @@ internal class FolderControllerTest {
         // given
         val moveFolderRequest = Folder.FolderMoveRequest(2L, 0)
         /* just Runs vs returns Unit 의 차이점은 뭘까? */
-        every { folderService.moveFolderDragAndDrop(any(), any(), any()) } returns Unit
+        every { folderService.moveFolderByDragAndDrop(any(), any(), any()) } returns Unit
 
         // when
         val resultAction = patchResultAction("/api/v1/folder/3/move", moveFolderRequest)
@@ -112,7 +112,7 @@ internal class FolderControllerTest {
     fun `폴더를 이동한다(버튼)`() {
         // given
         val moveFolderButtonRequest = Folder.FolderMoveButtonRequest(mutableListOf(1L), 1L)
-        every { folderService.moveFolderButton(any(), any()) } just Runs
+        every { folderService.moveFolderByButton(any(), any()) } just Runs
 
         // when
         val resultAction = patchResultAction("/api/v1/folder/move", moveFolderButtonRequest)

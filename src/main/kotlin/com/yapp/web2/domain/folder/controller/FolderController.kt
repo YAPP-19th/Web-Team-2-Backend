@@ -47,7 +47,7 @@ class FolderController(
         @RequestBody @Valid @ApiParam(value = "이동할 폴더의 정보", required = true) request: Folder.FolderMoveRequest
     ): ResponseEntity<String> {
         val accessToken = ControllerUtil.extractAccessToken(servletRequest)
-        folderService.moveFolderDragAndDrop(folderId, request, accessToken)
+        folderService.moveFolderByDragAndDrop(folderId, request, accessToken)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
@@ -58,7 +58,7 @@ class FolderController(
         @RequestBody @ApiParam(value = "이동할 폴더들의 ID 및 다음 폴더 ID", required = true) request: Folder.FolderMoveButtonRequest
     ): ResponseEntity<String> {
         val accessToken = ControllerUtil.extractAccessToken(servletRequest)
-        folderService.moveFolderButton(accessToken, request)
+        folderService.moveFolderByButton(accessToken, request)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
