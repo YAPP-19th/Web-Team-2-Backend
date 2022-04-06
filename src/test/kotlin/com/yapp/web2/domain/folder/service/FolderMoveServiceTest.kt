@@ -63,7 +63,7 @@ class FolderMoveServiceTest {
         every { folderRepository.findAllByParentFolderIsNull(any()) } returns topFolderList
 
         // when
-        folderService.moveFolderDragAndDrop(0, moveRequest, "test")
+        folderService.moveFolderByDragAndDrop(0, moveRequest, "test")
 
         // then
         assertAll(
