@@ -9,8 +9,8 @@ import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.domain.folder.service.move.factory.FolderMoveFactory
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveInnerStrategy
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveWithEqualParentOrTopFolder
+import com.yapp.web2.exception.custom.AccountNotFoundException
 import com.yapp.web2.exception.custom.FolderNotFoundException
-import com.yapp.web2.exception.custom.FolderSizeExceedException
 import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -26,7 +26,6 @@ class FolderService(
 ) {
     companion object {
         private val folderNotFoundException = FolderNotFoundException()
-        private val folderSizeExceedException = FolderSizeExceedException()
     }
 
     fun createDefaultFolder(account: Account) {
@@ -37,27 +36,46 @@ class FolderService(
     }
 
     fun createFolder(request: Folder.FolderCreateRequest, accessToken: String): Folder {
-        val userId = jwtProvider.getIdFromToken(accessToken)
-        val user = accountRepository.findByIdOrNull(userId)
-        val folder: Folder
-
-        when (isParentFolder(request.parentId)) {
-            true -> { // 보관함(최상위 폴더일 때) -> index 설정만 진행
-                val index = folderRepository.findAllByParentFolderCount(userId)
-                folder = Folder.dtoToEntity(request, index)
-                val accountFolder = user?.let { AccountFolder(it, folder) }
-                folder.folders?.add(accountFolder!!)
+        val accountId = jwtProvider.getIdFromToken(accessToken)
+        val account = accountRepository.findById(accountId).orElseThrow { AccountNotFoundException() }
+        val folder = when (isParentFolder(request.parentId)) {
+            true -> {
+                makeRootFolder(accountId, account, request)
             }
-            false -> { // 폴더 일 때 -> index 설정, 부모 폴더 찾아서 설정
-                val parentFolder: Folder = folderRepository.findById(request.parentId).get()
-                val index = folderRepository.findAllByFolderCount(userId, request.parentId)
-                folder = Folder.dtoToEntity(request, parentFolder, index)
-
-                val accountFolder = user?.let { AccountFolder(it, folder) }
-                parentFolder.folders?.add(accountFolder!!)
+            false -> {
+                makeChildFolder(accountId, account, request)
             }
         }
         return folderRepository.save(folder)
+    }
+
+    // 보관함(최상위 폴더일 때) -> index만 설정
+    private fun makeRootFolder(
+        accountId: Long,
+        account: Account,
+        request: Folder.FolderCreateRequest
+    ): Folder {
+        val index = folderRepository.findAllByParentFolderCount(accountId)
+        val folder = Folder.dtoToEntity(request, index)
+        val accountFolder = AccountFolder(account, folder)
+        folder.folders?.add(accountFolder)
+
+        return folder
+    }
+
+    // 폴더 일 때 -> 부모 폴더 찾아서 설정 및 index 설정
+    private fun makeChildFolder(
+        accountId: Long,
+        account: Account,
+        request: Folder.FolderCreateRequest
+    ): Folder {
+        val parentFolder: Folder = folderRepository.findById(request.parentId).get()
+        val index = folderRepository.findAllByFolderCount(accountId, request.parentId)
+        val folder = Folder.dtoToEntity(request, parentFolder, index)
+        val accountFolder = AccountFolder(account, folder)
+        parentFolder.folders?.add(accountFolder)
+
+        return folder
     }
 
     private fun isParentFolder(parentId: Long) = parentId == 0L
@@ -88,13 +106,26 @@ class FolderService(
         }
     }
 
-    fun moveFolderDragAndDrop(id: Long, request: Folder.FolderMoveRequest, accessToken: String) {
+    /**
+     * 폴더 드래그 & 드랍 이동, 케이스는 다음 5가지
+     *  1. 최상위 폴더 -> 상위 폴더 이동
+     *  2. 상위 폴더 -> 최상위 폴더 이동
+     *  3. 상위 폴더 -> 상위 폴더 이동
+     *  4. 최상위 폴더 -> 최상위 폴더 이동
+     *  5. 상위 폴더 -> 상위 폴더 이동
+     * @param folderId: 이동할 폴더 ID
+     * @param request: 이동 후 부모 폴더 & 이동 후 폴더 Index
+     * @param accessToken: Jwt Token
+     */
+    fun moveFolderByDragAndDrop(folderId: Long, request: Folder.FolderMoveRequest, accessToken: String) {
         val userId = jwtProvider.getIdFromToken(accessToken)
         val user = accountRepository.findById(userId).get()
-        val moveFolder = folderRepository.findById(id).get()
+        val moveFolder = folderRepository.findById(folderId).get()
         val nextParentId = request.nextParentId.toString().toLongOrNull()
         var nextParentFolder: Folder? = null
-        nextParentFolder = nextParentId?.let { folderRepository.findById(nextParentId).orElseThrow { FolderNotFoundException() }}
+        nextParentFolder = nextParentId?.let {
+            folderRepository.findById(nextParentId).orElseThrow { FolderNotFoundException() }
+        }
 
         /* 최상위 -> 최상위 OR 상위 -> 상위(동일한 부모) */
         if (isMoveTopFolderToTopFolder(moveFolder, nextParentId) ||
@@ -110,7 +141,17 @@ class FolderService(
         folderMove.folderDragAndDrop(moveFolder, request.nextIndex)
     }
 
-    fun moveFolderButton(accessToken: String, request: Folder.FolderMoveButtonRequest) {
+    private fun isMoveTopFolderToTopFolder(
+        moveFolder: Folder,
+        nextParentId: Long?
+    ) = (moveFolder.parentFolder == null && nextParentId == null)
+
+    private fun isMoveFolderToFolderWithEqualParent(
+        moveFolder: Folder,
+        nextParentFolder: Folder?
+    ) = (moveFolder.parentFolder == nextParentFolder)
+
+    fun moveFolderByButton(accessToken: String, request: Folder.FolderMoveButtonRequest) {
         val userId = jwtProvider.getIdFromToken(accessToken)
         val user = accountRepository.findById(userId).get()
 
@@ -128,7 +169,7 @@ class FolderService(
                 }
             }
 
-        // 이전 폴더 리스트에서 이동하려는 폴더보다 index가 큰 폴더들 -1
+        // 이동 전 폴더 리스트에서 자신보다 index가 큰 폴더들 index - 1
         beforeChildren.stream()
             .filter { it.index > beforeFolder.index }
             .forEach {
@@ -141,16 +182,6 @@ class FolderService(
         beforeFolder.index = nextFolderIndex
         beforeFolder.parentFolder = nextFolder
     }
-
-    private fun isMoveTopFolderToTopFolder(
-        moveFolder: Folder,
-        nextParentId: Long?
-    ) = (moveFolder.parentFolder == null && nextParentId == null)
-
-    private fun isMoveFolderToFolderWithEqualParent(
-        moveFolder: Folder,
-        nextParentFolder: Folder?
-    ) = (moveFolder.parentFolder == nextParentFolder)
 
     @Transactional(readOnly = true)
     fun findByFolderId(folderId: Long): Folder {
