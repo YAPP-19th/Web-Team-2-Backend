@@ -44,7 +44,7 @@ jobs:
 
     ## build
     - name: Build with Gradle
-      run: ./gradlew build -x test
+      run: ./gradlew build -x test ktlintCheck
     - name: Docker build
       run: |
         docker build -t test2 .
