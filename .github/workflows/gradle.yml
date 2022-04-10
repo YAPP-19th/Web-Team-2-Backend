@@ -44,7 +44,7 @@ jobs:
 
     ## build
     - name: Build with Gradle
-      run: ./gradlew build -x test ktlintCheck ktlintKotlinScriptCheck runKtlintCheckOverTestSourceSet ktlintTestSourceSetCheck ktlintMainSourceSetCheck
+      run: ./gradlew build -x test -x ktlintCheck -x ktlintKotlinScriptCheck -x runKtlintCheckOverTestSourceSet -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck
     - name: Docker build
       run: |
         docker build -t test2 .
