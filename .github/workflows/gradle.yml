@@ -65,4 +65,3 @@ jobs:
             docker tag juhyun419/tests2:${GITHUB_SHA::7} tests
             docker stop server
             docker run -d --rm --name server -p 8079:8079 tests
-
