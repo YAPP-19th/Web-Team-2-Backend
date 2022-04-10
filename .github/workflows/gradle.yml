@@ -47,7 +47,6 @@ jobs:
       run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck
     - name: Docker build
       run: |
-#        docker build -t repos .
           docker login -u ${{ secrets.USERNAME }} -p ${{ secrets.PASSWORD }}
           docker build -t tests2 .
           docker tag tests2 juhyun419/tests2:${GITHUB_SHA::7}
