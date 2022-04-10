@@ -44,10 +44,10 @@ jobs:
 
     ## build
     - name: Build with Gradle
-      run: ./gradlew build -x test -x ktlintCheck -x ktlintKotlinScriptCheck -x runKtlintCheckOverTestSourceSet -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck
+      run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck
     - name: Docker build
       run: |
-        docker build -t juhyun419/repos .
+        docker build -t repos .
 #          docker login -u ${{ secrets.USERNAME }} -p ${{ secrets.PASSWORD }}
 #          docker build -t yapptest .
 #          docker tag yapptest juhyun419/yapptest:${GITHUB_SHA::7}
