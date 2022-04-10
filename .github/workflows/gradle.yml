@@ -30,12 +30,24 @@ jobs:
       with:
         java-version: '11'
         distribution: 'temurin' # https://github.com/actions/setup-java
+
+    ## gradle caching
+    - name: Gradle Caching
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    ## build
     - name: Build with Gradle
       run: ./gradlew build -x test
     - name: Docker build
       run: |
           docker login -u ${{ secrets.USERNAME }} -p ${{ secrets.PASSWORD }}
-          docker build -t juhyun419/yapp-test .
-          docker tag yapp-test juhyun419/yapp-test:${GITHUB_SHA::7}
-          docker push juhyun419/yapp-test
-
+          docker build -t yapptest .
+          docker tag yapptest juhyun419/yapptest:${GITHUB_SHA::7}
+          docker push juhyun419/yapptest
