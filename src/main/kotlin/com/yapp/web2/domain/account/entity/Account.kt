@@ -57,7 +57,7 @@ class Account(
     var fcmToken: String? = null
 
     @Column(length = 10)
-    var remindCycle: Int? = 7
+    var remindCycle: Int = 7
 
     @Column(nullable = true, length = 255)
     var image: String = BASIC_IMAGE_URL
