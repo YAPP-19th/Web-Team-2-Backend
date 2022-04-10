@@ -45,10 +45,24 @@ jobs:
     ## build
     - name: Build with Gradle
       run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck
-    - name: Docker build
+    - name: Docker build & push
       run: |
-          docker login -u ${{ secrets.USERNAME }} -p ${{ secrets.PASSWORD }}
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -t tests2 .
           docker tag tests2 juhyun419/tests2:${GITHUB_SHA::7}
           docker push juhyun419/tests2:${GITHUB_SHA::7}
+
+    ## Deploy
+    - name: Deploy
+      uses: appleboy/ssh-action@master
+      with:
+        host: ec2-user@ec2-52-79-62-36.ap-northeast-2.compute.amazonaws.com
+        username: ec2-user
+        key: ${{ secrets.PRIVATE_KEY }}
+        envs: GITHUB_SHA
+        script: |
+            docker pull juhyun419/tests2:${GITHUB_SHA::7}
+            docker tag juhyun419/tests2:${GITHUB_SHA::7} tests
+            docker stop server
+            docker run -d --rm --name server -p 8079:8079 tests
 
