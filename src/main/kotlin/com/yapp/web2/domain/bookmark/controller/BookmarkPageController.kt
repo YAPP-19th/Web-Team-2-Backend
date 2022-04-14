@@ -23,7 +23,8 @@ class BookmarkPageController(
         pageable: Pageable,
         @RequestParam remind: Boolean
     ): ResponseEntity<Page<Bookmark>> {
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByFolderId(folderId, pageable, remind))
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(bookmarkPageService.getAllPageByFolderId(folderId, pageable, remind))
     }
 
     @GetMapping("/main")
@@ -33,7 +34,8 @@ class BookmarkPageController(
         @RequestParam remind: Boolean
     ): ResponseEntity<Page<Bookmark>> {
         val token = ControllerUtil.extractAccessToken(request)
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getAllPageByUserId(token, pageable, remind))
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(bookmarkPageService.getAllPageByUserId(token, pageable, remind))
     }
 
     @GetMapping("/trash")
@@ -43,7 +45,8 @@ class BookmarkPageController(
         @RequestParam remind: Boolean
     ): ResponseEntity<Page<Bookmark>> {
         val token = ControllerUtil.extractAccessToken(request)
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkPageService.getTrashPageByUserId(token, pageable, remind))
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(bookmarkPageService.getTrashPageByUserId(token, pageable, remind))
     }
 
     @GetMapping("/search/{keyWord}")
@@ -53,7 +56,8 @@ class BookmarkPageController(
         pageable: Pageable,
     ): ResponseEntity<Page<Bookmark>> {
         val token = ControllerUtil.extractAccessToken(request)
-        return ResponseEntity.status(HttpStatus.OK).body(bookmarkSearchService.searchKeywordOwnUserId(token, keyWord, pageable))
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(bookmarkSearchService.searchKeywordOwnUserId(token, keyWord, pageable))
     }
 
     @GetMapping("/today")
