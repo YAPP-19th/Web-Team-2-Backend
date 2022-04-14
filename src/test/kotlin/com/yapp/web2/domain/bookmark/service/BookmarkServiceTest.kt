@@ -14,7 +14,7 @@ import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.springframework.data.repository.findByIdOrNull
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -68,7 +68,7 @@ internal class BookmarkServiceTest {
             val predictException = ObjectNotFoundException()
 
             //when
-            val actualException = Assertions.assertThrows(ObjectNotFoundException::class.java) {
+            val actualException = assertThrows(ObjectNotFoundException::class.java) {
                 bookmarkService.addBookmark(token, folder.id!!, bookmarkDto)
             }
 
@@ -85,7 +85,7 @@ internal class BookmarkServiceTest {
             every { bookmarkRepository.findAllByFolderId(folder.id!!) } returns listOf(bookmark)
 
             //when
-            val actualException = Assertions.assertThrows(BusinessException::class.java) {
+            val actualException = assertThrows(BusinessException::class.java) {
                 bookmarkService.addBookmark(token, folder.id!!, sameBookmarkDto)
             }
 
@@ -117,7 +117,7 @@ internal class BookmarkServiceTest {
             every { bookmarkRepository.findBookmarkById(bookmark.id) } returns null
 
             //when
-            val actualException = Assertions.assertThrows(BookmarkNotFoundException::class.java) {
+            val actualException = assertThrows(BookmarkNotFoundException::class.java) {
                 bookmarkService.deleteBookmark(bookmarkIdList)
             }
 
@@ -149,15 +149,11 @@ internal class BookmarkServiceTest {
             //given
             updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", "test")
             every { bookmarkRepository.findBookmarkById(bookmark.id) } returns null
-            val predictException = BookmarkNotFoundException()
 
-            //when
-            val actualException = Assertions.assertThrows(BookmarkNotFoundException::class.java) {
+            //when & then
+            assertThrows(BookmarkNotFoundException::class.java) {
                 bookmarkService.updateBookmark(bookmark.id, updateBookmarkDto)
             }
-
-            //then
-            assertEquals(predictException.message, actualException.message)
         }
 
         @Test
@@ -204,13 +200,10 @@ internal class BookmarkServiceTest {
             every { accountRepository.findAccountById(any()) } returns account
             every { bookmarkRepository.findBookmarkById(any()) } returns bookmark
 
-            //when
-            val actualException = Assertions.assertThrows(RuntimeException::class.java) {
+            //when & then
+            assertThrows(RuntimeException::class.java) {
                 bookmarkService.toggleOnRemindBookmark(testToken, bookmark.id)
             }
-
-            //then
-            assertEquals(RuntimeException::class.java, actualException::class.java)
         }
 
         @Test
@@ -222,13 +215,10 @@ internal class BookmarkServiceTest {
             every { accountRepository.findAccountById(any()) } returns account
             every { bookmarkRepository.findBookmarkById(any()) } returns bookmark
 
-            //when
-            val actualException = Assertions.assertThrows(RuntimeException::class.java) {
+            //when & then
+            assertThrows(RuntimeException::class.java) {
                 bookmarkService.toggleOnRemindBookmark(testToken, bookmark.id)
             }
-
-            //then
-            assertEquals(RuntimeException::class.java, actualException::class.java)
         }
 
         @Test
@@ -256,13 +246,10 @@ internal class BookmarkServiceTest {
             every { accountRepository.findAccountById(any()) } returns account
             every { bookmarkRepository.findBookmarkById(any()) } returns bookmark
 
-            //when
-            val actualException = Assertions.assertThrows(RuntimeException::class.java) {
+            //when & then
+            assertThrows(RuntimeException::class.java) {
             bookmarkService.toggleOffRemindBookmark(testToken, bookmark.id)
             }
-
-            //then
-            assertEquals(RuntimeException::class.java, actualException::class.java)
         }
 
         @Test
@@ -274,13 +261,10 @@ internal class BookmarkServiceTest {
             every { accountRepository.findAccountById(any()) } returns account
             every { bookmarkRepository.findBookmarkById(any()) } returns bookmark
 
-            //when
-            val actualException = Assertions.assertThrows(RuntimeException::class.java) {
+            //when & then
+            assertThrows(RuntimeException::class.java) {
                 bookmarkService.toggleOffRemindBookmark(testToken, bookmark.id)
             }
-
-            //then
-            assertEquals(RuntimeException::class.java, actualException::class.java)
         }
 
         @Test
