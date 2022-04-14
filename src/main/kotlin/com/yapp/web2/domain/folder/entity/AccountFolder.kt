@@ -23,4 +23,6 @@ class AccountFolder(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
+
+    var authority: String = "Guest"
 }

@@ -32,6 +32,7 @@ class FolderService(
         val defaultFolder = Folder("보관함1", index = 0, parentFolder = null)
         val folder = folderRepository.save(defaultFolder)
         val accountFolder = AccountFolder(account, folder)
+        accountFolder.authority = "Admin"
         folder.folders?.add(accountFolder)
     }
 
@@ -58,6 +59,7 @@ class FolderService(
         val index = folderRepository.findAllByParentFolderCount(accountId)
         val folder = Folder.dtoToEntity(request, index)
         val accountFolder = AccountFolder(account, folder)
+        accountFolder.authority = "Admin"
         folder.folders?.add(accountFolder)
 
         return folder
