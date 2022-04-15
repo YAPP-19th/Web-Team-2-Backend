@@ -121,7 +121,7 @@ class Bookmark(
     )
 
     class BookmarkIdList(
-        val idList: MutableList<String>
+        val dotoriIdList: MutableList<String>
     )
 
     fun restore(): Bookmark {
