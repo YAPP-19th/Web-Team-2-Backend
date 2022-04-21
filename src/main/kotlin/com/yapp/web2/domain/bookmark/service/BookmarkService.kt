@@ -155,6 +155,10 @@ class BookmarkService(
         val account = jwtProvider.getAccountFromToken(token)
         val accountFcmToken = account.fcmToken ?: throw RuntimeException()
         val bookmark = getBookmarkIfPresent(bookmarkId)
+
+        // TODO: 2022/04/21 이전 버전에서 리마인드를 설정하는 부분 완벽히 공유로 변경한 후에는 제거하기
+        bookmark.remindTime = LocalDate.now().plusDays(account.remindCycle!!.toLong()).toString()
+
         val remindList = bookmark.remindList
         val remindNow = Remind(
             remindTime = LocalDate.now().plusDays(account.remindCycle.toLong()).toString(),
@@ -173,6 +177,8 @@ class BookmarkService(
         val bookmark = getBookmarkIfPresent(bookmarkId)
         val remindList = bookmark.remindList
 
+        // TODO: 2022/04/21 이전 버전에서 리마인드를 설정하는 부분 완벽히 공유로 변경한 후에는 제거하기, 현재 prod에서 리마인드 설정이 안되는 부분 제거
+        bookmark.remindTime = null
         if (!isFcmTokenExistInTheList(accountFcmToken, remindList)) throw RuntimeException()
 
         for (remind in remindList) {
