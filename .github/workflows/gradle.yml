@@ -46,11 +46,20 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck
 
-    ## docker push
+    ## docker build & push - prod
     - name: Docker build & push
+      if: contains(github.ref, 'main')
       run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -t juhyun419/tests2 .
+          docker build -f DockerFile.prod -t juhyun419/tests2 .
+          docker push ${{ secrets.DOCKER_REPO }}/tests2
+
+    ## docker build & push - dev
+    - name: Docker build & push
+      if: contains(github.ref, 'feature/#125-CICD')
+      run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -f DockerFile.dev -t juhyun419/tests2 .
           docker push ${{ secrets.DOCKER_REPO }}/tests2
 
     ## deploy-to-prod
@@ -65,7 +74,7 @@ jobs:
           script: |
               sudo docker rm -f $(docker ps -qa)
               sudo docker pull ${{ secrets.DOCKER_REPO }}/tests2
-              PROFILE=prod docker-compose up -d
+              docker-compose up -d
               docker image prune -f
 
     ## deploy-to-dev
@@ -79,5 +88,5 @@ jobs:
         script: |
             sudo docker rm -f $(docker ps -qa)
             sudo docker pull ${{ secrets.DOCKER_REPO }}/tests2
-            PROFILE=dev docker-compose up -d
+            docker-compose up -d
             docker image prune -f
