@@ -93,7 +93,23 @@ jobs:
             docker-compose up -d
             docker image prune -f
 
-    ## slack
+  ## time
+  current-time:
+    needs: CI-CD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Current Time
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYY-MM-DDTHH:mm:ss
+          utcOffset: "+09:00" # 기준이 UTC이기 때문에 한국시간인 KST를 맞추기 위해 +9시간 추가
+
+      - name: Print Current Time
+        run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}" # current-time 에서 지정한 포맷대로 현재 시간 출력
+        shell: bash
+
+  ## slack
   action-slack:
     needs: CI-CD
     runs-on: ubuntu-latest
