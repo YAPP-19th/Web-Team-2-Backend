@@ -48,7 +48,6 @@ jobs:
 
     ## docker build & push - prod
     - name: Docker build & push - prod
-      # uses: actions/checkout@v3
       if: contains(github.ref, 'main')
       run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
@@ -57,7 +56,6 @@ jobs:
 
     ## docker build & push - dev
     - name: Docker build & push - dev
-      # uses: actions/checkout@v3
       if: contains(github.ref, 'feature/#125-CICD')
       run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
@@ -92,3 +90,14 @@ jobs:
             sudo docker pull ${{ secrets.DOCKER_REPO }}/tests2
             docker-compose up -d
             docker image prune -f
+
+    ## slack
+    - name: action-slack
+      uses: 8398a7/action-slack@v3
+      with:
+          status: ${{ job.status }}
+          author_name: Github Action Test
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+      env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+      if: always() # Pick up events even if the job fails or is canceled.
