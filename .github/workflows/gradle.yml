@@ -51,8 +51,7 @@ jobs:
       run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -t tests2 .
-          docker tag tests2 ${{ secrets.DOCKER_REPO }}/tests2:${GITHUB_SHA::7}
-          docker push ${{ secrets.DOCKER_REPO }}/tests2:${GITHUB_SHA::7}
+          docker push ${{ secrets.DOCKER_REPO }}/tests2
 
     ## deploy-to-prod
     - name: Deploy to prod
@@ -65,7 +64,7 @@ jobs:
           envs: GITHUB_SHA
           script: |
               sudo docker rm -f $(docker ps -qa)
-              sudo docker pull ${{ secrets.DOCKER_REPO }}/tests2:${GITHUB_SHA::7}
+              sudo docker pull ${{ secrets.DOCKER_REPO }}/tests2
               PROFILE=prod docker-compose up -d
               docker image prune -f
 
@@ -77,9 +76,8 @@ jobs:
         host: ec2-52-79-62-36.ap-northeast-2.compute.amazonaws.com
         username: ec2-user
         key: ${{ secrets.PRIVATE_KEY }}
-        envs: GITHUB_SHA
         script: |
             sudo docker rm -f $(docker ps -qa)
-            sudo docker pull ${{ secrets.DOCKER_REPO }}/tests2:${GITHUB_SHA::7}
+            sudo docker pull ${{ secrets.DOCKER_REPO }}/tests2
             PROFILE=dev docker-compose up -d
             docker image prune -f
