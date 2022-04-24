@@ -102,7 +102,7 @@ jobs:
           fields: repo,message,commit,author,ref,job,took
       env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-      if: steps.deploy-prod = 'success' && steps.deploy-dev = 'success' # Pick up events even if the job fails or is canceled.
+      if: steps.deploy-prod == 'success' && steps.deploy-dev == 'success' # Pick up events even if the job fails or is canceled.
 
   ## remind failure on workflow
   fail-check:
