@@ -56,7 +56,6 @@ jobs:
     steps:
     
     ## build & push to prod
-    - uses: actions/checkout@v3
     - name: Docker build & push to prod
       if: contains(github.ref, 'main')
       run: |
@@ -65,7 +64,6 @@ jobs:
           docker push ${{ secrets.DOCKER_REPO }}/dotoriham-prod
 
     ## build & push to dev
-    - uses: actions/checkout@v3
     - name: Docker build & push to dev
       if: contains(github.ref, 'feature/#125-CICD')
       run: |
