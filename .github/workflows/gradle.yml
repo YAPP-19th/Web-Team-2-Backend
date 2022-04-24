@@ -24,13 +24,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Set up JDK 11
-    - uses: actions/checkout@v3
+      uses: actions/checkout@v3
       with:
         java-version: '11'
         distribution: 'temurin' # https://github.com/actions/setup-java
 
     - name: Gradle Caching
-    - uses: actions/cache@v3
+      uses: actions/cache@v3
       with:
         path: |
           ~/.gradle/caches
@@ -44,9 +44,9 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
-    - name: Build with Gradle
     - uses: actions/checkout@v3
-    - run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
+    - name: Build with Gradle
+      run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
 
   ## docker build & push
   docker-build-push:
@@ -55,19 +55,19 @@ jobs:
     steps:
     
     ## build & push to prod
+    - uses: actions/checkout@v3
     - name: Docker build & push to prod
       if: contains(github.ref, 'main')
-    - uses: actions/checkout@v3
-    - run: |
+      run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile-prod -t juhyun419/dotoriham-prod .
           docker push ${{ secrets.DOCKER_REPO }}/dotoriham-prod
 
     ## build & push to dev
+    - uses: actions/checkout@v3
     - name: Docker build & push to dev
       if: contains(github.ref, 'feature/#125-CICD')
-    - uses: actions/checkout@v3
-    - run: |
+      run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_REPO }}/dotoriham-dev .
           docker push ${{ secrets.DOCKER_REPO }}/dotoriham-dev
@@ -80,7 +80,7 @@ jobs:
     
     ## deploy to prod
     - name: Deploy to prod
-    - uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@master
       if: contains(github.ref, 'main')
       with:
           host: ec2-3-36-38-219.ap-northeast-2.compute.amazonaws.com
@@ -95,7 +95,7 @@ jobs:
 
     ## deploy to dev
     - name: Deploy to dev
-    - uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@master
       if: contains(github.ref, 'feature/#125-CICD')
       with:
         host: ec2-52-79-62-36.ap-northeast-2.compute.amazonaws.com
