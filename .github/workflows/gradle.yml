@@ -95,6 +95,7 @@ jobs:
 
     ## slack
   action-slack:
+    needs: CI-CD
     runs-on: ubuntu-latest
     steps:
         - name: Slack Alarm
