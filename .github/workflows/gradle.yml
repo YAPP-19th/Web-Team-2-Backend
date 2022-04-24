@@ -59,7 +59,7 @@ jobs:
       if: contains(github.ref, 'feature/#125-CICD')
       run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -f Dockerfile-dev -t juhyun419/tests2 .
+          docker build -f /Dockerfile-dev -t juhyun419/tests2 .
           docker push ${{ secrets.DOCKER_REPO }}/tests2
 
     ## deploy-to-prod
