@@ -50,7 +50,7 @@ jobs:
     - name: Docker build & push
       run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -t tests2 .
+          docker build -t juhyun419/tests2 .
           docker push ${{ secrets.DOCKER_REPO }}/tests2
 
     ## deploy-to-prod
