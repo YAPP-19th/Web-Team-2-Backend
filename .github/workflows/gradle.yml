@@ -79,7 +79,6 @@ jobs:
         key: ${{ secrets.PRIVATE_KEY }}
         envs: GITHUB_SHA
         script: |
-            sudo docker rm -f
             sudo docker pull ${{ secrets.DOCKER_REPO }}/tests2:${GITHUB_SHA::7}
             PROFILE=dev docker-compose up -d
             docker image prune -f
