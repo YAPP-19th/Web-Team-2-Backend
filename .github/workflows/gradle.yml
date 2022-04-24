@@ -81,5 +81,5 @@ jobs:
         script: |
             sudo docker rm -f $(docker ps -qa)
             sudo docker pull ${{ secrets.DOCKER_REPO }}/tests2:${GITHUB_SHA::7}
-            PROFILEs=dev docker-compose up -d
+            PROFILE=dev docker-compose up -d
             docker image prune -f
