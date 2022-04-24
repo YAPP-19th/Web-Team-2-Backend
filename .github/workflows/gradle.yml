@@ -106,6 +106,7 @@ jobs:
 
   ## remind failure on workflow
   fail-check:
+    runs-on: ubuntu-latest
     steps:
     - name: Push on failure
       uses: 8398a7/action-slack@v3
