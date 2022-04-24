@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  CI/CD:
     runs-on: ubuntu-latest
     steps:
 
@@ -51,16 +51,16 @@ jobs:
       if: contains(github.ref, 'main')
       run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -f Dockerfile-prod -t juhyun419/tests2 .
-          docker push ${{ secrets.DOCKER_REPO }}/tests2
+          docker build -f Dockerfile-prod -t juhyun419/dotoriham-prod .
+          docker push ${{ secrets.DOCKER_REPO }}/dotoriham-prod
 
     ## docker build & push - dev
     - name: Docker build & push - dev
       if: contains(github.ref, 'feature/#125-CICD')
       run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -f Dockerfile-dev -t juhyun419/tests2 .
-          docker push ${{ secrets.DOCKER_REPO }}/tests2
+          docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_REPO }}/dotoriham-dev .
+          docker push ${{ secrets.DOCKER_REPO }}/dotoriham-dev
 
     ## deploy-to-prod
     - name: Deploy to prod
@@ -73,7 +73,7 @@ jobs:
           envs: GITHUB_SHA
           script: |
               sudo docker rm -f $(docker ps -qa)
-              sudo docker pull ${{ secrets.DOCKER_REPO }}/tests2
+              sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-prod
               docker-compose up -d
               docker image prune -f
 
@@ -87,7 +87,7 @@ jobs:
         key: ${{ secrets.PRIVATE_KEY }}
         script: |
             sudo docker rm -f $(docker ps -qa)
-            sudo docker pull ${{ secrets.DOCKER_REPO }}/tests2
+            sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-dev
             docker-compose up -d
             docker image prune -f
 
