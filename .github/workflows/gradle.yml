@@ -19,16 +19,19 @@ permissions:
   contents: read
 
 jobs:
-  ## jdk setting & gradle caching & gradle build
-  setup:
+  CI-CD:
     runs-on: ubuntu-latest
     steps:
+
+    ## jdk setting
+    - uses: actions/checkout@v3
     - name: Set up JDK 11
-      uses: actions/checkout@v3
+      uses: actions/setup-java@v3
       with:
         java-version: '11'
         distribution: 'temurin' # https://github.com/actions/setup-java
 
+    ## gradle caching
     - name: Gradle Caching
       uses: actions/cache@v3
       with:
@@ -39,16 +42,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
 
-    - uses: actions/checkout@v3
-    - name: Gradle Build
+    ## gradle build
+    - name: Build with Gradle
       run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
 
-  ## docker build & push
-  docker-build-push:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
+    ## docker build & push to production
     - name: Docker build & push to prod
       if: contains(github.ref, 'main')
       run: |
@@ -56,7 +54,7 @@ jobs:
           docker build -f Dockerfile-prod -t juhyun419/dotoriham-prod .
           docker push ${{ secrets.DOCKER_REPO }}/dotoriham-prod
 
-    - uses: actions/checkout@v3
+    ## docker build & push - develop
     - name: Docker build & push to dev
       if: contains(github.ref, 'feature/#125-CICD')
       run: |
@@ -64,11 +62,7 @@ jobs:
           docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_REPO }}/dotoriham-dev .
           docker push ${{ secrets.DOCKER_REPO }}/dotoriham-dev
 
-  ## deploy to server
-  deploy:
-    needs: [setup, docker-build-push]
-    runs-on: ubuntu-latest
-    steps:
+    ## deploy to production
     - name: Deploy to prod
       uses: appleboy/ssh-action@master
       id: deploy-prod
@@ -84,6 +78,7 @@ jobs:
               docker-compose up -d
               docker image prune -f
 
+    ## deploy to develop
     - name: Deploy to dev
       uses: appleboy/ssh-action@master
       id: deploy-dev
@@ -98,33 +93,32 @@ jobs:
             docker-compose up -d
             docker image prune -f
 
-  ## slack
-  slack-message:
-    needs: [setup, docker-build-push, deploy]
+    ## slack
+  action-slack:
     runs-on: ubuntu-latest
     steps:
-    - name: action-slack
-      uses: 8398a7/action-slack@v3
-      with:
-          status: ${{ job.status }}
-          author_name: GitHub-Actions CI/CD
-          fields: repo,message,commit,author,ref,job,took
-      env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-      if: always() # Pick up events even if the job fails or is canceled.
+        - name: Slack Alarm
+          uses: 8398a7/action-slack@v3
+          with:
+              status: ${{ job.status }}
+              author_name: GitHub-Actions CI/CD
+              fields: repo,message,commit,author,ref,job,took
+          env:
+              SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+          if: always()# Pick up events even if the job fails or is canceled.
 
   ## remind failure on workflow
-#   fail-check:
-#     needs: [setup, gradle-build, docker-build-push, deploy]
-#     runs-on: ubuntu-latest
-#     steps:
-#     - name: Push on failure
-#       uses: 8398a7/action-slack@v3
-#       with:
-#           status: ${{ job.status }}
-# #          text: ':fail: Failed GitHub Actions'
-#           author_name: GitHub-Actions CI/CD
-#           fields: repo,message,commit,author,ref,job,took
-#       env:
-#           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-#       if: steps.deploy-prod != 'success' || steps.deploy-dev != 'success'
+#  fail-check:
+#    needs: CI-CD
+#    runs-on: ubuntu-latest
+#    steps:
+#    - name: Push on failure
+#      uses: 8398a7/action-slack@v3
+#      with:
+#          status: ${{ job.status }}
+##          text: ':fail: Failed GitHub Actions'
+#          author_name: GitHub-Actions CI/CD
+#          fields: repo,message,commit,author,ref,job,took
+#      env:
+#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+#      if: steps.deploy-prod != 'success' || steps.deploy-dev != 'success'
