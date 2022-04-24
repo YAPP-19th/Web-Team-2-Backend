@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 jobs:
-  ## jdk setting & gradle caching
+  ## jdk setting & gradle caching & gradle build
   setup:
     runs-on: ubuntu-latest
     steps:
@@ -38,19 +38,13 @@ jobs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
-          
-  ## gradle build
-  gradle-build:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-    - name: Build with Gradle
-      uses: actions/checkout@v3
+
+    - name: Gradle Build
       run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
 
   ## docker build & push
   docker-build-push:
-    needs: [setup, gradle-build]
+    needs: setup
     runs-on: ubuntu-latest
     steps:
     
@@ -72,7 +66,7 @@ jobs:
 
   ## deploy to server
   deploy:
-    needs: [setup, gradle-build, docker-build-push]
+    needs: [setup, docker-build-push]
     runs-on: ubuntu-latest
     steps:
     
@@ -109,7 +103,7 @@ jobs:
 
   ## slack
   slack-message:
-    needs: [setup, gradle-build, docker-build-push, deploy]
+    needs: [setup, docker-build-push, deploy]
     runs-on: ubuntu-latest
     steps:
     - name: action-slack
