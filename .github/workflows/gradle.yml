@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 jobs:
-  CI/CD:
+  CICD:
     runs-on: ubuntu-latest
     steps:
 
