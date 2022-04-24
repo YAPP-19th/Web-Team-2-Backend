@@ -23,14 +23,14 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
     - name: Set up JDK 11
+      uses: actions/checkout@v3
       with:
         java-version: '11'
         distribution: 'temurin' # https://github.com/actions/setup-java
 
-    - uses: actions/checkout@v3
     - name: Gradle Caching
+      uses: actions/checkout@v3
       with:
         path: |
           ~/.gradle/caches
@@ -131,7 +131,7 @@ jobs:
 #       uses: 8398a7/action-slack@v3
 #       with:
 #           status: ${{ job.status }}
-#           text: ':fail: Failed GitHub Actions'
+# #          text: ':fail: Failed GitHub Actions'
 #           author_name: GitHub-Actions CI/CD
 #           fields: repo,message,commit,author,ref,job,took
 #       env:
