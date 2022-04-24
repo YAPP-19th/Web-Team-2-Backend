@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 jobs:
-  CICD:
+  CI-CD:
     runs-on: ubuntu-latest
     steps:
 
@@ -44,11 +44,11 @@ jobs:
 
     ## gradle build
     - name: Build with Gradle
-      run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck
+      run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
 
     ## docker build & push - prod
     - name: Docker build & push - prod
-      if: contains(github.ref, 'main')
+      if: contains(github.ref, 'feature/#125-CICD')
       run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile-prod -t juhyun419/dotoriham-prod .
@@ -56,7 +56,7 @@ jobs:
 
     ## docker build & push - dev
     - name: Docker build & push - dev
-      if: contains(github.ref, 'feature/#125-CICD')
+      if: contains(github.ref, 'main')
       run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_REPO }}/dotoriham-dev .
@@ -65,7 +65,7 @@ jobs:
     ## deploy-to-prod
     - name: Deploy to prod
       uses: appleboy/ssh-action@master
-      if: contains(github.ref, 'main')
+      if: contains(github.ref, 'feature/#125-CICD')
       with:
           host: ec2-3-36-38-219.ap-northeast-2.compute.amazonaws.com
           username: ec2-user
@@ -80,7 +80,7 @@ jobs:
     ## deploy-to-dev
     - name: Deploy to dev
       uses: appleboy/ssh-action@master
-      if: contains(github.ref, 'feature/#125-CICD')
+      if: contains(github.ref, 'main')
       with:
         host: ec2-52-79-62-36.ap-northeast-2.compute.amazonaws.com
         username: ec2-user
