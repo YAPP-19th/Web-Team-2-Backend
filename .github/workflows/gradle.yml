@@ -121,7 +121,6 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
       if: always() # Pick up events even if the job fails or is canceled.
 
-
   ## remind failure on workflow
 #   fail-check:
 #     needs: [setup, gradle-build, docker-build-push, deploy]
