@@ -80,8 +80,7 @@ jobs:
     
     ## deploy to prod
     - name: Deploy to prod
-      uses: appleboy/ssh-action@master
-      id: deploy-prod
+    - uses: appleboy/ssh-action@master
       if: contains(github.ref, 'main')
       with:
           host: ec2-3-36-38-219.ap-northeast-2.compute.amazonaws.com
@@ -96,8 +95,7 @@ jobs:
 
     ## deploy to dev
     - name: Deploy to dev
-      uses: appleboy/ssh-action@master
-      id: deploy-dev
+    - uses: appleboy/ssh-action@master
       if: contains(github.ref, 'feature/#125-CICD')
       with:
         host: ec2-52-79-62-36.ap-northeast-2.compute.amazonaws.com
@@ -115,7 +113,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: action-slack
-      uses: 8398a7/action-slack@v3
+    - uses: 8398a7/action-slack@v3
       with:
           status: ${{ job.status }}
           author_name: GitHub-Actions CI/CD
