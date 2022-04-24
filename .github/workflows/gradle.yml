@@ -39,6 +39,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
 
+    - uses: actions/checkout@v3
     - name: Gradle Build
       run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
 
