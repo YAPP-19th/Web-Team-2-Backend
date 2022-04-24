@@ -90,10 +90,14 @@ jobs:
         script: |
             sudo docker rm -f $(docker ps -qa)
             sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-dev
-            docker-compose upsz -d
+            docker-compose up -d
             docker image prune -f
 
-    ## slack
+  ## slack
+  slack-message:
+    needs: CI-CD
+    runs-on: ubuntu-latest
+    steps:
     - name: action-slack
       uses: 8398a7/action-slack@v3
       with:
@@ -102,7 +106,8 @@ jobs:
           fields: repo,message,commit,author,ref,job,took
       env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-      if: steps.deploy-prod == 'success' && steps.deploy-dev == 'success' # Pick up events even if the job fails or is canceled.
+      if: always() # Pick up events even if the job fails or is canceled.
+
 
   ## remind failure on workflow
   fail-check:
