@@ -65,6 +65,7 @@ jobs:
     ## deploy to production
     - name: Deploy to prod
       uses: appleboy/ssh-action@master
+      id: deploy-prod
       if: contains(github.ref, 'main')
       with:
           host: ec2-3-36-38-219.ap-northeast-2.compute.amazonaws.com
@@ -80,6 +81,7 @@ jobs:
     ## deploy to develop
     - name: Deploy to dev
       uses: appleboy/ssh-action@master
+      id: deploy-dev
       if: contains(github.ref, 'feature/#125-CICD')
       with:
         host: ec2-52-79-62-36.ap-northeast-2.compute.amazonaws.com
@@ -88,7 +90,7 @@ jobs:
         script: |
             sudo docker rm -f $(docker ps -qa)
             sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-dev
-            docker-compose upsz -d
+            docker-compose up -d
             docker image prune -f
 
     ## slack
@@ -101,3 +103,18 @@ jobs:
       env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
       if: always() # Pick up events even if the job fails or is canceled.
+
+  ## remind failure on workflow
+  fail-check:
+    steps:
+    - name: Push on failure
+      uses: 8398a7/action-slack@v3
+      with:
+          status: ${{ job.status }}
+          text: 'Fail!'
+          author_name: GitHub-Actions CI/CD
+          fields: repo,message,commit,author,ref,job,took
+      env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+      if: steps.deploy-prod != 'success' || steps.deploy-dev != 'success'
+
