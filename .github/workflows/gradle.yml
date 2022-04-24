@@ -47,6 +47,7 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v3
     
     ## build & push to prod
     - name: Docker build & push to prod
