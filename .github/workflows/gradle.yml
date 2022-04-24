@@ -45,6 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Build with Gradle
+      uses: actions/checkout@v3
       run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
 
   ## docker build & push
