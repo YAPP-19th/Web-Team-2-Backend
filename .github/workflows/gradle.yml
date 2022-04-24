@@ -19,21 +19,18 @@ permissions:
   contents: read
 
 jobs:
-  CI-CD:
+  ## jdk setting & gradle caching
+  setup:
     runs-on: ubuntu-latest
     steps:
-
-    ## jdk setting
-    - uses: actions/checkout@v3
     - name: Set up JDK 11
-      uses: actions/setup-java@v3
+      uses: actions/checkout@v3
       with:
         java-version: '11'
         distribution: 'temurin' # https://github.com/actions/setup-java
 
-    ## gradle caching
     - name: Gradle Caching
-      uses: actions/cache@v3
+      uses: actions/checkout@v3
       with:
         path: |
           ~/.gradle/caches
@@ -41,28 +38,47 @@ jobs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
-
-    ## gradle build
+          
+  ## gradle build
+  gradle-build:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
     - name: Build with Gradle
-      run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
+    - uses: actions/checkout@v3
+    - run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
 
-    ## docker build & push to production
+  ## docker build & push
+  docker-build-push:
+    needs: [setup, gradle-build]
+    runs-on: ubuntu-latest
+    steps:
+    
+    ## build & push to prod
     - name: Docker build & push to prod
       if: contains(github.ref, 'main')
-      run: |
+    - uses: actions/checkout@v3
+    - run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile-prod -t juhyun419/dotoriham-prod .
           docker push ${{ secrets.DOCKER_REPO }}/dotoriham-prod
 
-    ## docker build & push - develop
+    ## build & push to dev
     - name: Docker build & push to dev
       if: contains(github.ref, 'feature/#125-CICD')
-      run: |
+    - uses: actions/checkout@v3
+    - run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_REPO }}/dotoriham-dev .
           docker push ${{ secrets.DOCKER_REPO }}/dotoriham-dev
 
-    ## deploy to production
+  ## deploy to server
+  deploy:
+    needs: [setup, gradle-build, docker-build-push]
+    runs-on: ubuntu-latest
+    steps:
+    
+    ## deploy to prod
     - name: Deploy to prod
       uses: appleboy/ssh-action@master
       id: deploy-prod
@@ -78,7 +94,7 @@ jobs:
               docker-compose up -d
               docker image prune -f
 
-    ## deploy to develop
+    ## deploy to dev
     - name: Deploy to dev
       uses: appleboy/ssh-action@master
       id: deploy-dev
@@ -93,33 +109,34 @@ jobs:
             docker-compose up -d
             docker image prune -f
 
-    ## slack
-  action-slack:
-    needs: CI-CD
+  ## slack
+  slack-message:
+    needs: [setup, gradle-build, docker-build-push, deploy]
     runs-on: ubuntu-latest
     steps:
-        - name: Slack Alarm
-          uses: 8398a7/action-slack@v3
-          with:
-              status: ${{ job.status }}
-              author_name: GitHub-Actions CI/CD
-              fields: repo,message,commit,author,ref,job,took
-          env:
-              SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-          if: always() # Pick up events even if the job fails or is canceled.
+    - name: action-slack
+      uses: 8398a7/action-slack@v3
+      with:
+          status: ${{ job.status }}
+          author_name: GitHub-Actions CI/CD
+          fields: repo,message,commit,author,ref,job,took
+      env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+      if: always() # Pick up events even if the job fails or is canceled.
+
 
   ## remind failure on workflow
-#  fail-check:
-#    needs: CI-CD
-#    runs-on: ubuntu-latest
-#    steps:
-#    - name: Push on failure
-#      uses: 8398a7/action-slack@v3
-#      with:
-#          status: ${{ job.status }}
-##          text: ':fail: Failed GitHub Actions'
-#          author_name: GitHub-Actions CI/CD
-#          fields: repo,message,commit,author,ref,job,took
-#      env:
-#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-#      if: steps.deploy-prod != 'success' || steps.deploy-dev != 'success'
+#   fail-check:
+#     needs: [setup, gradle-build, docker-build-push, deploy]
+#     runs-on: ubuntu-latest
+#     steps:
+#     - name: Push on failure
+#       uses: 8398a7/action-slack@v3
+#       with:
+#           status: ${{ job.status }}
+# #          text: ':fail: Failed GitHub Actions'
+#           author_name: GitHub-Actions CI/CD
+#           fields: repo,message,commit,author,ref,job,took
+#       env:
+#           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+#       if: steps.deploy-prod != 'success' || steps.deploy-dev != 'success'
