@@ -24,13 +24,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Set up JDK 11
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
       with:
         java-version: '11'
         distribution: 'temurin' # https://github.com/actions/setup-java
 
     - name: Gradle Caching
-      uses: actions/checkout@v3
+    - uses: actions/cache@v3
       with:
         path: |
           ~/.gradle/caches
