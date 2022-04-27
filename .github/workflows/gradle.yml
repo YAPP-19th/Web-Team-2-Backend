@@ -54,9 +54,9 @@ jobs:
           docker build -f Dockerfile-prod -t juhyun419/dotoriham-prod .
           docker push ${{ secrets.DOCKER_REPO }}/dotoriham-prod
 
-    ## docker build & push - develop
+    ## docker build & push to develop
     - name: Docker build & push to dev
-      if: contains(github.ref, 'feature/#125-CICD')
+      if: contains(github.ref, 'develop')
       run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_REPO }}/dotoriham-dev .
@@ -82,7 +82,7 @@ jobs:
     - name: Deploy to dev
       uses: appleboy/ssh-action@master
       id: deploy-dev
-      if: contains(github.ref, 'feature/#125-CICD')
+      if: contains(github.ref, 'develop')
       with:
         host: ec2-52-79-62-36.ap-northeast-2.compute.amazonaws.com
         username: ec2-user
@@ -123,20 +123,3 @@ jobs:
           env:
               SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
           if: always() # Pick up events even if the job fails or is canceled.
-
-  ## remind failure on workflow
-#  fail-check:
-#    needs: CI-CD
-#    runs-on: ubuntu-latest
-#    steps:
-#    - name: Push on failure
-#      uses: 8398a7/action-slack@v3
-#      with:
-#          status: ${{ job.status }}
-##          text: ':fail: Failed GitHub Actions'
-#          author_name: GitHub-Actions CI/CD
-#          fields: repo,message,commit,author,ref,job,took
-#      env:
-#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-#      if: steps.deploy-prod != 'success' || steps.deploy-dev != 'success'
-
