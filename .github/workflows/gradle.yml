@@ -42,13 +42,13 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
 
-#    ## make application-dev.properties
-#    - name: make application-dev.properties
-#      if: contains(github.ref, 'feature/#125-CICD')
-#      run: |
-#        mkdir -p src/main/resources/profiles
-#        printf ${{ secrets.PROPERTIES_DEV }} >> src/main/resources/profiles/application-dev.properties
-#      shell: bash
+    ## make application-dev.properties
+    - name: make application-dev.properties
+      if: contains(github.ref, 'feature/#125-CICD')
+      run: |
+        echo $DEV_PROP_FILE >> src/main/resources/application-dev.properties
+        cat src/main/resources/application-dev.properties
+      shell: bash
 
     ## gradle build
     - name: Build with Gradle
