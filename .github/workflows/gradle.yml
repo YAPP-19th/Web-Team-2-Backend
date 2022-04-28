@@ -46,9 +46,11 @@ jobs:
     - name: make application-dev.properties
       if: contains(github.ref, 'feature/#125-CICD')
       run: |
-        echo ${{ secrets.PROPERTIES_DEV }} >> src/main/resources/application-dev.properties
-        echo src/main/resources/application-dev.properties
+        echo $DEV_PROP >> src/main/resources/application-dev.properties
+        echo "test"
       shell: bash
+      env:
+        DEV_PROP: ${{ secrets.PROPERTIES_DEV }}
 
     ## gradle build
     - name: Build with Gradle
