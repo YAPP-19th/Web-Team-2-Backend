@@ -13,6 +13,7 @@ on:
     branches:
       - main
       - develop
+      - feature/#125-CICD
 
 permissions:
   contents: read
