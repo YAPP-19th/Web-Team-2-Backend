@@ -46,7 +46,7 @@ jobs:
     - name: make application-dev.properties
       if: contains(github.ref, 'feature/#125-CICD')
       run: |
-        echo $DEV_PROP >> src/main/resources/application-dev.properties
+        printf $DEV_PROP >> src/main/resources/application-dev.properties
         echo "test"
       shell: bash
       env:
