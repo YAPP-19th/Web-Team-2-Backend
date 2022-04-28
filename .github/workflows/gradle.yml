@@ -48,6 +48,7 @@ jobs:
         echo ${{ secrets.PROPERTIES_DEV }} >> src/main/resources/profiles/application-dev.properties
         echo pwd
         echo ls -al
+        echo ${GITHUB_WORKSPACE}
       shell: bash
 
     ## gradle build
