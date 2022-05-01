@@ -68,6 +68,15 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
 
+    ## check jar file
+    - name: make application-dev.properties
+      if: contains(github.ref, 'feature/#125-CICD')
+      run: |
+          ls -a .
+          cd ./build/libs
+          ls -a .
+      shell: bash
+
     ## docker build & push to production
     - name: Docker build & push to prod
       if: contains(github.ref, 'main')
