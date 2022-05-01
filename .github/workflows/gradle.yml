@@ -77,6 +77,8 @@ jobs:
           ls -a .
           jar xvf Web-Team-2-Backend-0.0.1-SNAPSHOT.jar
           ls -a .
+          cd ./Web-Team-2-Backend-0.0.1-SNAPSHOT/classes
+          ls -a .
       shell: bash
 
 #    ## docker build & push to production
