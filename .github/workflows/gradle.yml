@@ -63,7 +63,7 @@ jobs:
       if: contains(github.ref, 'main')
       run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -f Dockerfile-prod -t juhyun419/dotoriham-prod .
+          docker build -f Dockerfile-prod -t ${{ secrets.DOCKER_REPO }}/dotoriham-prod .
           docker push ${{ secrets.DOCKER_REPO }}/dotoriham-prod
 
     ## docker build & push to develop
