@@ -53,14 +53,11 @@ jobs:
 
         echo "===== make properties file ====="
         cd ./src/main/resources
-        ls -al
-        touch ./application-dev.properties
-        pwd
         ls -a .
-
-        echo "===== copy properties ====="
+        touch ./application-dev.properties
         echo $DEV_PROP >> ./application-dev.properties
         cat application-dev.properties
+        ls -a .
       shell: bash
       env:
         DEV_PROP: ${{ secrets.PROPERTIES_DEV }}
