@@ -52,6 +52,7 @@ jobs:
         ls -a .
 
         echo "===== make properties file ====="
+        mkdir -p ./src/main/resources/profiles
         cd ./src/main/resources/profiles
         ls -a .
         touch ./application-dev.properties
