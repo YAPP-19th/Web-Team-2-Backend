@@ -47,15 +47,15 @@ jobs:
       if: contains(github.ref, 'feature/#125-CICD')
       run: |
         echo "ls -a . & pwd"
-        ls -a .
         pwd
+        ls -a .
 
         echo "mkdir & touch"
         mkdir -p ./src/main/resource
         cd ./src/main/resource
         touch ./application-dev.properties
-        ls -a .
         pwd
+        ls -a .
 
         echo "copy properties"
         echo $DEV_PROP >> ./application-dev.properties
