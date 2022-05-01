@@ -20,6 +20,7 @@ permissions:
 
 jobs:
   CI-CD:
+    uses: ./.github/workflows/gradle.yml
     runs-on: ubuntu-latest
     steps:
 
@@ -32,38 +33,33 @@ jobs:
         distribution: 'temurin' # https://github.com/actions/setup-java
 
     ## gradle caching
-#    - name: Gradle Caching
-#      uses: actions/cache@v3
-#      with:
-#        path: |
-#          ~/.gradle/caches
-#          ~/.gradle/wrapper
-#        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-#        restore-keys: |
-#          ${{ runner.os }}-gradle-
+    - name: Gradle Caching
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
 
     ## make application-dev.properties
     - name: make application-dev.properties
       if: contains(github.ref, 'feature/#125-CICD')
       run: |
+        echo ${{ github.repository }}
         echo "ls -a . & pwd"
         pwd
         ls -a .
 
-        cd ./src/main
-        ls -a .
-        pwd
-        cd -
-
-        echo "mkdir & touch"
-        mkdir -p ./src/main/resource
-        cd ./src/main/resource
+        echo "===== make properties file ====="
+        cd ./src/main/resources
         ls -al
         touch ./application-dev.properties
         pwd
         ls -a .
 
-        echo "copy properties"
+        echo "===== copy properties ====="
         echo $DEV_PROP >> ./application-dev.properties
         cat application-dev.properties
       shell: bash
@@ -89,80 +85,80 @@ jobs:
           ls -a .
       shell: bash
 
-#    ## docker build & push to production
-#    - name: Docker build & push to prod
-#      if: contains(github.ref, 'main')
-#      run: |
-#          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-#          docker build -f Dockerfile-prod -t juhyun419/dotoriham-prod .
-#          docker push ${{ secrets.DOCKER_REPO }}/dotoriham-prod
-#
-#    ## docker build & push to develop
-#    - name: Docker build & push to dev
-#      if: contains(github.ref, 'feature/#125-CICD')
-#      run: |
-#          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-#          docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_REPO }}/dotoriham-dev .
-#          docker push ${{ secrets.DOCKER_REPO }}/dotoriham-dev
-#
-#    ## deploy to production
-#    - name: Deploy to prod
-#      uses: appleboy/ssh-action@master
-#      id: deploy-prod
-#      if: contains(github.ref, 'main')
-#      with:
-#          host: ec2-3-36-38-219.ap-northeast-2.compute.amazonaws.com
-#          username: ec2-user
-#          key: ${{ secrets.PRIVATE_KEY }}
-#          envs: GITHUB_SHA
-#          script: |
-#              sudo docker rm -f $(docker ps -qa)
-#              sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-prod
-#              docker-compose up -d
-#              docker image prune -f
-#
-#    ## deploy to develop
-#    - name: Deploy to dev
-#      uses: appleboy/ssh-action@master
-#      id: deploy-dev
-#      if: contains(github.ref, 'feature/#125-CICD')
-#      with:
-#        host: ec2-52-79-62-36.ap-northeast-2.compute.amazonaws.com
-#        username: ec2-user
-#        key: ${{ secrets.PRIVATE_KEY }}
-#        script: |
-#            sudo docker rm -f $(docker ps -qa)
-#            sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-dev
-#            docker-compose up -d
-#            docker image prune -f
-#
-#  ## time
-#  current-time:
-#    needs: CI-CD
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Get Current Time
-#        uses: 1466587594/get-current-time@v2
-#        id: current-time
-#        with:
-#          format: YYYY-MM-DDTHH:mm:ss
-#          utcOffset: "+09:00" # 기준이 UTC이기 때문에 한국시간인 KST를 맞추기 위해 +9시간 추가
-#
-#      - name: Print Current Time
-#        run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}" # current-time 에서 지정한 포맷대로 현재 시간 출력
-#        shell: bash
-#
-#  ## slack
-#  action-slack:
-#    needs: CI-CD
-#    runs-on: ubuntu-latest
-#    steps:
-#        - name: Slack Alarm
-#          uses: 8398a7/action-slack@v3
-#          with:
-#              status: ${{ job.status }}
-#              author_name: GitHub-Actions CI/CD
-#              fields: repo,message,commit,author,ref,job,took
-#          env:
-#              SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-#          if: always() # Pick up events even if the job fails or is canceled.
+    ## docker build & push to production
+    - name: Docker build & push to prod
+      if: contains(github.ref, 'main')
+      run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -f Dockerfile-prod -t juhyun419/dotoriham-prod .
+          docker push ${{ secrets.DOCKER_REPO }}/dotoriham-prod
+
+    ## docker build & push to develop
+    - name: Docker build & push to dev
+      if: contains(github.ref, 'feature/#125-CICD')
+      run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_REPO }}/dotoriham-dev .
+          docker push ${{ secrets.DOCKER_REPO }}/dotoriham-dev
+
+    ## deploy to production
+    - name: Deploy to prod
+      uses: appleboy/ssh-action@master
+      id: deploy-prod
+      if: contains(github.ref, 'main')
+      with:
+          host: ec2-3-36-38-219.ap-northeast-2.compute.amazonaws.com
+          username: ec2-user
+          key: ${{ secrets.PRIVATE_KEY }}
+          envs: GITHUB_SHA
+          script: |
+              sudo docker rm -f $(docker ps -qa)
+              sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-prod
+              docker-compose up -d
+              docker image prune -f
+
+    ## deploy to develop
+    - name: Deploy to dev
+      uses: appleboy/ssh-action@master
+      id: deploy-dev
+      if: contains(github.ref, 'feature/#125-CICD')
+      with:
+        host: ec2-52-79-62-36.ap-northeast-2.compute.amazonaws.com
+        username: ec2-user
+        key: ${{ secrets.PRIVATE_KEY }}
+        script: |
+            sudo docker rm -f $(docker ps -qa)
+            sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-dev
+            docker-compose up -d
+            docker image prune -f
+
+  ## time
+  current-time:
+    needs: CI-CD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Current Time
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYY-MM-DDTHH:mm:ss
+          utcOffset: "+09:00" # 기준이 UTC이기 때문에 한국시간인 KST를 맞추기 위해 +9시간 추가
+
+      - name: Print Current Time
+        run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}" # current-time 에서 지정한 포맷대로 현재 시간 출력
+        shell: bash
+
+  ## slack
+  action-slack:
+    needs: CI-CD
+    runs-on: ubuntu-latest
+    steps:
+        - name: Slack Alarm
+          uses: 8398a7/action-slack@v3
+          with:
+              status: ${{ job.status }}
+              author_name: GitHub-Actions CI/CD
+              fields: repo,message,commit,author,ref,job,took
+          env:
+              SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+          if: always() # Pick up events even if the job fails or is canceled.
