@@ -77,7 +77,7 @@ jobs:
           ls -a .
           jar xvf Web-Team-2-Backend-0.0.1-SNAPSHOT.jar
           ls -a .
-          cd ./Web-Team-2-Backend-0.0.1-SNAPSHOT/classes
+          cd ./Web-Team-2-Backend-0.0.1-SNAPSHOT/BOOT-INF/classes
           ls -a .
       shell: bash
 
