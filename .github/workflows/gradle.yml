@@ -50,6 +50,11 @@ jobs:
         pwd
         ls -a .
 
+        cd ./src/main
+        ls -a .
+        pwd
+        cd -
+
         echo "mkdir & touch"
         mkdir -p ./src/main/resource/profiles
         cd ./src/main/resource/profiles
