@@ -62,6 +62,7 @@ jobs:
       env:
         DEV_PROP: ${{ secrets.PROPERTIES_DEV }}
 
+
     ## gradle build
     - name: Build with Gradle
       run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
