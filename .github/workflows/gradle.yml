@@ -52,7 +52,7 @@ jobs:
         ls -a .
 
         echo "===== make properties file ====="
-        cd ./src/main/resources
+        cd ./src/main/resources/profiles
         ls -a .
         touch ./application-dev.properties
         echo $DEV_PROP >> ./application-dev.properties
@@ -65,22 +65,6 @@ jobs:
     ## gradle build
     - name: Build with Gradle
       run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
-
-    ## check jar file
-    - name: check jar file
-      if: contains(github.ref, 'feature/#125-CICD')
-      run: |
-          pwd
-          ls -a .
-          cd ./build/libs
-          ls -a .
-          jar xf Web-Team-2-Backend-0.0.1-SNAPSHOT.jar
-          ls -a .
-          cd ./BOOT-INF/classes
-          pwd
-          ls -a .
-          cat application-dev.properties
-      shell: bash
 
     ## docker build & push to production
     - name: Docker build & push to prod
@@ -104,7 +88,7 @@ jobs:
       id: deploy-prod
       if: contains(github.ref, 'main')
       with:
-          host: ec2-3-36-38-219.ap-northeast-2.compute.amazonaws.com
+          host: ${{ secrets.HOST_PROD }}
           username: ec2-user
           key: ${{ secrets.PRIVATE_KEY }}
           envs: GITHUB_SHA
@@ -120,7 +104,7 @@ jobs:
       id: deploy-dev
       if: contains(github.ref, 'feature/#125-CICD')
       with:
-        host: ec2-52-79-62-36.ap-northeast-2.compute.amazonaws.com
+        host: ${{ secrets.HOST_DEV }}
         username: ec2-user
         key: ${{ secrets.PRIVATE_KEY }}
         script: |
