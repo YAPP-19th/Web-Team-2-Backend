@@ -57,7 +57,6 @@ jobs:
         touch ./application-dev.properties
         echo $DEV_PROP >> ./application-dev.properties
         cat application-dev.properties
-        ls -a .
       shell: bash
       env:
         DEV_PROP: ${{ secrets.PROPERTIES_DEV }}
