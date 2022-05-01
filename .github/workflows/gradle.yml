@@ -62,7 +62,6 @@ jobs:
       env:
         DEV_PROP: ${{ secrets.PROPERTIES_DEV }}
 
-
     ## gradle build
     - name: Build with Gradle
       run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
@@ -75,7 +74,7 @@ jobs:
           ls -a .
           cd ./build/libs
           ls -a .
-          jar xvf Web-Team-2-Backend-0.0.1-SNAPSHOT.jar
+          jar xf Web-Team-2-Backend-0.0.1-SNAPSHOT.jar
           ls -a .
           cd ./BOOT-INF/classes
           pwd
