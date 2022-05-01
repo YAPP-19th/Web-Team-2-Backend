@@ -55,7 +55,7 @@ jobs:
         cd ./src/main/resources
         ls -a .
         touch ./application-dev.properties
-        echo $DEV_PROP >> ./application-dev.properties
+        printf $DEV_PROP >> ./application-dev.properties
         cat application-dev.properties
       shell: bash
       env:
