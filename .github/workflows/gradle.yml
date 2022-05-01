@@ -51,8 +51,8 @@ jobs:
         ls -a .
 
         echo "mkdir & touch"
-        mkdir -p ./src/main/resource
-        cd ./src/main/resource
+        mkdir -p ./src/main/resource/profiles
+        cd ./src/main/resource/profiles
         touch ./application-dev.properties
         pwd
         ls -a .
@@ -72,12 +72,14 @@ jobs:
     - name: check jar file
       if: contains(github.ref, 'feature/#125-CICD')
       run: |
+          pwd
           ls -a .
           cd ./build/libs
           ls -a .
           jar xvf Web-Team-2-Backend-0.0.1-SNAPSHOT.jar
           ls -a .
           cd ./BOOT-INF/classes
+          pwd
           ls -a .
       shell: bash
 
