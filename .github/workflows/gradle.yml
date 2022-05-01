@@ -82,6 +82,7 @@ jobs:
           cd ./BOOT-INF/classes
           pwd
           ls -a .
+          cat application-dev.properties
       shell: bash
 
     ## docker build & push to production
