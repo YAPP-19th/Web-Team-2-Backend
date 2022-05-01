@@ -57,8 +57,9 @@ jobs:
         cd -
 
         echo "mkdir & touch"
-        mkdir -p ./src/main/resource/profiles
-        cd ./src/main/resource/profiles
+        mkdir -p ./src/main/resource
+        cd ./src/main/resource
+        ls -al
         touch ./application-dev.properties
         pwd
         ls -a .
