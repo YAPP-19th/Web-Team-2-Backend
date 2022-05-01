@@ -50,7 +50,7 @@ jobs:
         cd ./src/main/resources
         ls -a .
         touch ./application-dev.properties
-        echo ${{ secrets.PROPERTIES_DEV }} > ./application-dev.properties
+        echo "${{ secrets.PROPERTIES_DEV }}" > ./application-dev.properties
         cat application-dev.properties
       shell: bash
 
