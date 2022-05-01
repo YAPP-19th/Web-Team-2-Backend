@@ -43,7 +43,6 @@ jobs:
           ${{ runner.os }}-gradle-
 
     ## make application-dev.properties
-    - uses: actions/checkout@v3
     - name: make application-dev.properties
       if: contains(github.ref, 'feature/#125-CICD')
       run: |
@@ -72,12 +71,10 @@ jobs:
         DEV_PROP: ${{ secrets.PROPERTIES_DEV }}
 
     ## gradle build
-    - uses: actions/checkout@v3
     - name: Build with Gradle
       run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
 
     ## check jar file
-    - uses: actions/checkout@v3
     - name: check jar file
       if: contains(github.ref, 'feature/#125-CICD')
       run: |
