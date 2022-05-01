@@ -51,15 +51,15 @@ jobs:
         pwd
 
         echo "mkdir & touch"
-        mkdir -p ./src/main/resource/profiles
-        cd ./src/main/resource/profiles
+        mkdir -p ./src/main/resource
+        cd ./src/main/resource
         touch ./application-dev.properties
         ls -a .
         pwd
 
         echo "copy properties"
         echo $DEV_PROP >> ./application-dev.properties
-        echo ./application-dev.properties
+        cat application-dev.properties
       shell: bash
       env:
         DEV_PROP: ${{ secrets.PROPERTIES_DEV }}
