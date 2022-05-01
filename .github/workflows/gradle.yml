@@ -20,7 +20,6 @@ permissions:
 
 jobs:
   CI-CD:
-    uses: ./.github/workflows/gradle.yml
     runs-on: ubuntu-latest
     steps:
 
