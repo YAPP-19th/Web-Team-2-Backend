@@ -97,8 +97,10 @@ jobs:
       if: contains(github.ref, 'feature/#125-CICD')
       with:
         host: ${{ secrets.HOST_DEV }}
-        username: ec2-user
-        key: ${{ secrets.PRIVATE_KEY }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: 22
+        #key: ${{ secrets.PRIVATE_KEY }}
         script: |
             sudo docker rm -f $(docker ps -qa)
             sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-dev
