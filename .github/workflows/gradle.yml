@@ -42,16 +42,24 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
 
-    ## make application-dev.properties
+    ## create application-dev.properties
     - name: make application-dev.properties
       if: contains(github.ref, 'feature/#125-CICD')
       run: |
-        echo "===== make properties file ====="
         cd ./src/main/resources
         ls -a .
         touch ./application-dev.properties
         echo "${{ secrets.PROPERTIES_DEV }}" > ./application-dev.properties
         cat application-dev.properties
+      shell: bash
+
+    ## create firebase-key.json
+    - name: create firebase key
+      run: |
+        cd ./src/main/resources
+        ls -a .
+        touch ./firebase-service-key.json
+        echo "${{ secrets.FIREBASE_KEY }}" > ./firebase-service-key.json
       shell: bash
 
     ## gradle build
