@@ -77,10 +77,24 @@ class BookmarkInterfaceService(
 
         if(bookmark is SharedBookmark) {
             bookmark.remindOff(account.id!!)
-            bookmarkInterfaceRepository.deleteBookmarkInterfacesByParentBookmarkIdAndUserId(bookmarkId, account.id!!)
+
+            val bookmarkList = bookmarkInterfaceRepository.findBookmarkInterfacesByUserId(account.id!!)
+            val deleteBookmarkList = getDeleteBookmarkList(bookmarkList, bookmarkId)
+
+            bookmarkInterfaceRepository.deleteAll(deleteBookmarkList)
         }
 
         if(bookmark is PersonalBookmark)
             bookmark.remindOff()
+    }
+
+    private fun getDeleteBookmarkList(bookmarkList: List<BookmarkInterface>, remindBookmarkId: String): List<BookmarkInterface> {
+        val deleteBookmarkList = mutableListOf<BookmarkInterface>()
+
+        for (bm in bookmarkList) {
+            if(bm is PersonalBookmark && bm.parentBookmarkId == remindBookmarkId)
+                deleteBookmarkList.add(bm)
+        }
+        return deleteBookmarkList
     }
 }

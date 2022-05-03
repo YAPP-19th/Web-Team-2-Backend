@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface BookmarkInterfaceRepository : MongoRepository<BookmarkInterface, String>{
     fun findBookmarkInterfaceById(id: String): BookmarkInterface?
-    fun deleteBookmarkInterfacesByParentBookmarkIdAndUserId(parentBookmarkId: String, userId: Long)
+    fun findBookmarkInterfacesByUserId(userId: Long): List<BookmarkInterface>
 }
