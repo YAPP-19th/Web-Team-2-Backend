@@ -62,15 +62,17 @@ class Bookmark(
     var remindCheck: Boolean = false
     var remindStatus: Boolean = false
 
+    val remindList = mutableListOf<Remind>()
+
     @ApiModel(description = "북마크 수정 DTO")
     class UpdateBookmarkDto(
         @ApiModelProperty(value = "북마크 이름", required = true, example = "Change Bookmark")
         @field:NotEmpty(message = "제목을 입력해주세요")
         var title: String,
 
-        @ApiModelProperty(value = "리마인드 여부", example = "true")
-        @field:NotNull(message = "리마인드 여부를 입력해주세요")
-        var remind: Boolean = false
+        @ApiModelProperty(value = "북마크 설명", example = "description")
+        @field:NotNull(message = "description이 null입니다!")
+        var description: String
     )
 
     @ApiModel(description = "북마크 생성 DTO")

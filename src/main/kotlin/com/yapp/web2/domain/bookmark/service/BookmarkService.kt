@@ -2,6 +2,7 @@ package com.yapp.web2.domain.bookmark.service
 
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.bookmark.entity.Bookmark
+import com.yapp.web2.domain.bookmark.entity.Remind
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
@@ -68,7 +69,7 @@ class BookmarkService(
                 folder.name,
                 bookmarkDto.url,
                 bookmarkDto.title,
-                remindTime = LocalDate.now().plusDays(account.remindCycle!!.toLong()).toString(),
+                remindTime = LocalDate.now().plusDays(account.remindCycle.toLong()).toString(),
                 bookmarkDto.image,
                 bookmarkDto.description
             )
@@ -95,7 +96,7 @@ class BookmarkService(
                 null,
                 bookmarkDto.url,
                 bookmarkDto.title,
-                remindTime = LocalDate.now().plusDays(account.remindCycle!!.toLong()).toString(),
+                remindTime = LocalDate.now().plusDays(account.remindCycle.toLong()).toString(),
                 bookmarkDto.image,
                 bookmarkDto.description
             )
@@ -138,20 +139,56 @@ class BookmarkService(
             ?: throw bookmarkNotFoundException
     }
 
-    fun updateBookmark(token: String, bookmarkId: String, updateBookmarkDto: Bookmark.UpdateBookmarkDto): Bookmark {
+    fun updateBookmark(bookmarkId: String, updateBookmarkDto: Bookmark.UpdateBookmarkDto): Bookmark {
+        // TODO: 2022/04/05 AOP를 통하여 접근 user의 권한에 따른 접근허용 범위 체크
         val toChangeBookmark = getBookmarkIfPresent(bookmarkId)
-        val account = jwtProvider.getAccountFromToken(token)
 
         updateBookmarkDto.let {
             toChangeBookmark.title = it.title
-            when (updateBookmarkDto.remind) {
-                true -> toChangeBookmark.remindTime =
-                    LocalDate.now().plusDays(account.remindCycle!!.toLong()).toString()
-                false -> toChangeBookmark.remindTime = null
-            }
+            toChangeBookmark.description = it.description
         }
 
         return bookmarkRepository.save(toChangeBookmark)
+    }
+
+    fun toggleOnRemindBookmark(token: String, bookmarkId: String) {
+        val account = jwtProvider.getAccountFromToken(token)
+        val accountFcmToken = account.fcmToken ?: throw RuntimeException()
+        val bookmark = getBookmarkIfPresent(bookmarkId)
+        val remindList = bookmark.remindList
+        val remindNow = Remind(
+            remindTime = LocalDate.now().plusDays(account.remindCycle.toLong()).toString(),
+            fcmToken = accountFcmToken
+        )
+
+        if (isFcmTokenExistInTheList(accountFcmToken, remindList)) throw RuntimeException()
+
+        bookmark.remindList.add(remindNow)
+        bookmarkRepository.save(bookmark)
+    }
+
+    fun toggleOffRemindBookmark(token: String, bookmarkId: String) {
+        val account = jwtProvider.getAccountFromToken(token)
+        val accountFcmToken = account.fcmToken ?: throw RuntimeException()
+        val bookmark = getBookmarkIfPresent(bookmarkId)
+        val remindList = bookmark.remindList
+
+        if (!isFcmTokenExistInTheList(accountFcmToken, remindList)) throw RuntimeException()
+
+        for (remind in remindList) {
+            if (remind.fcmToken == accountFcmToken) {
+                bookmark.remindList.remove(remind)
+                break
+            }
+        }
+
+        bookmarkRepository.save(bookmark)
+    }
+
+    private fun isFcmTokenExistInTheList(fcmToken: String?, remindList: List<Remind>): Boolean {
+        for (remind in remindList)
+            if (remind.fcmToken == fcmToken) return true
+        return false
     }
 
     fun increaseBookmarkClickCount(bookmarkId: String): Bookmark {
@@ -219,13 +256,5 @@ class BookmarkService(
                 bookmark?.let { entity -> bookmarkRepository.delete(entity) }
             }
         }
-    }
-
-    fun releaseRemindBookmark(bookmarkId: String) {
-        bookmarkRepository.findByIdOrNull(bookmarkId)
-            ?.let {
-                it.remindTime = null
-                bookmarkRepository.save(it)
-            } ?: bookmarkNotFoundException
     }
 }
