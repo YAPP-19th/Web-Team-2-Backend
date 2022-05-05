@@ -18,7 +18,7 @@ import javax.validation.Valid
 class FolderController(
     private val folderService: FolderService
 ) {
-    @ApiOperation(value = "폴더 생성")
+    @ApiOperation(value = "폴더 생성 API")
     @PostMapping
     fun createFolder(
         servletRequest: HttpServletRequest,
@@ -29,7 +29,7 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(folderId?.let { Folder.FolderCreateResponse(it) })
     }
 
-    @ApiOperation("폴더 수정")
+    @ApiOperation("폴더 수정 API")
     @PatchMapping("/{folderId}")
     fun updateFolder(
         @PathVariable @ApiParam(value = "폴더 ID", example = "4", required = true) folderId: Long,
