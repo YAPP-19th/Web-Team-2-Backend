@@ -172,20 +172,3 @@ class AccountController(
     }
 
 }
-
-data class Test(
-    @field: NotEmpty(message = "비밀번호를 입력해주세요")
-    @field: CustomPassword
-    val password: String,
-)
-
-fun main() {
-    val test = Test(
-        password = "1!wqdas2323"
-    )
-    val validatorFactory = Validation.buildDefaultValidatorFactory()
-    val validator = validatorFactory.validator
-
-    val constraints = validator.validate(test)
-    constraints.forEach(System.out::println)
-}
