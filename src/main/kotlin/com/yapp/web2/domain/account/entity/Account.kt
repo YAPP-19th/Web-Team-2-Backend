@@ -16,6 +16,10 @@ class Account(
 ) : BaseTimeEntity() {
 
     companion object {
+        fun signUpToAccount(dto: AccountRequestDto.SignUpRequest, encryptPassword: String, name: String): Account {
+            return Account(dto.email, encryptPassword, dto.fcmToken, name)
+        }
+
         fun profileToAccount(dto: AccountProfile): Account {
             return Account(dto.email, dto.image, dto.name, dto.socialType, dto.fcmToken)
         }
@@ -31,6 +35,16 @@ class Account(
         const val BASIC_IMAGE_URL: String = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png"
     }
 
+    constructor(email: String, password: String) : this(email) {
+        this.password = password
+    }
+
+    constructor(email: String, encryptPassword: String, fcmToken: String, name: String) : this(email) {
+        this.password = encryptPassword
+        this.fcmToken = fcmToken
+        this.name = name
+    }
+
     constructor(email: String, image: String, nickname: String, socialType: String, fcmToken: String) : this(email) {
         this.image = image
         this.name = nickname
@@ -44,12 +58,6 @@ class Account(
     @Column(nullable = true)
     var name: String = ""
 
-    @Column(nullable = true, length = 10)
-    var sex: String = ""
-
-    @Column(nullable = true, length = 5)
-    var age: Int? = null
-
     @Column(nullable = true, length = 20)
     var socialType: String = "none"
 
@@ -62,14 +70,14 @@ class Account(
     @Column(nullable = true, length = 255)
     var image: String = BASIC_IMAGE_URL
 
-    @Column(length = 30)
+    @Column(length = 20)
     var backgroundColor: String = "black"
 
-    @Column(length = 10)
+    @Column
     var remindToggle: Boolean = true
 
-    @Column(nullable = true, length = 10)
-    var remindNotiCheck: Boolean = true
+    @Column
+    var deleted: Boolean = false
 
     @OneToMany(mappedBy = "account")
     var accountFolderList: MutableList<AccountFolder>? = mutableListOf()
@@ -92,7 +100,7 @@ class Account(
         val socialType: String,
 
         @ApiModelProperty(value = "FCM 토큰", required = true, example = "dOOUnnp-iBs:APA91bF1i7mobIF7kEhi3aVlFuv6A5--P1S...")
-        @field: NotEmpty(message = "FCM 토큰을 입력해주세요")
+        @field: NotEmpty(message = "FCM 토큰이 존재하지 않습니다")
         val fcmToken: String
     )
 
@@ -131,4 +139,8 @@ class Account(
         @field: NotBlank(message = "이름을 입력해주세요")
         val nickName: String
     )
+
+    fun softDeleteAccount() {
+        this.deleted = true
+    }
 }
