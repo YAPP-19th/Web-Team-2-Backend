@@ -56,7 +56,7 @@ class Message {
 
         var NOT_EXIST_EMAIL = "존재하지 않는 이메일 입니다."
 
-        var SUCCESS_SEND_MAIL = "메일 발송이 완료되었습니다."
+        var SUCCESS_SEND_MAIL = "회원의 이메일에 임시 비밀번호가 정상적으로 발송되었습니다."
 
         var SUCCESS_EXIST_EMAIL = "입력하신 이메일 주소가 정상적으로 확인되었습니다."
     }
