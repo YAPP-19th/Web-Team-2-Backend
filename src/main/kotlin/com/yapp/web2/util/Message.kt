@@ -55,5 +55,9 @@ class Message {
         var PASSWORD_VALID_MESSAGE = "특수문자를 포함하여 영문 대소문자, 숫자 중 2종류 이상을 조합하여 8~16자의 비밀번호를 생성해주세요."
 
         var NOT_EXIST_EMAIL = "존재하지 않는 이메일 입니다."
+
+        var SUCCESS_SEND_MAIL = "메일 발송이 완료되었습니다."
+
+        var SUCCESS_EXIST_EMAIL = "입력하신 이메일 주소가 정상적으로 확인되었습니다."
     }
 }

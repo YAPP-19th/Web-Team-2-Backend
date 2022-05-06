@@ -1,7 +1,6 @@
 package com.yapp.web2.domain.account.controller
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import com.yapp.web2.common.CustomPassword
 import com.yapp.web2.config.S3Uploader
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.entity.AccountRequestDto
@@ -18,8 +17,6 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
-import javax.validation.Validation
-import javax.validation.constraints.NotEmpty
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -169,6 +166,26 @@ class AccountController(
         accountService.softDelete(token)
 
         return ResponseEntity.status(HttpStatus.OK).body(Message.DELETE_ACCOUNT_SUCCEED)
+    }
+
+    @ApiOperation(value = "비밀번호 재설정 - 이메일이 존재 여부 확인 API")
+    @GetMapping("/password/email")
+    fun checkEmailExist(
+        request: HttpServletRequest,
+        @RequestBody @Valid @ApiParam(value = "이메일 주소") dto: AccountRequestDto.EmailCheckRequest
+    ): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.checkEmailExist(token, dto))
+    }
+
+    @ApiOperation(value = "비밀번호 재설정 - 임시 비밀번호 생성 및 메일 발송 API")
+    @PostMapping("/password/reset")
+    fun sendTempPasswordToEmail(request: HttpServletRequest): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        val tempPassword = accountService.createTempPassword()
+        accountService.updatePassword(token, tempPassword)
+
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.sendMail(token, tempPassword))
     }
 
 }

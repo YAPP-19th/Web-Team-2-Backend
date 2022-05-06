@@ -6,13 +6,18 @@ import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.config.S3Uploader
 import com.yapp.web2.domain.account.entity.AccountRequestDto
+import com.yapp.web2.domain.account.entity.MailDto
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.exception.BusinessException
+import com.yapp.web2.exception.custom.EmailNotFoundException
 import com.yapp.web2.exception.custom.ExistNameException
 import com.yapp.web2.exception.custom.ImageNotFoundException
 import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.util.Message
+import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.mail.SimpleMailMessage
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -26,11 +31,15 @@ class AccountService(
     private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider,
     private val s3Uploader: S3Uploader,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
+    private val mailSender: JavaMailSender
 ) {
 
     @Value("\${extension.version}")
     private lateinit var extensionVersion: String
+
+    @Value("\${spring.mail.username}")
+    private lateinit var fromSender: String
 
     companion object {
         private const val DIR_NAME = "static"
@@ -186,5 +195,34 @@ class AccountService(
         account.softDeleteAccount()
     }
 
+    fun checkEmailExist(token: String, request: AccountRequestDto.EmailCheckRequest): String {
+        accountRepository.findByEmail(request.email)?.let {
+            if (it.email != request.email) {
+                throw EmailNotFoundException()
+            }
+        }
+        return Message.SUCCESS_EXIST_EMAIL
+    }
+
+    internal fun createTempPassword(): String {
+        return RandomStringUtils.randomAlphanumeric(12) + "!"
+    }
+
+    fun sendMail(token: String, tempPassword: String): String {
+        val account = jwtProvider.getAccountFromToken(token)
+        val mailMessage = SimpleMailMessage()
+        mailMessage.setTo(account.email)
+        mailMessage.setFrom(fromSender)
+        mailMessage.setSubject("${account.name} 님의 임시비밀번호 안내 메일입니다.")
+        mailMessage.setText("안녕하세요. \n\n 임시 비밀번호를 전달드립니다. \n\n 임시 비밀번호는: $tempPassword 입니다.")
+        mailSender.send(mailMessage)
+
+        return Message.SUCCESS_SEND_MAIL
+    }
+
+    fun updatePassword(token: String, tempPassword: String) {
+        val account = jwtProvider.getAccountFromToken(token)
+        account.password = passwordEncoder.encode(tempPassword)
+    }
 
 }

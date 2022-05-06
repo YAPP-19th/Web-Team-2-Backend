@@ -38,20 +38,31 @@ class AccountRequestDto {
         val password: String
     )
 
-
+    @ApiModel(description = "현재 비밀번호 조회 Request DTO")
     class CurrentPassword(
+        @ApiModelProperty(value = "현재 비밀번호", required = true, example = "1234567!")
         @field: NotBlank(message = "현재 비밀번호를 입력해주세요")
         val currentPassword: String
     )
 
+    @ApiModel(description = "비밀번호 변경 Request DTO")
     class PasswordChangeRequest(
+        @ApiModelProperty(value = "기존 비밀번호", required = true, example = "1234567!")
         @field: NotBlank(message = "기존 비밀번호를 입력해주세요")
         @field: CustomPassword
         val currentPassword: String,
 
+        @ApiModelProperty(value = "새 비밀번호", required = true, example = "12345678!")
         @field: NotBlank(message = "새 비밀번호를 입력해주세요")
         @field: CustomPassword
         val newPassword: String
+    )
+
+    @ApiModel(description = "비밀번호 재설정 - 이메일 주소 확인 Request DTO")
+    class EmailCheckRequest(
+        @ApiModelProperty(value = "이메일 주소", required = true, example = "a@a.com")
+        @field: NotBlank(message = "이메일을 입력해주세요")
+        val email: String
     )
 
 }
