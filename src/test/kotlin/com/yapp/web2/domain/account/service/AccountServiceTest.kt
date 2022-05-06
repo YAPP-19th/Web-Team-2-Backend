@@ -6,6 +6,7 @@ import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.exception.BusinessException
+import com.yapp.web2.exception.custom.EmailNotFoundException
 import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.multipart.MultipartFile
@@ -47,12 +49,15 @@ internal class AccountServiceTest {
     @MockK
     private lateinit var passwordEncoder: PasswordEncoder
 
+    @MockK
+    private lateinit var mailSender: JavaMailSender
+
     private lateinit var testAccount: Account
 
     @BeforeEach
     internal fun init() {
         MockKAnnotations.init(this)
-        accountService = AccountService(folderService, accountRepository, jwtProvider, s3Uploader, passwordEncoder)
+        accountService = AccountService(folderService, accountRepository, jwtProvider, s3Uploader, passwordEncoder, mailSender)
         testAccount = Account("test@gmail.com", "1234567!")
     }
 
@@ -102,11 +107,6 @@ internal class AccountServiceTest {
 
         // then
         org.junit.jupiter.api.assertThrows<IllegalStateException> { accountService.singUp(request) }
-    }
-
-    @Test
-    fun `회원가입 시 이메일 형식을 검사한다`() {
-        // TODO: 2022/05/05
     }
 
     @Test
@@ -190,7 +190,6 @@ internal class AccountServiceTest {
 
     @Test
     fun `비밀번호는 특수문자를 포함하여 영문자 혹은 숫자를 포함해야 한다`() {
-        // TODO: 2022/05/05
         val rightPassword1 = AccountRequestDto.PasswordChangeRequest("1234567!", "1234567!")
         val rightPassword2 = AccountRequestDto.PasswordChangeRequest("abcdefg!", "abcdefg!")
         val validatorFactory = Validation.buildDefaultValidatorFactory()
@@ -205,6 +204,42 @@ internal class AccountServiceTest {
             { assertThat(constraints1).isEmpty() },
             { assertThat(constraints2).isEmpty() }
         )
+    }
+
+    @Test
+    fun `회원을 정상적으로 탈퇴한다`() {
+        // given
+        every { jwtProvider.getAccountFromToken(any()) } returns testAccount
+
+        // when
+        accountService.softDelete("any")
+
+        // then
+        assertThat(testAccount.deleted).isTrue
+    }
+
+    @Test
+    fun `비밀번호 설정 시 입력한 이메일이 존재하는지 확인한다`() {
+        // given
+        val request = AccountRequestDto.EmailCheckRequest("test@gmail.com")
+        val expected = "입력하신 이메일 주소가 정상적으로 확인되었습니다."
+
+        every { accountRepository.findByEmail(any()) } returns testAccount
+
+        // when
+        val actual = accountService.checkEmailExist("any", request)
+
+        // then
+        assertThat(actual).isEqualTo(expected)
+    }
+
+    @Test
+    fun `임시 비밀번호를 생성한다`() {
+        // when
+        val temp = accountService.createTempPassword()
+
+        // then
+        assertThat(temp.length).isEqualTo(13)
     }
 
     @Nested
