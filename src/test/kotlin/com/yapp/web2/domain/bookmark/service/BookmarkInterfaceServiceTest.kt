@@ -11,7 +11,6 @@ import com.yapp.web2.security.jwt.JwtProvider
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -117,6 +116,18 @@ internal class BookmarkInterfaceServiceTest {
 
             // then
             assertEquals(PersonalBookmark::class, actualBookmark::class)
+        }
+
+        @Test
+        fun `저장할 폴더가 없을 때는 예외를 던진다`() {
+            // given
+            testAccount.id = 0L
+            every { jwtProvider.getAccountFromToken(testToken) } returns testAccount
+
+            // when & then
+            assertThrows(RuntimeException::class.java) {
+                bookmarkInterfaceService.addBookmark(testToken, testFolderId, testDto)
+            }
         }
     }
 }
