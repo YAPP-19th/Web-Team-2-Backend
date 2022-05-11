@@ -1,39 +1,48 @@
 package com.yapp.web2.util
 
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
 import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-class AES256Util {
+@Component
+class AES256Util(
+    @Value("\${aes.secretKey}")
+    private val key: String
+) {
+
     companion object {
         private const val alg = "AES/CBC/PKCS5Padding"
-        @Value("\${aes.secretKey}")
-        private const val key = "비미리에여비미리에여비미리에여비미리에여"
-        private val iv = key.substring(0, 16)
+        // iv 값은 노출시켜도 괜찮다~
+        private const val iv = "1234567891234567"
 
-        fun encrypt(text: String): String {
-            val cipher = Cipher.getInstance(alg)
-            val keySpec = SecretKeySpec(key.encodeToByteArray(), "AES")
-            val ivSpec = IvParameterSpec(iv.encodeToByteArray())
-            cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec)
+        private const val AES = "AES"
+    }
 
-            val encrypted = cipher.doFinal(text.toByteArray(StandardCharsets.UTF_8))
-            return Base64.getEncoder().encodeToString(encrypted)
-        }
+    fun encrypt(text: String): String {
+        val cipher = Cipher.getInstance(alg)
+        val keySpec = SecretKeySpec(key.substring(0, 16).encodeToByteArray(), AES)
+        val ivSpec = IvParameterSpec(iv.encodeToByteArray())
 
-        fun decrypt(cipherText: String): String {
-            val cipher = Cipher.getInstance(alg)
-            val keySpec = SecretKeySpec(key.encodeToByteArray(), "AES")
-            val ivSpec = IvParameterSpec(iv.encodeToByteArray())
-            cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec)
+        cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec)
 
-            val decodedBytes = Base64.getDecoder().decode(cipherText)
-            val decrypted = cipher.doFinal(decodedBytes)
+        val encrypted = cipher.doFinal(text.toByteArray(StandardCharsets.UTF_8))
+        return Base64.getEncoder().encodeToString(encrypted)
+    }
 
-            return String(decrypted, StandardCharsets.UTF_8)
-        }
+    fun decrypt(cipherText: String): String {
+        val cipher = Cipher.getInstance(alg)
+        val keySpec = SecretKeySpec(key.substring(0, 16).encodeToByteArray(), AES)
+        val ivSpec = IvParameterSpec(iv.encodeToByteArray())
+
+        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec)
+
+        val decodedBytes = Base64.getDecoder().decode(cipherText)
+        val decrypted = cipher.doFinal(decodedBytes)
+
+        return String(decrypted, StandardCharsets.UTF_8)
     }
 }

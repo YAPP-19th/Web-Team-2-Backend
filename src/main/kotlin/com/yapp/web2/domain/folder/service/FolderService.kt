@@ -25,7 +25,8 @@ class FolderService(
     private val folderRepository: FolderRepository,
     private val bookmarkRepository: BookmarkRepository,
     private val accountRepository: AccountRepository,
-    private val jwtProvider: JwtProvider
+    private val jwtProvider: JwtProvider,
+    private val aeS256Util: AES256Util
 ) {
     companion object {
         private val folderNotFoundException = FolderNotFoundException()
@@ -326,6 +327,6 @@ class FolderService(
 
     fun encryptFolderId(folderId: Long): FolderTokenDto {
         val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
-        return FolderTokenDto(AES256Util.encrypt(folder.id.toString()))
+        return FolderTokenDto(aeS256Util.encrypt(folder.id.toString()))
     }
 }
