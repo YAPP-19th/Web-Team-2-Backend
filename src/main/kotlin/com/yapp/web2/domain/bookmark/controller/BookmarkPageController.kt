@@ -68,4 +68,13 @@ class BookmarkPageController(
         val todayRemindBookmarkList = bookmarkPageService.getTodayRemindBookmark(token)
         return ResponseEntity.status(HttpStatus.OK).body(todayRemindBookmarkList)
     }
+
+    @GetMapping("/open/{folderToken}")
+    fun getBookmarkPageByFolderToken(
+        @PathVariable folderToken: String,
+        pageable: Pageable
+    ): ResponseEntity<Page<Bookmark>> {
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(bookmarkPageService.getAllPageByEncryptFolderId(folderToken, pageable))
+    }
 }

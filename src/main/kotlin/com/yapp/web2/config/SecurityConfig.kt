@@ -20,6 +20,7 @@ class SecurityConfig(
             .antMatchers("/v2/**", "/configuration/**", "/swagger*/**", "/webjars/**", "/swagger-resources/**")
             .antMatchers("/v3/**", "/swagger-ui", "/swagger-ui/**")
             .antMatchers("/actuator/**")
+            .antMatchers("/api/v1/page/open/**")
     }
 
     override fun configure(http: HttpSecurity?) {
@@ -33,6 +34,7 @@ class SecurityConfig(
             .antMatchers("/v2/**", "/configuration/**", "/swagger*/**", "/webjars/**", "/swagger-resources/**").permitAll()
             .antMatchers("/v3/**", "/swagger-ui", "/swagger-ui/**").permitAll()
             .antMatchers("/actuator/**").permitAll()
+            .antMatchers("/api/v1/page/open/**").permitAll()
             .anyRequest().authenticated()
 
         http.apply(JwtSecurityConfig(jwtProvider))
