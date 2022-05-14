@@ -12,5 +12,9 @@ class ExceptionMessage {
         const val REMIND_CYCLE_VALID_EXCEPTION = "정확한 주기 일자를 입력해주세요."
 
         const val FOLDER_SIZE_EXCEED_EXCEPTION = "하위 폴더는 최대 8개까지 생성을 할 수 있습니다."
+
+        const val PASSWORD_DIFFERENT_EXCEPTION = "비밀번호가 일치하지 않습니다."
+
+        const val NOT_FOUND_EMAIL = "가입하신 이메일 주소를 찾을 수 없습니다."
     }
 }
