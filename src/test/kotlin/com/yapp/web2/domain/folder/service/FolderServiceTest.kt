@@ -9,6 +9,7 @@ import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
+import com.yapp.web2.util.AES256Util
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -43,6 +44,9 @@ internal open class FolderServiceTest {
 
     @MockK
     private lateinit var jwtProvider: JwtProvider
+
+    @MockK
+    private lateinit var aeS256Util: AES256Util
 
     private lateinit var folder: Folder
     private lateinit var changeEmoji: String
@@ -201,6 +205,16 @@ internal open class FolderServiceTest {
 
         // then
         printJson(actual)
+    }
+
+    @Test
+    fun `폴더 id를 암호화할 때, 폴더 id가 존재하지 않으면 예외를 던진다`() {
+        // given
+        folder.id = 1
+        every { folderRepository.findFolderById(folder.id!!) } returns null
+
+        // then &
+        assertThrows<FolderNotFoundException> { folderService.encryptFolderId(folder.id!!) }
     }
 
     @Test

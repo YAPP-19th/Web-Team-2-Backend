@@ -71,6 +71,7 @@ class BookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
     }
 
+    // TODO: 2022/05/03 이거 괜히 만들어져있는 거 같음 moveBookmarkDto에 list가 존재하기 때문에 굳이 bookmarkId를 pathvariable을 통해 받을 필요가 없다. 제거
     @ApiOperation(value = "북마크 이동 API")
     @PatchMapping("/move/{bookmarkId}")
     fun moveBookmark(
