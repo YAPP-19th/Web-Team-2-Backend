@@ -62,7 +62,7 @@ class Bookmark(
     var remindCheck: Boolean = false
     var remindStatus: Boolean = false
 
-    val remindList = mutableListOf<Remind>()
+    var remindList = mutableListOf<Remind>()
 
     @ApiModel(description = "북마크 수정 DTO")
     class UpdateBookmarkDto(
@@ -121,7 +121,7 @@ class Bookmark(
     )
 
     class BookmarkIdList(
-        val idList: MutableList<String>
+        val dotoriIdList: MutableList<String>
     )
 
     fun restore(): Bookmark {

@@ -9,9 +9,12 @@ import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.domain.folder.service.move.factory.FolderMoveFactory
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveInnerStrategy
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveWithEqualParentOrTopFolder
+import com.yapp.web2.exception.ObjectNotFoundException
 import com.yapp.web2.exception.custom.AccountNotFoundException
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
+import com.yapp.web2.util.AES256Util
+import com.yapp.web2.util.FolderTokenDto
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -22,7 +25,8 @@ class FolderService(
     private val folderRepository: FolderRepository,
     private val bookmarkRepository: BookmarkRepository,
     private val accountRepository: AccountRepository,
-    private val jwtProvider: JwtProvider
+    private val jwtProvider: JwtProvider,
+    private val aeS256Util: AES256Util
 ) {
     companion object {
         private val folderNotFoundException = FolderNotFoundException()
@@ -32,6 +36,7 @@ class FolderService(
         val defaultFolder = Folder("보관함1", index = 0, parentFolder = null)
         val folder = folderRepository.save(defaultFolder)
         val accountFolder = AccountFolder(account, folder)
+//        accountFolder.authority = "Admin"
         folder.folders?.add(accountFolder)
     }
 
@@ -58,6 +63,7 @@ class FolderService(
         val index = folderRepository.findAllByParentFolderCount(accountId)
         val folder = Folder.dtoToEntity(request, index)
         val accountFolder = AccountFolder(account, folder)
+//        accountFolder.authority = "Admin"
         folder.folders?.add(accountFolder)
 
         return folder
@@ -317,5 +323,10 @@ class FolderService(
         }
         childList.reverse()
         return childList
+    }
+
+    fun encryptFolderId(folderId: Long): FolderTokenDto {
+        val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
+        return FolderTokenDto(aeS256Util.encrypt(folder.id.toString()))
     }
 }

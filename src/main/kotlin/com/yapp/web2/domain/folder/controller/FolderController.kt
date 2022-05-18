@@ -4,6 +4,7 @@ import com.yapp.web2.domain.folder.entity.Folder
 
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.util.ControllerUtil
+import com.yapp.web2.util.FolderTokenDto
 import com.yapp.web2.util.Message
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
@@ -55,7 +56,10 @@ class FolderController(
     @PatchMapping("/move")
     fun moveFolderByButton(
         servletRequest: HttpServletRequest,
-        @RequestBody @ApiParam(value = "이동할 폴더들의 ID 및 다음 폴더 ID", required = true) request: Folder.FolderMoveButtonRequest
+        @RequestBody @ApiParam(
+            value = "이동할 폴더들의 ID 및 다음 폴더 ID",
+            required = true
+        ) request: Folder.FolderMoveButtonRequest
     ): ResponseEntity<String> {
         val accessToken = ControllerUtil.extractAccessToken(servletRequest)
         folderService.moveFolderByButton(accessToken, request)
@@ -104,5 +108,10 @@ class FolderController(
         @PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long
     ): ResponseEntity<MutableList<Folder.FolderListResponse>> {
         return ResponseEntity.status(HttpStatus.OK).body(folderService.findAllParentFolderList(folderId))
+    }
+
+    @GetMapping("encrypt/{folderId}")
+    fun getEncryptFolderId(@PathVariable folderId: Long): ResponseEntity<FolderTokenDto> {
+        return ResponseEntity.status(HttpStatus.OK).body(folderService.encryptFolderId(folderId))
     }
 }
