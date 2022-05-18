@@ -65,4 +65,10 @@ class AccountRequestDto {
         val email: String
     )
 
+    @ApiModel(description = "배경 색상 변경 Request DTO")
+    class ChangeBackgroundColorRequest(
+        @ApiModelProperty(value = "변경할 색상 이미지 url", required = true, example = "https://aaa.com")
+        val changeUrl: String
+    )
+
 }
