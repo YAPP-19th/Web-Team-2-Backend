@@ -330,7 +330,6 @@ class AccountControllerTest {
     }
 
     @Test
-
     fun `비밀번호 재설정 시 임시 비밀번호를 생성하고 메일을 발송한다`() {
         // given
         val tempPassword = RandomStringUtils.randomAlphanumeric(12) + "!"
