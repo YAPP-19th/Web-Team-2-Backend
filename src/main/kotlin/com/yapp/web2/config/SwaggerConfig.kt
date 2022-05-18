@@ -1,5 +1,6 @@
 package com.yapp.web2.config
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.bind.annotation.RestController
@@ -15,10 +16,9 @@ import springfox.documentation.spi.service.contexts.SecurityContext
 import springfox.documentation.spring.web.plugins.Docket
 import springfox.documentation.swagger.web.SecurityConfiguration
 import springfox.documentation.swagger.web.SecurityConfigurationBuilder
-import springfox.documentation.swagger2.annotations.EnableSwagger2
 
 @Configuration
-@EnableSwagger2
+@OpenAPIDefinition
 class SwaggerConfig {
 
     @Bean
@@ -36,7 +36,7 @@ class SwaggerConfig {
 
     @Bean
     fun productApi(): Docket {
-        return Docket(DocumentationType.SWAGGER_2)
+        return Docket(DocumentationType.OAS_30)
             .apiInfo(this.metaInfo())
             .securityContexts(listOf(securityContext()))
             .securitySchemes(listOf(apiKey()))
