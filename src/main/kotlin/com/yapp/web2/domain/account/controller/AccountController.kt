@@ -85,11 +85,11 @@ class AccountController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
-    @ApiOperation(value = "닉네임 조회 API")
+    @ApiOperation(value = "닉네임 비교 API")
     @PostMapping("/nickNameCheck")
     fun nickNameCheck(
         request: HttpServletRequest,
-        @RequestBody @Valid @ApiParam(value = "변경할 닉네임") nickName: Account.NextNickName
+        @RequestBody @Valid @ApiParam(value = "비교할 닉네임") nickName: Account.NextNickName
     ): ResponseEntity<String> {
         val token = ControllerUtil.extractAccessToken(request)
         val result = accountService.checkNickNameDuplication(token, nickName)
@@ -109,9 +109,13 @@ class AccountController(
 
     @ApiOperation(value = "배경 색상 변경 API")
     @PostMapping("/changeBackgroundColor")
-    fun changeBackgroundColor(request: HttpServletRequest, changeUrl: String): ResponseEntity<String> {
+    fun changeBackgroundColor(
+        request: HttpServletRequest,
+        @RequestBody @ApiParam(value = "변경할 색상 정보")
+        dto: AccountRequestDto.ChangeBackgroundColorRequest
+    ): ResponseEntity<String> {
         val token = ControllerUtil.extractAccessToken(request)
-        accountService.changeBackgroundColor(token, changeUrl)
+        accountService.changeBackgroundColor(token, dto)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
@@ -127,7 +131,7 @@ class AccountController(
         @RequestBody @Valid @ApiParam(value = "회원가입 정보", required = true)
         request: AccountRequestDto.SignUpRequest
     ): ResponseEntity<Account.AccountLoginSuccess> {
-        return ResponseEntity.status(HttpStatus.OK).body(accountService.singUp(request))
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.signUp(request))
     }
 
     @ApiOperation("일반 로그인 API")
@@ -140,7 +144,7 @@ class AccountController(
     }
 
     @ApiOperation(value = "현재 비밀번호와 입력받은 비밀번호 비교 API")
-    @GetMapping("/currentPassword")
+    @PostMapping("/passwordCheck")
     fun comparePassword(
         request: HttpServletRequest,
         @RequestBody @Valid @ApiParam(value = "현재(기존) 비밀번호") dto: AccountRequestDto.CurrentPassword
@@ -169,7 +173,7 @@ class AccountController(
     }
 
     @ApiOperation(value = "비밀번호 재설정 - 이메일이 존재 여부 확인 API")
-    @GetMapping("/password/email")
+    @PostMapping("/password/emailCheck")
     fun checkEmailExist(
         request: HttpServletRequest,
         @RequestBody @Valid @ApiParam(value = "이메일 주소") dto: AccountRequestDto.EmailCheckRequest
