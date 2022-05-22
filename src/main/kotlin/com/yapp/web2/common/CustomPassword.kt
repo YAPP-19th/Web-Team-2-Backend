@@ -11,6 +11,7 @@ import kotlin.reflect.KClass
 @Retention(AnnotationRetention.RUNTIME)
 annotation class CustomPassword(
 
+    // TODO: 2022/05/08 필드 별 정확한 의미 파악
     val message: String = "영문 대소문자, 숫자, 특수문자 중 2종류 이상을 조합하여 8~16자의 비밀번호를 생성해주세요.",
     val groups: Array<KClass<*>> = [],
     val payload: Array<KClass<out Payload>> = [],

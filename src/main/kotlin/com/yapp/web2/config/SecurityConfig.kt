@@ -25,10 +25,7 @@ class SecurityConfig(
     override fun configure(web: WebSecurity?) {
         web!!.ignoring()
             .antMatchers("/api/v1/user/oauth2Login", "/api/v1/user/signUp", "/api/v1/user/reIssuanceAccessToken")
-            .antMatchers("/v2/**", "/configuration/**", "/swagger*/**", "/webjars/**", "/swagger-resources/**")
-            .antMatchers("/v3/**", "/swagger-ui", "/swagger-ui/**")
-            .antMatchers("/actuator/**")
-            .antMatchers("/api/v1/page/open/**")
+            .antMatchers("/swagger-resources/**", "/v3/api-docs/**", "/swagger-ui/**")
     }
 
     override fun configure(http: HttpSecurity?) {
@@ -38,9 +35,7 @@ class SecurityConfig(
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
         http.authorizeRequests()
-            .antMatchers("/api/v1/user/oauth2Login", "/api/v1/user/reIssuanceAccessToken").permitAll()
-            .antMatchers("/v2/**", "/configuration/**", "/swagger*/**", "/webjars/**", "/swagger-resources/**").permitAll()
-            .antMatchers("/v3/**", "/swagger-ui", "/swagger-ui/**").permitAll()
+            .antMatchers("/api/v1/user/reIssuanceAccessToken").permitAll()
             .antMatchers("/actuator/**").permitAll()
             .antMatchers("/api/v1/page/open/**").permitAll()
             .anyRequest().authenticated()

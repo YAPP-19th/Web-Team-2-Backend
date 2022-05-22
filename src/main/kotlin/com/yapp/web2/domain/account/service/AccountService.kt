@@ -82,7 +82,7 @@ class AccountService(
         return Account.AccountLoginSuccess(jwtProvider.createToken(account2), account2, isRegistered)
     }
 
-    fun singUp(dto: AccountRequestDto.SignUpRequest): Account.AccountLoginSuccess {
+    fun signUp(dto: AccountRequestDto.SignUpRequest): Account.AccountLoginSuccess {
         if (accountRepository.findByEmail(dto.email) != null) {
             throw IllegalStateException(Message.EXIST_USER)
         }
@@ -152,9 +152,9 @@ class AccountService(
         }
     }
 
-    fun changeBackgroundColor(token: String, changeUrl: String) {
+    fun changeBackgroundColor(token: String, dto: AccountRequestDto.ChangeBackgroundColorRequest) {
         val account = jwtProvider.getAccountFromToken(token)
-        account.backgroundColor = changeUrl
+        account.backgroundColor = dto.changeUrl
     }
 
     fun checkExtension(userVersion: String): String {

@@ -5,7 +5,9 @@ import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.security.jwt.TokenDto
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.OneToMany
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
 

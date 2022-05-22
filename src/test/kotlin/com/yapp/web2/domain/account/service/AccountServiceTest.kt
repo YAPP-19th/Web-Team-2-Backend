@@ -1,19 +1,22 @@
 package com.yapp.web2.domain.account.service
 
+import com.yapp.web2.common.PasswordValidator
 import com.yapp.web2.config.S3Uploader
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.exception.BusinessException
-import com.yapp.web2.exception.custom.EmailNotFoundException
 import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
-import com.yapp.web2.util.Message
-import io.mockk.*
+import io.mockk.MockKAnnotations
+import io.mockk.Runs
+import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
+import io.mockk.just
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -21,12 +24,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.multipart.MultipartFile
-import java.util.*
-import javax.validation.Validation
+import java.util.Optional
 import kotlin.IllegalStateException
 
 internal class AccountServiceTest {
@@ -54,11 +58,14 @@ internal class AccountServiceTest {
 
     private lateinit var testAccount: Account
 
+    private lateinit var validator: PasswordValidator
+
     @BeforeEach
     internal fun init() {
         MockKAnnotations.init(this)
         accountService = AccountService(folderService, accountRepository, jwtProvider, s3Uploader, passwordEncoder, mailSender)
         testAccount = Account("test@gmail.com", "1234567!")
+        validator = PasswordValidator()
     }
 
     @Test
@@ -87,7 +94,7 @@ internal class AccountServiceTest {
         every { jwtProvider.createToken(any()) } returns testToken
 
         // when
-        val actual = accountService.singUp(request)
+        val actual = accountService.signUp(request)
 
         // then
         assertAll(
@@ -106,7 +113,7 @@ internal class AccountServiceTest {
         every { accountRepository.findByEmail(any()) }.throws(IllegalStateException())
 
         // then
-        org.junit.jupiter.api.assertThrows<IllegalStateException> { accountService.singUp(request) }
+        org.junit.jupiter.api.assertThrows<IllegalStateException> { accountService.signUp(request) }
     }
 
     @Test
@@ -156,54 +163,22 @@ internal class AccountServiceTest {
         assertEquals(expectedMessage, actualException.message)
     }
 
-    @Test
-    fun `비밀번호의 길이는 8자에서 16자 사이여야 한다`() {
-        // given
-        val lessThanEightLength = AccountRequestDto.PasswordChangeRequest("123456!", "123456!")
-        val moreThenSixteenLength = AccountRequestDto.PasswordChangeRequest("123456789abcdefg!@", "123456789abcdefg!@")
-        val validatorFactory = Validation.buildDefaultValidatorFactory()
-        val validator = validatorFactory.validator
-
-        // when
-        val constraints = validator.validate(lessThanEightLength)
-        val constraints2 = validator.validate(moreThenSixteenLength)
-
-        assertAll(
-            { assertThat(constraints.stream().filter { it.messageTemplate.equals(Message.PASSWORD_VALID_MESSAGE) }) },
-            { assertThat(constraints2.stream().filter { it.messageTemplate.equals(Message.PASSWORD_VALID_MESSAGE) }) }
-        )
+    @ParameterizedTest
+    @ValueSource(strings = ["1234567!", "a1234567!", "12341234!@", "!1234567", "!abcdefg"])
+    fun `비밀번호는 특수문자를 포함하여 영문자 및 숫자 조합으로 8자에서 16자 사이여야 한다`(successPassword: String) {
+        assertThat(validator.isValid(successPassword, null)).isTrue
     }
 
-    @Test
-    fun `비밀번호는 특수문자를 반드시 포함해야 한다`() {
-        // given
-        val notContainsSpecialCharacters = AccountRequestDto.PasswordChangeRequest("12345678", "12345678")
-        val validatorFactory = Validation.buildDefaultValidatorFactory()
-        val validator = validatorFactory.validator
-
-        // when
-        val constraints = validator.validate(notContainsSpecialCharacters)
-
-        // then
-        assertThat(constraints.stream().filter { it.messageTemplate.equals(Message.PASSWORD_VALID_MESSAGE) })
+    @ParameterizedTest
+    @ValueSource(strings = ["12345678", "abcdefgh", "1234abcd", "1a2b3c4d"])
+    fun `특수문자가 포함되지 않은 패스워드는 검증에 실패한다`(failPassword: String) {
+        assertThat(validator.isValid(failPassword, null)).isFalse
     }
 
-    @Test
-    fun `비밀번호는 특수문자를 포함하여 영문자 혹은 숫자를 포함해야 한다`() {
-        val rightPassword1 = AccountRequestDto.PasswordChangeRequest("1234567!", "1234567!")
-        val rightPassword2 = AccountRequestDto.PasswordChangeRequest("abcdefg!", "abcdefg!")
-        val validatorFactory = Validation.buildDefaultValidatorFactory()
-        val validator = validatorFactory.validator
-
-        // when
-        val constraints1 = validator.validate(rightPassword1)
-        val constraints2 = validator.validate(rightPassword2)
-
-        // then
-        assertAll(
-            { assertThat(constraints1).isEmpty() },
-            { assertThat(constraints2).isEmpty() }
-        )
+    @ParameterizedTest
+    @ValueSource(strings = ["", " ", "1234", "abcd", "1234567", "123456!", "0123456789abcdefgh"])
+    fun `길이가 8자 미만 혹은 16자 초과하는 패스워드는 검증에 실패한다`(failPassword: String) {
+        assertThat(validator.isValid(failPassword, null)).isFalse
     }
 
     @Test
@@ -388,13 +363,13 @@ internal class AccountServiceTest {
     @Nested
     inner class BackgroundColorSetting {
         private lateinit var testToken: String
-        private lateinit var testBackgroundColorUrl: String
+        private lateinit var request: AccountRequestDto.ChangeBackgroundColorRequest
         private lateinit var account: Account
 
         @BeforeEach
         internal fun setUp() {
             testToken = "testToken"
-            testBackgroundColorUrl = "http://yapp-bucket-test/test/image"
+            request = AccountRequestDto.ChangeBackgroundColorRequest("http://yapp-bucket-test/test/image")
             account = Account("testAccount")
         }
 
@@ -405,10 +380,10 @@ internal class AccountServiceTest {
             every { accountRepository.findById(1) } returns Optional.of(account)
 
             //when
-            accountService.changeBackgroundColor(testToken, testBackgroundColorUrl)
+            accountService.changeBackgroundColor(testToken, request)
 
             //then
-            assertThat(account.backgroundColor).isEqualTo(testBackgroundColorUrl)
+            assertThat(account.backgroundColor).isEqualTo(request.changeUrl)
         }
     }
 }
