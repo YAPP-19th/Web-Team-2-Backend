@@ -1,11 +1,25 @@
 package com.yapp.web2.domain.bookmark.entity
 
+import com.yapp.web2.domain.account.entity.Account
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 
 class BookmarkDto {
+
+    companion object {
+        fun AddBookmarkDtoToBookmark(bookmarkDto: AddBookmarkDto, account: Account): BookmarkInterface {
+            return PersonalBookmark(
+                account,
+                bookmarkDto.link,
+                bookmarkDto.title,
+                bookmarkDto.image,
+                bookmarkDto.description,
+                bookmarkDto.remind
+            )
+        }
+    }
 
     @ApiModel(description = "북마크 수정 DTO")
     class UpdateBookmarkDto(
@@ -23,19 +37,22 @@ class BookmarkDto {
 
         // TODO: 2021/12/04 RequestParam 데이터 검증
         @ApiModelProperty(value = "북마크 url", required = true, example = "https://www.naver.com")
-        var url: String,
+        var link: String,
 
         @ApiModelProperty(value = "북마크 제목", example = "Bookmark Title")
-        var title: String?,
+        var title: String,
 
         @ApiModelProperty(value = "북마크 리마인드 여부", required = true, example = "true")
         var remind: Boolean,
 
-        @ApiModelProperty(value = "북마크 이미지", example = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png")
+        @ApiModelProperty(
+            value = "북마크 이미지",
+            example = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png"
+        )
         var image: String?,
 
         @ApiModelProperty(value = "description", example = "설명 예제...")
-        var description: String?
+        var description: String
     )
 
     @ApiModel(description = "북마크 이동 API(폴더별 이동)")
