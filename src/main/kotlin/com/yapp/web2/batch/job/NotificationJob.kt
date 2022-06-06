@@ -27,7 +27,7 @@ class NotificationJob(
 
     private val log = LoggerFactory.getLogger(javaClass)
 
-    @Bean(name = ["bookmarkNotificationJob"])
+    @Bean("bookmarkNotificationJob")
     fun bookmarkNotificationJob(): Job {
         return jobBuilderFactory.get("bookmarkNotificationJob")
             .start(bookmarkNotificationStep())
@@ -62,6 +62,7 @@ class NotificationJob(
         }
     }
 
+    @Bean
     fun remindBookmarkWriter(): ItemWriter<Bookmark> {
         return ItemWriter {
             it.stream().forEach { bookmark ->

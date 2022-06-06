@@ -1,5 +1,3 @@
-
-
 package com.yapp.web2.domain.bookmark.repository
 
 import com.yapp.web2.domain.bookmark.entity.Bookmark
@@ -8,6 +6,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.data.mongodb.repository.Query
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 
 @Repository
 interface BookmarkRepository : MongoRepository<Bookmark, String> {
@@ -39,4 +38,6 @@ interface BookmarkRepository : MongoRepository<Bookmark, String> {
     fun findAllByUserId(userId: Long): List<Bookmark>
 
     fun findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrueAndRemindTimeIsNotNull(userId: Long): List<Bookmark>
+
+    fun findAllByDeletedIsTrueAndDeleteTimeIsAfter(time: LocalDateTime): List<Bookmark>
 }

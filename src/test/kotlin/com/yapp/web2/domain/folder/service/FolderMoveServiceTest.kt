@@ -6,6 +6,7 @@ import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.security.jwt.JwtProvider
+import com.yapp.web2.util.AES256Util
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -34,6 +35,9 @@ class FolderMoveServiceTest {
 
     @MockK
     private lateinit var jwtProvider: JwtProvider
+
+    @MockK
+    private lateinit var aeS256Util: AES256Util
 
     private lateinit var user: Account
 
