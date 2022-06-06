@@ -134,6 +134,30 @@ class AccountController(
         return ResponseEntity.status(HttpStatus.OK).body(accountService.signUp(request))
     }
 
+    @ApiOperation("회원가입 시 이메일 존재여부 확인 API")
+    @PostMapping("/signUp/emailCheck")
+    fun checkEmail(
+        @RequestBody @Valid @ApiParam(value = "회원가입 시 등록 이메일", required = true)
+        request: AccountRequestDto.SignUpEmailRequest
+    ): ResponseEntity<String> {
+        return when (accountService.checkEmail(request)) {
+            true -> ResponseEntity.status(HttpStatus.CONFLICT).body(Message.EXIST_EMAIL)
+            false -> ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
+        }
+    }
+
+    @ApiOperation("FCM Token 설정 API")
+    @PostMapping("/fcm-token")
+    fun registerFcmToken(
+        request: HttpServletRequest,
+        @RequestBody @Valid @ApiParam(value = "FCM Token") dto: AccountRequestDto.FcmToken
+    ): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        accountService.registerFcmToken(token, dto)
+
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
+    }
+
     @ApiOperation("일반 로그인 API")
     @PostMapping("/signIn")
     fun signIn(
