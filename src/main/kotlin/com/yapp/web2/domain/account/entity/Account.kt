@@ -102,7 +102,6 @@ class Account(
         val socialType: String,
 
         @ApiModelProperty(value = "FCM 토큰", required = true, example = "dOOUnnp-iBs:APA91bF1i7mobIF7kEhi3aVlFuv6A5--P1S...")
-        @field: NotEmpty(message = "FCM 토큰이 존재하지 않습니다")
         val fcmToken: String
     )
 
@@ -144,5 +143,9 @@ class Account(
 
     fun softDeleteAccount() {
         this.deleted = true
+    }
+
+    fun updateFcmToken(fcmToken: String) {
+        this.fcmToken = fcmToken
     }
 }
