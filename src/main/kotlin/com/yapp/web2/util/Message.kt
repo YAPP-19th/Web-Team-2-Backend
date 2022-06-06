@@ -14,7 +14,7 @@ class Message {
 
         var WRONG_TOKEN_FORM = "형식에 어긋난 토큰입니다"
 
-        var NULL_TOKEN = "값이 존재하지 않습니다"
+        var NULL_TOKEN = "토큰이 존재하지 않습니다"
 
         var EXIST_NAME = "이미 존재하는 닉네임입니다"
 
@@ -55,6 +55,8 @@ class Message {
         var PASSWORD_VALID_MESSAGE = "특수문자를 포함하여 영문 대소문자, 숫자 중 2종류 이상을 조합하여 8~16자의 비밀번호를 생성해주세요."
 
         var NOT_EXIST_EMAIL = "존재하지 않는 이메일 입니다."
+
+        var EXIST_EMAIL = "이미 가입한 이메일 주소입니다."
 
         var SUCCESS_SEND_MAIL = "회원의 이메일에 임시 비밀번호가 정상적으로 발송되었습니다."
 
