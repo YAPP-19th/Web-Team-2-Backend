@@ -24,7 +24,8 @@ class SecurityConfig(
 
     override fun configure(web: WebSecurity?) {
         web!!.ignoring()
-            .antMatchers("/api/v1/user/oauth2Login", "/api/v1/user/signUp", "/api/v1/user/reIssuanceAccessToken")
+            .antMatchers("/api/v1/user/oauth2Login", "/api/v1/user/signUp", "/api/v1/user/signUp/emailCheck")
+            .antMatchers("/api/v1/user/reIssuanceAccessToken")
             .antMatchers("/swagger-resources/**", "/v3/api-docs/**", "/swagger-ui/**")
     }
 
@@ -35,7 +36,6 @@ class SecurityConfig(
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
         http.authorizeRequests()
-            .antMatchers("/api/v1/user/reIssuanceAccessToken").permitAll()
             .antMatchers("/actuator/**").permitAll()
             .antMatchers("/api/v1/page/open/**").permitAll()
             .anyRequest().authenticated()
