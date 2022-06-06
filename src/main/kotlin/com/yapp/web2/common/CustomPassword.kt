@@ -16,4 +16,3 @@ annotation class CustomPassword(
     val groups: Array<KClass<*>> = [],
     val payload: Array<KClass<out Payload>> = [],
 )
-
