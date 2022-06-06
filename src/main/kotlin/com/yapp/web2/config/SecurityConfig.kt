@@ -10,6 +10,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.web.firewall.DefaultHttpFirewall
+import org.springframework.security.web.firewall.HttpFirewall
 
 @Configuration
 @EnableWebSecurity
@@ -22,8 +24,15 @@ class SecurityConfig(
         return BCryptPasswordEncoder()
     }
 
+    // request rejected 에러 로그 제거
+    @Bean
+    fun defaultHttpFirewall(): HttpFirewall {
+        return DefaultHttpFirewall()
+    }
+
     override fun configure(web: WebSecurity?) {
-        web!!.ignoring()
+        web!!.httpFirewall(defaultHttpFirewall())
+            .ignoring()
             .antMatchers("/api/v1/user/oauth2Login", "/api/v1/user/signUp", "/api/v1/user/signUp/emailCheck")
             .antMatchers("/api/v1/user/reIssuanceAccessToken")
             .antMatchers("/swagger-resources/**", "/v3/api-docs/**", "/swagger-ui/**")
