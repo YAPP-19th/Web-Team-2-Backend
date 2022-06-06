@@ -95,20 +95,6 @@ class AccountService(
         return Account.AccountLoginSuccess(jwtProvider.createToken(newAccount), newAccount, false)
     }
 
-    fun checkEmail(dto: AccountRequestDto.SignUpEmailRequest): Boolean {
-        if (isExistEmail(dto.email)) {
-            return true
-        }
-        return false
-    }
-
-    private fun isExistEmail(email: String) = accountRepository.findByEmail(email) != null
-
-    fun registerFcmToken(token: String, dto: AccountRequestDto.FcmToken) {
-        val account = jwtProvider.getAccountFromToken(token)
-        account.updateFcmToken(dto.fcmToken)
-    }
-
     internal fun getNickName(email: String): String {
         val atIndex = email.indexOf("@")
         return email.substring(0, atIndex)

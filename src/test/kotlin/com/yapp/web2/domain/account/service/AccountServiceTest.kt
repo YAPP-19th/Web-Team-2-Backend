@@ -19,9 +19,7 @@ import io.mockk.just
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -217,46 +215,6 @@ internal class AccountServiceTest {
 
         // then
         assertThat(temp.length).isEqualTo(13)
-    }
-
-    @Test
-    fun `이메일이 존재할경우 true를 반환한다`() {
-        // given
-        val request = AccountRequestDto.SignUpEmailRequest("test@gmail.com")
-        every { accountRepository.findByEmail(any()) } returns testAccount
-
-        // when
-        val actual = accountService.checkEmail(request)
-
-        // then
-        assertTrue(actual)
-    }
-
-    @Test
-    fun `이메일이 존재하지 않을경우 false를 반환한다`() {
-        // given
-        val request = AccountRequestDto.SignUpEmailRequest("test@gmail.com")
-        every { accountRepository.findByEmail(any()) } returns null
-
-        // when
-        val actual = accountService.checkEmail(request)
-
-        // then
-        assertFalse(actual)
-    }
-
-    @Test
-    fun `FCM Token값을 정상적으로 설정한다`() {
-        // given
-        val expected = "test-token"
-        val request = AccountRequestDto.FcmToken(expected)
-        every { jwtProvider.getAccountFromToken(any()) } returns testAccount
-
-        // when
-        accountService.registerFcmToken("token", request)
-
-        // then
-        assertThat(testAccount.fcmToken).isEqualTo(expected)
     }
 
     @Nested

@@ -22,15 +22,8 @@ class AccountRequestDto {
         val password: String,
 
         @ApiModelProperty(value = "FCM 토큰", required = true, example = "dOOUnnp-iBs:APA91bF1i7mobIF7kEhi3aVlFuv6A5--P1S...")
+        @field: NotBlank(message = "FCM 토큰이 존재하지 않습니다.")
         val fcmToken: String
-    )
-
-    @ApiModel(description = "회원가입 할 때 이메일 Request DTO")
-    class SignUpEmailRequest(
-        @ApiModelProperty(value = "이메일", required = true, example = "a@gmail.com")
-        @field: Email(regexp = "^(.+)@(\\S+)$", message = "이메일 주소가 올바르지 않습니다")
-        @field: NotBlank(message = "이메일을 입력해주세요")
-        val email: String
     )
 
     @ApiModel(description = "로그인 Request DTO")
@@ -76,12 +69,6 @@ class AccountRequestDto {
     class ChangeBackgroundColorRequest(
         @ApiModelProperty(value = "변경할 색상 이미지 url", required = true, example = "https://aaa.com")
         val changeUrl: String
-    )
-
-    @ApiModel(description = "FCM Token Request DTO")
-    class FcmToken(
-        @ApiModelProperty(value = "등록할 FCM Token 값", required = true, example = "fvczxj3AcxzcndmVf-sdfd..")
-        val fcmToken: String
     )
 
 }
