@@ -9,7 +9,6 @@ import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.domain.folder.service.move.factory.FolderMoveFactory
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveInnerStrategy
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveWithEqualParentOrTopFolder
-import com.yapp.web2.exception.ObjectNotFoundException
 import com.yapp.web2.exception.custom.AccountNotFoundException
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
@@ -191,8 +190,7 @@ class FolderService(
 
     @Transactional(readOnly = true)
     fun findByFolderId(folderId: Long): Folder {
-        return folderRepository.findById(folderId)
-            .orElseThrow { folderNotFoundException }
+        return folderRepository.findById(folderId).orElseThrow { folderNotFoundException }
     }
 
     fun deleteFolder(folder: Folder) {
