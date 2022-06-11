@@ -151,7 +151,8 @@ fun excludedClassFilesForReport(classDirectories: ConfigurableFileCollection) {
                     "**/exception/**",
                     "**/config/**",
                     "**/Bookmarkers*",
-                    "**/BaseTimeEntity*"
+                    "**/BaseTimeEntity*",
+                    "**/infra/**"
                 )
             }
         })
