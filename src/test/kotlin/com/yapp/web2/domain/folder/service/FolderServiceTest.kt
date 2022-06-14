@@ -318,7 +318,7 @@ internal open class FolderServiceTest {
     }
 
     @Test
-    fun `자식 폴더들을 재귀로 삭제한다`() {
+    fun `부모 폴더와 자식 폴더들을 전부 삭제한다`() {
         // given
         val parentFolder: Folder = getParentFolder("parent")
         parentFolder.id = 1L
