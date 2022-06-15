@@ -110,6 +110,7 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(folderService.findAllParentFolderList(folderId))
     }
 
+    @ApiOperation(value = "암호화된 폴더 ID 조회 API")
     @GetMapping("encrypt/{folderId}")
     fun getEncryptFolderId(@PathVariable folderId: Long): ResponseEntity<FolderTokenDto> {
         return ResponseEntity.status(HttpStatus.OK).body(folderService.encryptFolderId(folderId))

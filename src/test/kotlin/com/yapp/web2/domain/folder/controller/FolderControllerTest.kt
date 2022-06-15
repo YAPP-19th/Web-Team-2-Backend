@@ -6,6 +6,7 @@ import com.yapp.web2.domain.ControllerTestUtil
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.security.jwt.JwtProvider
+import com.yapp.web2.util.FolderTokenDto
 import com.yapp.web2.util.Message
 import io.mockk.Runs
 import io.mockk.every
@@ -218,5 +219,21 @@ internal class FolderControllerTest {
             .andExpect(jsonPath("$[1].folderId").value(2L))
             .andExpect(jsonPath("$[1].emoji").value("emoji2"))
             .andExpect(jsonPath("$[1].name").value("parent2"))
+    }
+
+    @Test
+    fun `암호화된 폴더 ID를 조회한다`() {
+        // given
+        val expected = "AES256token"
+        every { folderService.encryptFolderId(any()) } returns FolderTokenDto(expected)
+
+        // when
+        val resultAction = util.getResultAction("/api/v1/folder/encrypt/1", mockMvc)
+
+        // then
+        resultAction
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.folderIdToken").value(expected))
     }
 }
