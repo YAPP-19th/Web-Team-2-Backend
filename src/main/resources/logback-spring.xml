@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <!-- 변수 설정 -->
-    <property name="LOG_DIR" value="./logs"/>
+    <property name="LOG_DIR" value="/home/ec2-user/logs"/>
     <property name="LOG_FILE" value="${LOG_DIR}/logfile.log"/>
 
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
@@ -14,7 +14,7 @@
         <file>./log/debug.log</file>
         <!-- 사이즈 & 일자별로 로그 파일 적용 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>./log/%d{yyyy-MM}/log.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>/home/ec2-user/logs/%d{yyyy-MM}/log.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>10MB</maxFileSize>
             <maxHistory>90</maxHistory>
         </rollingPolicy>
