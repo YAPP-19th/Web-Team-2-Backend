@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <!-- 변수 설정 -->
-    <property name="LOG_DIR" value="./logs"/>
+    <property name="LOG_DIR" value="/home/ec2-user/logs"/>
     <property name="LOG_FILE" value="${LOG_DIR}/logfile.log"/>
 
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
