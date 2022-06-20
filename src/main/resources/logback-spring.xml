@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 변수 설정 -->
+    <property name="LOG_DIR" value="/home/ec2-user/logs"/>
+    <property name="LOG_FILE" value="${LOG_DIR}/logfile.log"/>
+
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>[%d{yyyy-MM-dd HH:mm:ss}][%thread] %highlight(%-5level) %logger{36} - %msg%n</Pattern>
+        </layout>
+    </appender>
+
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>./log/debug.log</file>
+        <!-- 사이즈 & 일자별로 로그 파일 적용 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>/home/ec2-user/logs/%d{yyyy-MM}/log.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>90</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <Pattern>[%d{yyyy-MM-dd HH:mm:ss}][%thread] %-5level %logger{36} - %msg%n</Pattern>
+        </encoder>
+    </appender>
+
+    <!-- Logging level - TRACE > DEBUG > INFO > WARN > ERROR > FATAL -->
+    <!-- 모든 로그 레벨을 INFO로 설정 : INFO, WARN, ERROR, FATAL 레벨 출력 -->
+    <root level="INFO">
+        <appender-ref ref="console"/>
+        <appender-ref ref="file"/>
+    </root>
+
+</configuration>
