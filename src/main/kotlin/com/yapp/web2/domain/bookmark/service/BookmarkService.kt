@@ -6,7 +6,7 @@ import com.yapp.web2.domain.bookmark.entity.Remind
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
-import com.yapp.web2.exception.ObjectNotFoundException
+import com.yapp.web2.exception.custom.ObjectNotFoundException
 import com.yapp.web2.exception.custom.BookmarkNotFoundException
 import com.yapp.web2.exception.custom.SameBookmarkException
 import com.yapp.web2.security.jwt.JwtProvider
