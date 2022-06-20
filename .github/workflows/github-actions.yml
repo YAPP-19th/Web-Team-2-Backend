@@ -91,7 +91,7 @@ jobs:
       with:
           host: ${{ secrets.HOST_PROD }}
           username: ec2-user
-          key: ${{ secrets.PRIVATE_KEY }}
+          #key: ${{ secrets.PRIVATE_KEY }}
           envs: GITHUB_SHA
           script: |
               sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-prod
