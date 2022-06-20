@@ -90,8 +90,8 @@ jobs:
       if: contains(github.ref, 'main')
       with:
           host: ${{ secrets.HOST_PROD }}
-          username: ec2-user
-          #key: ${{ secrets.PRIVATE_KEY }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
           envs: GITHUB_SHA
           script: |
               sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-prod
