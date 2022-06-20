@@ -92,7 +92,7 @@ jobs:
           host: ${{ secrets.HOST_PROD }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          envs: GITHUB_SHA
+          port: 22
           script: |
               sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-prod
               docker-compose up -d
