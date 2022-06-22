@@ -52,7 +52,6 @@ class Account(
     @Transactional
     fun isInsideAccountFolder(accountFolder: AccountFolder): Boolean {
         accountFolderList.forEach {
-            println(it.folder.name)
             if (it.folder.id == accountFolder.folder.id) return true
         }
         return false
