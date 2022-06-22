@@ -20,9 +20,14 @@ class AccountFolder(
     @JoinColumn(name = "folder_id")
     var folder: Folder
 ) {
+
+    fun changeAuthority(authority: Authority) {
+        this.authority = authority
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
-    var authority: String = "Guest"
+    var authority: Authority = Authority.NONE
 }
