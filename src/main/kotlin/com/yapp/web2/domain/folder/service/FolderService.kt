@@ -1,15 +1,16 @@
 package com.yapp.web2.domain.folder.service
 
+import com.yapp.web2.domain.account.AccountDto
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.AccountFolder
+import com.yapp.web2.domain.folder.entity.Authority
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.domain.folder.service.move.factory.FolderMoveFactory
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveInnerStrategy
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveWithEqualParentOrTopFolder
-import com.yapp.web2.exception.ObjectNotFoundException
 import com.yapp.web2.exception.custom.AccountNotFoundException
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
@@ -36,7 +37,7 @@ class FolderService(
         val defaultFolder = Folder("보관함1", index = 0, parentFolder = null)
         val folder = folderRepository.save(defaultFolder)
         val accountFolder = AccountFolder(account, folder)
-//        accountFolder.authority = "Admin"
+        accountFolder.authority = Authority.ADMIN
         folder.folders?.add(accountFolder)
     }
 
@@ -63,7 +64,7 @@ class FolderService(
         val index = folderRepository.findAllByParentFolderCount(accountId)
         val folder = Folder.dtoToEntity(request, index)
         val accountFolder = AccountFolder(account, folder)
-//        accountFolder.authority = "Admin"
+        accountFolder.authority = Authority.ADMIN
         folder.folders?.add(accountFolder)
 
         return folder
@@ -328,5 +329,18 @@ class FolderService(
     fun encryptFolderId(folderId: Long): FolderTokenDto {
         val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
         return FolderTokenDto(aeS256Util.encrypt(folder.id.toString()))
+    }
+
+    fun getAccountListAtRootFolder(folderId: Long): AccountDto.FolderBelongAccountListDto {
+        // 사용자가 account-folder에 속하여있지 않다면, 예외를 던진다. -> 필요할까?
+        // folder를 통하여 account list를 받아와서 account를 dto로 변환한 리스트를 return한다.
+        val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
+        val accountList = mutableListOf<AccountDto.FolderBelongAccountInfo>()
+
+        folder.folders?.forEach {
+            accountList.add(AccountDto.accountToFolderBelongAccountInfo(it.account))
+        }
+
+        return AccountDto.FolderBelongAccountListDto(accountList)
     }
 }
