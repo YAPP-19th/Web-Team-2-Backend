@@ -9,14 +9,13 @@ import com.yapp.web2.domain.folder.entity.Authority
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.ObjectNotFoundException
-import com.yapp.web2.exception.custom.BookmarkNotFoundException
-import com.yapp.web2.exception.custom.FolderNotFoundException
-import com.yapp.web2.exception.custom.SameBookmarkException
+import com.yapp.web2.exception.custom.*
 import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional
 class SharedBookmarkService(
     private val bookmarkInterfaceRepository: BookmarkInterfaceRepository,
     private val folderRepository: FolderRepository,
@@ -34,10 +33,9 @@ class SharedBookmarkService(
         for (af in account.accountFolderList)
             if (af.folder == folder && af.authority > Authority.NONE) return
 
-        throw RuntimeException("오류오류! 권한이 없습니다!")
+        throw NoPermissionException()
     }
 
-    @Transactional
     fun addBookmark(token: String, folderId: Long, bookmarkDto: BookmarkDto.AddBookmarkDto): BookmarkInterface {
         val account = jwtProvider.getAccountFromToken(token)
         checkAuthority(account, folderId)
@@ -58,14 +56,13 @@ class SharedBookmarkService(
     }
 
     fun checkSameBookmark(bookmarkInterface: BookmarkInterface, folderId: Long) {
-        val bookmarkList = bookmarkInterfaceRepository.findAllByFolderId(folderId) ?: throw RuntimeException()
+        val bookmarkList = bookmarkInterfaceRepository.findAllByFolderId(folderId) ?: throw SameBookmarkException()
 
         for (savedBookmark in bookmarkList) {
             if (savedBookmark.link == bookmarkInterface.link) throw SameBookmarkException()
         }
     }
 
-    @Transactional
     fun deleteBookmark(token: String, dto: BookmarkDto.SharedBookmarkDeleteDto) {
         val account = jwtProvider.getAccountFromToken(token)
         checkAuthority(account, dto.folderId)
@@ -87,7 +84,7 @@ class SharedBookmarkService(
         val account = jwtProvider.getAccountFromToken(token)
         checkAuthority(account, dto.folderId)
 
-        val bookmark = bookmarkInterfaceRepository.findBookmarkInterfaceById(bookmarkId) ?: throw RuntimeException()
+        val bookmark = bookmarkInterfaceRepository.findBookmarkInterfaceById(bookmarkId) ?: throw BookmarkNotFoundException()
 
         bookmark.updateBookmark(dto.title, dto.description)
         bookmarkInterfaceRepository.save(bookmark)
@@ -98,7 +95,6 @@ class SharedBookmarkService(
         bookmarkInterfaceRepository.saveAll(bookmarkList)
     }
 
-    @Transactional
     fun moveBookmarkList(token: String, dto: BookmarkDto.MoveBookmarkDto) {
         val account = jwtProvider.getAccountFromToken(token)
         checkAuthority(account, dto.nextFolderId)
@@ -107,13 +103,9 @@ class SharedBookmarkService(
 
         for (bookmark in bookmarkList) {
             val sharedBookmark = bookmark as SharedBookmark
-            if (sharedBookmark.isSameRootFolderId(folder.id)) throw RuntimeException("같은 공유보관함이 아닙니다!")
+            if (!sharedBookmark.isSameRootFolderId(folder.rootFolderId)) throw NotSameRootFolderException()
 
-            sharedBookmark.folderId?.let {
-                folderRepository.findFolderById(it)
-            }?.run {
-                this.updateBookmarkCount(-1)
-            }
+            deleteBookmarkInfoAtFolder(bookmark)
 
             sharedBookmark.moveFolder(dto.nextFolderId)
             sharedBookmark.changeFolderInfo(folder)
@@ -121,6 +113,14 @@ class SharedBookmarkService(
         }
 
         bookmarkInterfaceRepository.saveAll(bookmarkList)
+    }
+
+    fun deleteBookmarkInfoAtFolder(bookmark: SharedBookmark) {
+        bookmark.folderId?.let {
+            folderRepository.findFolderById(it)
+        }?.run {
+            this.updateBookmarkCount(-1)
+        }
     }
 
     fun toggleOnRemindBookmark(token: String, bookmarkId: String) {
