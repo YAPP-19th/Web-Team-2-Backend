@@ -117,8 +117,10 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(folderService.encryptFolderId(folderId))
     }
 
+    @ApiOperation(value = "보관함에 속한 유저 리스트 조회 API")
     @GetMapping("belong/{folderId}")
-    fun getAccountList(@PathVariable folderId: Long): ResponseEntity<AccountDto.FolderBelongAccountListDto> {
+    fun getAccountList(@PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long):
+        ResponseEntity<AccountDto.FolderBelongAccountListDto> {
         return ResponseEntity.status(HttpStatus.OK).body(folderService.getAccountListAtRootFolder(folderId))
     }
 }
