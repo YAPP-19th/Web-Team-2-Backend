@@ -1,6 +1,7 @@
 package com.yapp.web2.domain.bookmark.entity
 
 import com.yapp.web2.domain.account.entity.Account
+import com.yapp.web2.domain.folder.entity.Folder
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import javax.validation.constraints.NotEmpty
@@ -9,7 +10,7 @@ import javax.validation.constraints.NotNull
 class BookmarkDto {
 
     companion object {
-        fun AddBookmarkDtoToBookmark(bookmarkDto: AddBookmarkDto, account: Account): BookmarkInterface {
+        fun addBookmarkDtoToPersonalBookmark(bookmarkDto: AddBookmarkDto, account: Account): BookmarkInterface {
             return PersonalBookmark(
                 account,
                 bookmarkDto.link,
@@ -17,6 +18,17 @@ class BookmarkDto {
                 bookmarkDto.image,
                 bookmarkDto.description,
                 bookmarkDto.remind
+            )
+        }
+
+        fun addBookmarkDtoToSharedBookmark(bookmarkDto: AddBookmarkDto, account: Account, folder: Folder): BookmarkInterface {
+            return SharedBookmark(
+                account,
+                bookmarkDto.link,
+                bookmarkDto.title,
+                bookmarkDto.image,
+                bookmarkDto.description,
+                folder.rootFolderId
             )
         }
     }
@@ -57,6 +69,9 @@ class BookmarkDto {
 
     @ApiModel(description = "북마크 이동 API(폴더별 이동)")
     data class MoveBookmarkDto(
+        @ApiModelProperty(value = "이동 전 폴더 ID", required = true, example = "1")
+        val folderId: Long,
+        @ApiModelProperty(value = "변경해야한 북마크 ID list", required = false)
         val bookmarkIdList: MutableList<String>,
         @ApiModelProperty(value = "이동 후 폴더 ID", required = true, example = "2")
         val nextFolderId: Long
@@ -82,5 +97,16 @@ class BookmarkDto {
 
     data class BookmarkIdList(
         val dotoriIdList: MutableList<String>
+    )
+
+    data class SharedBookmarkDeleteDto(
+        val folderId: Long,
+        val dotoriIdList: MutableList<String>
+    )
+
+    data class UpdateSharedBookmarkDto(
+        val folderId: Long,
+        val title: String,
+        val description: String
     )
 }

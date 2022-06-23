@@ -2,6 +2,7 @@ package com.yapp.web2.domain.bookmark.service
 
 import com.yapp.web2.domain.bookmark.entity.BookmarkDto
 import com.yapp.web2.domain.bookmark.entity.BookmarkInterface
+import com.yapp.web2.domain.bookmark.entity.SharedBookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkInterfaceRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
@@ -22,7 +23,7 @@ class PersonalBookmarkService(
 
     fun addBookmark(token: String, folderId: Long?, bookmarkDto: BookmarkDto.AddBookmarkDto): BookmarkInterface {
         val account = jwtProvider.getAccountFromToken(token)
-        val bookmark = BookmarkDto.AddBookmarkDtoToBookmark(bookmarkDto, account)
+        val bookmark = BookmarkDto.addBookmarkDtoToPersonalBookmark(bookmarkDto, account)
 
         folderId?.run {
             val folder = checkFolderAbsence(folderId)
@@ -50,7 +51,6 @@ class PersonalBookmarkService(
     @Transactional
     fun deleteBookmark(bookmarkIdList: BookmarkDto.BookmarkIdList) {
         val bookmarkList = bookmarkInterfaceRepository.findAllById(bookmarkIdList.dotoriIdList)
-        val resultList = mutableListOf<BookmarkInterface>()
 
         for (bookmark in bookmarkList) {
             when (val folderId = bookmark.folderId) {
@@ -61,10 +61,9 @@ class PersonalBookmarkService(
                 }
             }
             bookmark.deleteBookmark()
-            resultList.add(bookmark)
         }
 
-        bookmarkInterfaceRepository.saveAll(resultList)
+        bookmarkInterfaceRepository.saveAll(bookmarkList)
     }
 
     fun updateBookmark(bookmarkId: String, dto: BookmarkDto.UpdateBookmarkDto) {
@@ -80,8 +79,15 @@ class PersonalBookmarkService(
         val folder = folderRepository.findFolderById(dto.nextFolderId) ?: throw FolderNotFoundException()
 
         for (bookmark in bookmarkList) {
+            bookmark.folderId?.let {
+                folderRepository.findFolderById(it)
+            }?.run {
+                this.updateBookmarkCount(-1)
+            }
+
             bookmark.moveFolder(dto.nextFolderId)
             bookmark.changeFolderInfo(folder)
+            folder.updateBookmarkCount(1)
         }
 
         bookmarkInterfaceRepository.saveAll(bookmarkList)
@@ -99,6 +105,11 @@ class PersonalBookmarkService(
     fun toggleOffRemindBookmark(token: String, bookmarkId: String) {
         val bookmark =
             bookmarkInterfaceRepository.findBookmarkInterfaceById(bookmarkId) ?: throw BookmarkNotFoundException()
+
+        if (!bookmark.parentBookmarkId.isNullOrBlank()) {
+            bookmarkInterfaceRepository.delete(bookmark)
+            return
+        }
 
         bookmark.remindOff()
         bookmarkInterfaceRepository.save(bookmark)

@@ -4,6 +4,7 @@ import com.yapp.web2.domain.bookmark.entity.BookmarkDto
 import com.yapp.web2.domain.bookmark.service.PersonalBookmarkService
 import com.yapp.web2.util.ControllerUtil
 import com.yapp.web2.util.Message
+import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import org.springframework.http.HttpStatus
@@ -30,9 +31,9 @@ class PersonalBookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SAVED)
     }
 
-    @ApiOperation(value = "북마크 생성 API")
+    @ApiOperation(value = "폴더에 속하지 않는 북마크 생성 API")
     @PostMapping
-    fun createBookmark(
+    fun createBookmarkNoFolder(
         request: HttpServletRequest,
         @RequestBody @ApiParam(value = "북마크 생성 정보", required = true) bookmark: BookmarkDto.AddBookmarkDto
     ): ResponseEntity<String> {
@@ -58,9 +59,10 @@ class PersonalBookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
     }
 
+    @ApiOperation(value = "여러 북마크 이동 API")
     @PostMapping("/moveList")
     fun moveBookmarkList(
-        @RequestBody moveBookmarkDto: BookmarkDto.MoveBookmarkDto
+        @RequestBody @ApiParam(value = "북마크 이동 정보", required = true) moveBookmarkDto: BookmarkDto.MoveBookmarkDto
     ): ResponseEntity<String> {
         personalBookmarkService.moveBookmarkList(moveBookmarkDto)
         return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
