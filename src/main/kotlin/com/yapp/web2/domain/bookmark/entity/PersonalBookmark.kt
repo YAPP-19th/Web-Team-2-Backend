@@ -23,6 +23,18 @@ class PersonalBookmark : BookmarkInterface {
         if (remind) remindOn(account.remindCycle.toLong())
     }
 
+    constructor(
+        account: Account,
+        link: String,
+        title: String,
+        image: String?,
+        description: String,
+        parentId: String
+    ) : super(account, link, title, image, description) {
+        this.parentBookmarkId = parentId
+        remindOn(account.remindCycle.toLong())
+    }
+
     constructor(title: String) {
         this.title = title
     }

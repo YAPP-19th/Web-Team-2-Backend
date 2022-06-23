@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional
 class PersonalBookmarkService(
     private val bookmarkInterfaceRepository: BookmarkInterfaceRepository,
     private val folderRepository: FolderRepository,
@@ -48,7 +49,6 @@ class PersonalBookmarkService(
         }
     }
 
-    @Transactional
     fun deleteBookmark(bookmarkIdList: BookmarkDto.BookmarkIdList) {
         val bookmarkList = bookmarkInterfaceRepository.findAllById(bookmarkIdList.dotoriIdList)
 
