@@ -1,6 +1,6 @@
 package com.yapp.web2.domain.bookmark.controller
 
-import com.yapp.web2.domain.bookmark.entity.BookmarkDto
+import com.yapp.web2.domain.bookmark.BookmarkDto
 import com.yapp.web2.domain.bookmark.service.SharedBookmarkService
 import com.yapp.web2.util.ControllerUtil
 import com.yapp.web2.util.Message

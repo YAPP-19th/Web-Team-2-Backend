@@ -1,8 +1,7 @@
 package com.yapp.web2.domain.bookmark.service
 
-import com.yapp.web2.domain.bookmark.entity.BookmarkDto
+import com.yapp.web2.domain.bookmark.BookmarkDto
 import com.yapp.web2.domain.bookmark.entity.BookmarkInterface
-import com.yapp.web2.domain.bookmark.entity.SharedBookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkInterfaceRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository

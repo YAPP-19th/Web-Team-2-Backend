@@ -1,6 +1,10 @@
-package com.yapp.web2.domain.bookmark.entity
+package com.yapp.web2.domain.bookmark
 
 import com.yapp.web2.domain.account.entity.Account
+import com.yapp.web2.domain.bookmark.entity.Bookmark
+import com.yapp.web2.domain.bookmark.entity.BookmarkInterface
+import com.yapp.web2.domain.bookmark.entity.PersonalBookmark
+import com.yapp.web2.domain.bookmark.entity.SharedBookmark
 import com.yapp.web2.domain.folder.entity.Folder
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
