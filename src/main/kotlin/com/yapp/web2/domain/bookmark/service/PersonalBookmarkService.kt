@@ -35,6 +35,11 @@ class PersonalBookmarkService(
         return bookmarkInterfaceRepository.save(bookmark)
     }
 
+    fun addBookmarkList(token: String, folderId: Long?, dto: BookmarkDto.AddBookmarkListDto) {
+        for (addBookmarkDto in dto.addBookmarkList)
+            addBookmark(token, folderId, addBookmarkDto)
+    }
+
     @Transactional(readOnly = true)
     fun checkFolderAbsence(folderId: Long): Folder {
         return folderRepository.findFolderById(folderId) ?: throw ObjectNotFoundException()

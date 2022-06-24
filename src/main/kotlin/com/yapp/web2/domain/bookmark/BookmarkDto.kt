@@ -1,5 +1,6 @@
 package com.yapp.web2.domain.bookmark
 
+import com.google.common.collect.ImmutableList
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.entity.BookmarkInterface
@@ -69,6 +70,12 @@ class BookmarkDto {
 
         @ApiModelProperty(value = "description", example = "설명 예제...")
         var description: String
+    )
+
+    @ApiModel(description = "북마크 생성 리스트 DTO")
+    data class AddBookmarkListDto(
+        @ApiModelProperty(value = "북마크 객체 리스트", required = true)
+        val addBookmarkList: ImmutableList<AddBookmarkDto>
     )
 
     @ApiModel(description = "북마크 이동 API(폴더별 이동)")
