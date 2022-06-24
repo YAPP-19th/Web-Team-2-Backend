@@ -1,5 +1,6 @@
 package com.yapp.web2.domain.bookmark.service
 
+import com.google.common.collect.ImmutableList
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.bookmark.BookmarkDto
 import com.yapp.web2.domain.bookmark.entity.SharedBookmark
@@ -97,6 +98,29 @@ internal class SharedBookmarkServiceTest {
             {Assertions.assertThat(actual.image).isEqualTo(testDto.image)},
             {Assertions.assertThat(rootFolder.bookmarkCount).isEqualTo(1)}
         )
+    }
+
+    @Test
+    fun `여러개의 북마크를 저장한다`() {
+        // given
+        val testDto1 = BookmarkDto.AddBookmarkDto("testLink1", "testTitle1", true, "testImage", "testDes")
+        val testDto2 = BookmarkDto.AddBookmarkDto("testLink2", "testTitle2", true, "testImage", "testDes")
+        val testDto3 = BookmarkDto.AddBookmarkDto("testLink3", "testTitle3", true, "testImage", "testDes")
+        val bookmark1 = BookmarkDto.addBookmarkDtoToPersonalBookmark(testDto1, testAccount)
+
+        every { folderRepository.findFolderById(folderId) } returns rootFolder
+        every { bookmarkInterfaceRepository.findAllByFolderId(any()) } returns mutableListOf()
+        every { jwtProvider.getAccountFromToken(testToken) } returns testAccount
+        every { bookmarkInterfaceRepository.save(any()) } returns bookmark1
+
+        // when + then
+        assertDoesNotThrow {
+            sharedBookmarkService.addBookmarkList(
+                testToken, folderId, BookmarkDto.AddBookmarkListDto(
+                    ImmutableList.of(testDto1, testDto2, testDto3)
+                )
+            )
+        }
     }
 
     @Test
