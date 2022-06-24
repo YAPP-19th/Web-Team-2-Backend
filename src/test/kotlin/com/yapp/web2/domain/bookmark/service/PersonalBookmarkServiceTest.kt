@@ -1,5 +1,6 @@
 package com.yapp.web2.domain.bookmark.service
 
+import com.google.common.collect.ImmutableList
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.bookmark.BookmarkDto
 import com.yapp.web2.domain.bookmark.entity.PersonalBookmark
@@ -11,6 +12,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import okhttp3.internal.immutableListOf
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -87,6 +89,27 @@ internal class PersonalBookmarkServiceTest {
         assertEquals("testTitle", actual.title)
         assertEquals("testImage", actual.image)
         assertEquals("testDes", actual.description)
+    }
+
+    @Test
+    fun `여러개의 북마크를 저장한다`() {
+        // given
+        val testDto1 = BookmarkDto.AddBookmarkDto("testLink1", "testTitle1", true, "testImage", "testDes")
+        val testDto2 = BookmarkDto.AddBookmarkDto("testLink2", "testTitle2", true, "testImage", "testDes")
+        val testDto3 = BookmarkDto.AddBookmarkDto("testLink3", "testTitle3", true, "testImage", "testDes")
+        val bookmark1 = BookmarkDto.addBookmarkDtoToPersonalBookmark(testDto1, account)
+
+        every { jwtProvider.getAccountFromToken(testToken) } returns account
+        every { bookmarkInterfaceRepository.save(any()) } returns bookmark1
+
+        // when + then
+        assertDoesNotThrow {
+            personalBookmarkService.addBookmarkList(
+                testToken, folderId = null, BookmarkDto.AddBookmarkListDto(
+                    ImmutableList.of(testDto1, testDto2, testDto3)
+                )
+            )
+        }
     }
 
     @Test
