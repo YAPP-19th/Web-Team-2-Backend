@@ -29,6 +29,18 @@ class SharedBookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.SAVED)
     }
 
+    @ApiOperation(value = "여러개의 북마크 생성 API")
+    @PostMapping("/list/{folderId}")
+    fun createBookmarkList(
+        request: HttpServletRequest,
+        @PathVariable @ApiParam(value = "북마크가 저장될 폴더 ID", example = "12", required = true) folderId: Long,
+        @RequestBody @ApiParam(value = "북마크 생성 리스트 정보", required = true) dto: BookmarkDto.AddBookmarkListDto
+    ): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        sharedBookmarkService.addBookmarkList(token, folderId, dto)
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SAVED)
+    }
+
     @ApiOperation(value = "북마크 삭제 API")
     @PostMapping("/delete")
     fun deleteBookmark(
