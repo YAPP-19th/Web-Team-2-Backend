@@ -3,7 +3,6 @@ package com.yapp.web2.domain.account.controller
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.yapp.web2.config.S3Uploader
 import com.yapp.web2.domain.account.entity.Account
-import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.account.service.AccountService
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.util.ControllerUtil
@@ -123,6 +122,13 @@ class AccountController(
     @GetMapping("/{extensionVersion}")
     fun checkExtensionVersion(@PathVariable extensionVersion: String): ResponseEntity<String> {
         return ResponseEntity.status(HttpStatus.OK).body(accountService.checkExtension(extensionVersion))
+    }
+
+    @GetMapping("/invite/{folderToken}")
+    fun acceptInvitation(request: HttpServletRequest, @PathVariable folderToken: String): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        accountService.acceptInvitation(token, folderToken)
+        return ResponseEntity.status(HttpStatus.OK).body("good")
     }
 
     @ApiOperation("회원가입 API")
