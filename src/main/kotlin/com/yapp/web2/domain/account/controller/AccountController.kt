@@ -3,6 +3,7 @@ package com.yapp.web2.domain.account.controller
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.yapp.web2.config.S3Uploader
 import com.yapp.web2.domain.account.entity.Account
+import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.account.service.AccountService
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.util.ControllerUtil

@@ -5,6 +5,7 @@ import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.security.jwt.TokenDto
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
+import org.springframework.transaction.annotation.Transactional
 import javax.persistence.*
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
@@ -126,7 +127,6 @@ class Account(
             example = "dOOUnnp-iBs:APA91bF1i7mobIF7kEhi3aVlFuv6A5--P1S..."
         )
         @field: NotEmpty(message = "FCM 토큰을 입력해주세요")
-        @ApiModelProperty(value = "FCM 토큰", required = true, example = "dOOUnnp-iBs:APA91bF1i7mobIF7kEhi3aVlFuv6A5--P1S...")
         val fcmToken: String
     )
 

@@ -8,6 +8,19 @@ import java.time.LocalDateTime
 
 @Document(collection = "bookmarkInterface")
 abstract class BookmarkInterface() {
+    companion object {
+        fun copyBookmark(account: Account, bookmark: BookmarkInterface): PersonalBookmark {
+            return PersonalBookmark(
+                account,
+                bookmark.link,
+                bookmark.title,
+                bookmark.image,
+                bookmark.description,
+                bookmark.id
+            )
+        }
+    }
+
     @Id
     var id: String = ""
     var userId: Long? = null

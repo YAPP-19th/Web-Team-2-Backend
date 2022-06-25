@@ -34,8 +34,7 @@ class AccountService(
     private val folderService: FolderService,
     private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider,
-    private val s3Uploader: S3Uploader,
-    private val aes256Util: AES256Util
+    private val aes256Util: AES256Util,
     private val s3Uploader: S3Uploader,
     private val passwordEncoder: PasswordEncoder,
     private val mailSender: JavaMailSender
