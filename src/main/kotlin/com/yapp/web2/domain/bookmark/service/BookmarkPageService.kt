@@ -2,7 +2,6 @@ package com.yapp.web2.domain.bookmark.service
 
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
-import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.util.AES256Util
 import org.springframework.data.domain.Page
@@ -15,7 +14,7 @@ import java.time.LocalDate
 class BookmarkPageService(
     private val bookmarkRepository: BookmarkRepository,
     private val jwtProvider: JwtProvider,
-    private val aeS256Util: AES256Util
+    private val aes256Util: AES256Util
 ) {
     @Transactional(readOnly = true)
     fun getAllPageByFolderId(folderId: Long, pageable: Pageable, remind: Boolean): Page<Bookmark> {
@@ -58,7 +57,8 @@ class BookmarkPageService(
     }
 
     fun getAllPageByEncryptFolderId(token: String, pageable: Pageable): Page<Bookmark> {
-        val folderIdByString = aeS256Util.decrypt(token)
+        // TODO: 2022/05/14 복호화 후에 id가 제대로 나왔는지 확인하는 로직 필요
+        val folderIdByString = aes256Util.decrypt(token)
         return bookmarkRepository.findAllByFolderIdAndDeleteTimeIsNull(folderIdByString.toLong(), pageable)
     }
 }

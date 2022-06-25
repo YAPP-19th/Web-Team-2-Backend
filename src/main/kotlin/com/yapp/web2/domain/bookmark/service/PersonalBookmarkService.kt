@@ -5,9 +5,9 @@ import com.yapp.web2.domain.bookmark.entity.BookmarkInterface
 import com.yapp.web2.domain.bookmark.repository.BookmarkInterfaceRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
-import com.yapp.web2.exception.ObjectNotFoundException
 import com.yapp.web2.exception.custom.BookmarkNotFoundException
 import com.yapp.web2.exception.custom.FolderNotFoundException
+import com.yapp.web2.exception.custom.ObjectNotFoundException
 import com.yapp.web2.exception.custom.SameBookmarkException
 import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.stereotype.Service
