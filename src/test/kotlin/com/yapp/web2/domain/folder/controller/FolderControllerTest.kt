@@ -1,27 +1,25 @@
 package com.yapp.web2.domain.folder.controller
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import com.yapp.web2.domain.BaseTimeEntity
+import com.yapp.web2.domain.ControllerTestUtil
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.security.jwt.JwtProvider
+import com.yapp.web2.util.FolderTokenDto
 import com.yapp.web2.util.Message
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.ResultActions
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -38,6 +36,8 @@ internal class FolderControllerTest {
     @MockkBean
     private lateinit var jwtProvider: JwtProvider
 
+    val util = ControllerTestUtil()
+
     @Test
     fun `폴더를 생성한다`() {
         // given
@@ -47,7 +47,7 @@ internal class FolderControllerTest {
         every { folderService.createFolder(any(), any()) } returns folder as Folder
 
         // when
-        val resultAction = postResultAction("/api/v1/folder", createFolderRequest)
+        val resultAction = util.postResultAction("/api/v1/folder", createFolderRequest, mockMvc)
 
         // then
         resultAction
@@ -64,7 +64,7 @@ internal class FolderControllerTest {
         every { folderService.createFolder(any(), any()) } returns folder as Folder
 
         // when
-        val resultAction = postResultAction("/api/v1/folder", createFolderRequest)
+        val resultAction = util.postResultAction("/api/v1/folder", createFolderRequest, mockMvc)
 
         // then
         resultAction
@@ -80,14 +80,13 @@ internal class FolderControllerTest {
         every { folderService.changeFolder(any(), any()) } just Runs
 
         // when
-        val resultAction = patchResultAction("/api/v1/folder/1", changeFolderRequest)
-        val response = getResponseBody(resultAction)
+        val resultAction = util.patchResultAction("/api/v1/folder/1", changeFolderRequest, mockMvc)
 
         // then
         resultAction
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk)
-        assertThat(response).isEqualTo(Message.SUCCESS)
+            .andExpect(content().string(Message.SUCCESS))
     }
 
     @Test
@@ -98,14 +97,13 @@ internal class FolderControllerTest {
         every { folderService.moveFolderByDragAndDrop(any(), any(), any()) } returns Unit
 
         // when
-        val resultAction = patchResultAction("/api/v1/folder/3/move", moveFolderRequest)
-        val response = getResponseBody(resultAction)
+        val resultAction = util.patchResultAction("/api/v1/folder/3/move", moveFolderRequest, mockMvc)
 
         // then
         resultAction
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk)
-        assertThat(response).isEqualTo(Message.SUCCESS)
+            .andExpect(content().string(Message.SUCCESS))
     }
 
     @Test
@@ -115,14 +113,13 @@ internal class FolderControllerTest {
         every { folderService.moveFolderByButton(any(), any()) } just Runs
 
         // when
-        val resultAction = patchResultAction("/api/v1/folder/move", moveFolderButtonRequest)
-        val response = getResponseBody(resultAction)
+        val resultAction = util.patchResultAction("/api/v1/folder/move", moveFolderButtonRequest, mockMvc)
 
         // then
         resultAction
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk)
-        assertThat(response).isEqualTo(Message.SUCCESS)
+            .andExpect(content().string(Message.SUCCESS))
     }
 
     @DisplayName("폴더의 경우 Hard Delete, 북마크의 경우 Soft Delete")
@@ -136,14 +133,13 @@ internal class FolderControllerTest {
         every { folderService.deleteFolder(any()) } just Runs
 
         // when
-        val resultAction = deleteResultAction("/api/v1/folder/1")
-        val response = getResponseBody(resultAction)
+        val resultAction = util.deleteResultAction("/api/v1/folder/1", mockMvc)
 
         // then
         resultAction
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk)
-        assertThat(response).isEqualTo(Message.SUCCESS)
+            .andExpect(content().string(Message.SUCCESS))
     }
 
     @Test
@@ -153,7 +149,7 @@ internal class FolderControllerTest {
         every { folderService.findAll(any()) } returns folders
 
         // when
-        val resultAction = getResultAction("/api/v1/folder")
+        val resultAction = util.getResultAction("/api/v1/folder", mockMvc)
 
         // then
         resultAction
@@ -168,14 +164,13 @@ internal class FolderControllerTest {
         every { folderService.deleteFolderList(any()) } just Runs
 
         // when
-        val resultAction = postResultAction("/api/v1/folder/deletes", deleteFolderListRequest)
-        val response = getResponseBody(resultAction)
+        val resultAction = util.postResultAction("/api/v1/folder/deletes", deleteFolderListRequest, mockMvc)
 
         // then
         resultAction
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isOk)
-        assertThat(response).isEqualTo(Message.SUCCESS)
+            .andExpect(content().string(Message.SUCCESS))
     }
 
     @Test
@@ -188,7 +183,7 @@ internal class FolderControllerTest {
         every { folderService.findFolderChildList(any()) } returns folderList
 
         // when
-        val resultAction = getResultAction("/api/v1/folder/1/children")
+        val resultAction = util.getResultAction("/api/v1/folder/1/children", mockMvc)
 
         // then
         resultAction
@@ -212,7 +207,7 @@ internal class FolderControllerTest {
         every { folderService.findAllParentFolderList(any()) } returns folderList
 
         // when
-        val resultAction = getResultAction("/api/v1/folder/1/parent")
+        val resultAction = util.getResultAction("/api/v1/folder/1/parent", mockMvc)
 
         // then
         resultAction
@@ -226,45 +221,19 @@ internal class FolderControllerTest {
             .andExpect(jsonPath("$[1].name").value("parent2"))
     }
 
-    private fun getResultAction(uri: String): ResultActions {
-        return mockMvc.perform(
-            MockMvcRequestBuilders.get(uri)
-                .header("AccessToken", "token")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
-    }
+    @Test
+    fun `암호화된 폴더 ID를 조회한다`() {
+        // given
+        val expected = "AES256token"
+        every { folderService.encryptFolderId(any()) } returns FolderTokenDto(expected)
 
-    private fun postResultAction(uri: String, request: Any): ResultActions {
-        return mockMvc.perform(
-            MockMvcRequestBuilders.post(uri)
-                .content(jacksonObjectMapper().writeValueAsString(request))
-                .header("AccessToken", "token")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
-    }
+        // when
+        val resultAction = util.getResultAction("/api/v1/folder/encrypt/1", mockMvc)
 
-    private fun patchResultAction(uri: String, request: Any): ResultActions {
-        return mockMvc.perform(
-            MockMvcRequestBuilders.patch(uri)
-                .content(jacksonObjectMapper().writeValueAsString(request))
-                .header("AccessToken", "token")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
-    }
-
-    private fun deleteResultAction(uri: String): ResultActions {
-        return mockMvc.perform(
-            MockMvcRequestBuilders.delete(uri)
-                .header("AccessToken", "token")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
-    }
-
-    private fun getResponseBody(resultActions: ResultActions): String {
-        return resultActions.andReturn().response.contentAsString
+        // then
+        resultAction
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.folderIdToken").value(expected))
     }
 }

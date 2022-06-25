@@ -1,7 +1,9 @@
 package com.yapp.web2.domain.account.service
 
+import com.yapp.web2.common.PasswordValidator
 import com.yapp.web2.config.S3Uploader
 import com.yapp.web2.domain.account.entity.Account
+import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Folder
@@ -9,19 +11,37 @@ import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.AlreadyInvitedException
 import com.yapp.web2.exception.custom.FolderNotRootException
+import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.util.AES256Util
+import com.yapp.web2.security.jwt.TokenDto
+import io.mockk.MockKAnnotations
+import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.just
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mock.web.MockMultipartFile
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.multipart.MultipartFile
-import java.util.*
+import java.util.Optional
+import kotlin.IllegalStateException
 
 @ExtendWith(MockKExtension::class)
 internal class AccountServiceTest {
@@ -43,6 +63,212 @@ internal class AccountServiceTest {
 
     @InjectMockKs
     private lateinit var accountService: AccountService
+    @MockK
+    private lateinit var passwordEncoder: PasswordEncoder
+
+    @MockK
+    private lateinit var mailSender: JavaMailSender
+
+    private lateinit var testAccount: Account
+
+    private lateinit var validator: PasswordValidator
+
+    @BeforeEach
+    internal fun init() {
+        MockKAnnotations.init(this)
+        accountService = AccountService(folderService, accountRepository, jwtProvider, s3Uploader, passwordEncoder, mailSender)
+        testAccount = Account("test@gmail.com", "1234567!")
+        validator = PasswordValidator()
+    }
+
+    @Test
+    fun `회원 가입할 이메일에서 닉네임을 가져온다`() {
+        // given
+        val email = "abc@gmail.com"
+
+        // when
+        val actual = accountService.getNickName(email)
+
+        // then
+        assertThat(actual).isEqualTo("abc")
+    }
+
+    @Test
+    fun `회원가입에 성공한다`() {
+        // given
+        val testToken = TokenDto("testAccessToken", "testRefreshToken")
+        val request = AccountRequestDto.SignUpRequest("abc@gmail.com", "12341234", "testFcmToken")
+        val testAccount = Account.signUpToAccount(request, "2b86ff88ef6c4906482731gf15ddcb24381d34b", "abc")
+
+        every { accountRepository.findByEmail(request.email) } returns null
+        every { passwordEncoder.encode(request.password) } returns "2b86ff88ef6c4906482731gf15ddcb24381d34b"
+        every { accountRepository.save(any()) } returns testAccount
+        every { folderService.createDefaultFolder(any()) } just Runs
+        every { jwtProvider.createToken(any()) } returns testToken
+
+        // when
+        val actual = accountService.signUp(request)
+
+        // then
+        assertAll(
+            { assertThat(actual.accessToken).isEqualTo(testToken.accessToken) },
+            { assertThat(actual.refreshToken).isEqualTo(testToken.refreshToken) },
+            { assertThat(actual.email).isEqualTo(request.email) },
+            { assertThat(actual.isRegistered).isFalse() },
+            { assertThat(actual.name).isEqualTo("abc") },
+        )
+    }
+
+    @Test
+    fun `회원가입 시 기존 이메일이 존재하면 예외를 반환한다`() {
+        // given
+        val request = AccountRequestDto.SignUpRequest("abc@gmail.com", "12341234", "testFcmToken")
+        every { accountRepository.findByEmail(any()) }.throws(IllegalStateException())
+
+        // then
+        org.junit.jupiter.api.assertThrows<IllegalStateException> { accountService.signUp(request) }
+    }
+
+    @Test
+    fun `현재 비밀번호와 비교한다`() {
+        // given
+        val currentPassword = AccountRequestDto.CurrentPassword("1234567!")
+        every { jwtProvider.getAccountFromToken(any()) } returns testAccount
+        every { passwordEncoder.matches(any(), any()) } returns true
+
+        // when
+        accountService.comparePassword("testToken", currentPassword)
+
+        // then
+        verify(exactly = 1) { passwordEncoder.matches(any(), any()) }
+    }
+
+    @Test
+    fun `비밀번호를 정상적으로 변경한다`() {
+        // given
+        val request = AccountRequestDto.PasswordChangeRequest("1234567!", "test")
+        val expected = "비밀번호가 정상적으로 변경되었습니다."
+        every { jwtProvider.getAccountFromToken(any()) } returns testAccount
+        every { passwordEncoder.matches(any(), any()) } returns true
+        every { passwordEncoder.encode(any()) } returns "test"
+
+        // when
+        val actual = accountService.changePassword("test", request)
+
+        //then
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `현재 비밀번호와 다를경우 예외를 반환한다`() {
+        // given
+        val request = AccountRequestDto.PasswordChangeRequest("1234567!@", "test")
+        val expectedMessage = "비밀번호가 일치하지 않습니다."
+        every { jwtProvider.getAccountFromToken(any()) } returns testAccount
+        every { passwordEncoder.matches(any(), any()) }.throws(PasswordMismatchException())
+
+        // when
+        val actualException = assertThrows(PasswordMismatchException::class.java) {
+            accountService.changePassword("test", request)
+        }
+
+        //then
+        assertEquals(expectedMessage, actualException.message)
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["1234567!", "a1234567!", "12341234!@", "!1234567", "!abcdefg"])
+    fun `비밀번호는 특수문자를 포함하여 영문자 및 숫자 조합으로 8자에서 16자 사이여야 한다`(successPassword: String) {
+        assertThat(validator.isValid(successPassword, null)).isTrue
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["12345678", "abcdefgh", "1234abcd", "1a2b3c4d"])
+    fun `특수문자가 포함되지 않은 패스워드는 검증에 실패한다`(failPassword: String) {
+        assertThat(validator.isValid(failPassword, null)).isFalse
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["", " ", "1234", "abcd", "1234567", "123456!", "0123456789abcdefgh"])
+    fun `길이가 8자 미만 혹은 16자 초과하는 패스워드는 검증에 실패한다`(failPassword: String) {
+        assertThat(validator.isValid(failPassword, null)).isFalse
+    }
+
+    @Test
+    fun `회원을 정상적으로 탈퇴한다`() {
+        // given
+        every { jwtProvider.getAccountFromToken(any()) } returns testAccount
+
+        // when
+        accountService.softDelete("any")
+
+        // then
+        assertThat(testAccount.deleted).isTrue
+    }
+
+    @Test
+    fun `비밀번호 설정 시 입력한 이메일이 존재하는지 확인한다`() {
+        // given
+        val request = AccountRequestDto.EmailCheckRequest("test@gmail.com")
+        val expected = "입력하신 이메일 주소가 정상적으로 확인되었습니다."
+
+        every { accountRepository.findByEmail(any()) } returns testAccount
+
+        // when
+        val actual = accountService.checkEmailExist("any", request)
+
+        // then
+        assertThat(actual).isEqualTo(expected)
+    }
+
+    @Test
+    fun `임시 비밀번호를 생성한다`() {
+        // when
+        val temp = accountService.createTempPassword()
+
+        // then
+        assertThat(temp.length).isEqualTo(13)
+    }
+
+    @Test
+    fun `이메일이 존재할경우 true를 반환한다`() {
+        // given
+        val request = AccountRequestDto.SignUpEmailRequest("test@gmail.com")
+        every { accountRepository.findByEmail(any()) } returns testAccount
+
+        // when
+        val actual = accountService.checkEmail(request)
+
+        // then
+        assertTrue(actual)
+    }
+
+    @Test
+    fun `이메일이 존재하지 않을경우 false를 반환한다`() {
+        // given
+        val request = AccountRequestDto.SignUpEmailRequest("test@gmail.com")
+        every { accountRepository.findByEmail(any()) } returns null
+
+        // when
+        val actual = accountService.checkEmail(request)
+
+        // then
+        assertFalse(actual)
+    }
+
+    @Test
+    fun `FCM Token값을 정상적으로 설정한다`() {
+        // given
+        val expected = "test-token"
+        val request = AccountRequestDto.FcmToken(expected)
+        every { jwtProvider.getAccountFromToken(any()) } returns testAccount
+
+        // when
+        accountService.registerFcmToken("token", request)
+
+        // then
+        assertThat(testAccount.fcmToken).isEqualTo(expected)
+    }
 
     @Nested
     inner class Profile {
@@ -196,7 +422,7 @@ internal class AccountServiceTest {
             val expectedException = BusinessException("계정이 존재하지 않습니다.")
 
             //when
-            val actualException = assertThrows<BusinessException> {
+            val actualException = assertThrows(BusinessException::class.java) {
                 accountService.changeProfileImage(testToken, testFile)
             }
             //then
@@ -237,13 +463,13 @@ internal class AccountServiceTest {
     @Nested
     inner class BackgroundColorSetting {
         private lateinit var testToken: String
-        private lateinit var testBackgroundColorUrl: String
+        private lateinit var request: AccountRequestDto.ChangeBackgroundColorRequest
         private lateinit var account: Account
 
         @BeforeEach
         internal fun setUp() {
             testToken = "testToken"
-            testBackgroundColorUrl = "http://yapp-bucket-test/test/image"
+            request = AccountRequestDto.ChangeBackgroundColorRequest("http://yapp-bucket-test/test/image")
             account = Account("testAccount")
         }
 
@@ -254,10 +480,10 @@ internal class AccountServiceTest {
             every { accountRepository.findById(1) } returns Optional.of(account)
 
             //when
-            accountService.changeBackgroundColor(testToken, testBackgroundColorUrl)
+            accountService.changeBackgroundColor(testToken, request)
 
             //then
-            assertThat(account.backgroundColor).isEqualTo(testBackgroundColorUrl)
+            assertThat(account.backgroundColor).isEqualTo(request.changeUrl)
         }
     }
 }

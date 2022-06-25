@@ -1,0 +1,146 @@
+
+# github repository Actions 페이지에 나타낼 이름
+name: Dotoriham CI/CD
+
+# event trigger
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  CI-CD:
+    runs-on: ubuntu-latest
+    steps:
+
+    ## jdk setting
+    - uses: actions/checkout@v3
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin' # https://github.com/actions/setup-java
+
+    ## gradle caching
+    - name: Gradle Caching
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    ## create application-prod.properties
+    - name: create application-prod.properties
+      if: contains(github.ref, 'main')
+      run: |
+          cd ./src/main/resources
+          touch ./application-prod.properties
+          echo "${{ secrets.PROPERTIES_PROD }}" > ./application-prod.properties
+      shell: bash
+
+    ## create application-dev.properties
+    - name: create application-dev.properties
+      if: contains(github.ref, 'develop')
+      run: |
+        cd ./src/main/resources
+        touch ./application-dev.properties
+        echo "${{ secrets.PROPERTIES_DEV }}" > ./application-dev.properties
+      shell: bash
+
+    ## create firebase-key.json
+    - name: create firebase key
+      run: |
+        cd ./src/main/resources
+        ls -a .
+        touch ./firebase-service-key.json
+        echo "${{ secrets.FIREBASE_KEY }}" > ./firebase-service-key.json
+      shell: bash
+
+    ## gradle build
+    - name: Build with Gradle
+      run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
+
+    ## docker build & push to production
+    - name: Docker build & push to prod
+      if: contains(github.ref, 'main')
+      run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -f Dockerfile-prod -t ${{ secrets.DOCKER_REPO }}/dotoriham-prod .
+          docker push ${{ secrets.DOCKER_REPO }}/dotoriham-prod
+
+    ## docker build & push to develop
+    - name: Docker build & push to dev
+      if: contains(github.ref, 'develop')
+      run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -f Dockerfile-dev -t ${{ secrets.DOCKER_REPO }}/dotoriham-dev .
+          docker push ${{ secrets.DOCKER_REPO }}/dotoriham-dev
+
+    ## deploy to production
+    - name: Deploy to prod
+      uses: appleboy/ssh-action@master
+      id: deploy-prod
+      if: contains(github.ref, 'main')
+      with:
+          host: ${{ secrets.HOST_PROD }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: 22
+          script: |
+              sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-prod
+              docker-compose up -d
+              docker image prune -f
+
+    ## deploy to develop
+    - name: Deploy to dev
+      uses: appleboy/ssh-action@master
+      id: deploy-dev
+      if: contains(github.ref, 'develop')
+      with:
+        host: ${{ secrets.HOST_DEV }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: 22
+        #key: ${{ secrets.PRIVATE_KEY }}
+        script: |
+            sudo docker pull ${{ secrets.DOCKER_REPO }}/dotoriham-dev
+            docker-compose up -d
+            docker image prune -f
+
+  ## time
+  current-time:
+    needs: CI-CD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Current Time
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYY-MM-DDTHH:mm:ss
+          utcOffset: "+09:00" # 기준이 UTC이기 때문에 한국시간인 KST를 맞추기 위해 +9시간 추가
+
+      - name: Print Current Time
+        run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}" # current-time 에서 지정한 포맷대로 현재 시간 출력
+        shell: bash
+
+  ## slack
+  action-slack:
+    needs: CI-CD
+    runs-on: ubuntu-latest
+    steps:
+        - name: Slack Alarm
+          uses: 8398a7/action-slack@v3
+          with:
+              status: ${{ job.status }}
+              author_name: GitHub-Actions CI/CD
+              fields: repo,message,commit,author,ref,job,took
+          env:
+              SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+          if: always() # Pick up events even if the job fails or is canceled.

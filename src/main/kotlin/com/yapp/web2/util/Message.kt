@@ -14,9 +14,11 @@ class Message {
 
         var WRONG_TOKEN_FORM = "형식에 어긋난 토큰입니다"
 
-        var NULL_TOKEN = "값이 존재하지 않습니다"
+        var NULL_TOKEN = "토큰이 존재하지 않습니다"
 
         var EXIST_NAME = "이미 존재하는 닉네임입니다"
+
+        var EXIST_USER = "이미 존재하는 회원입니다."
 
         var AVAILABLE_NAME = "사용가능한 닉네임입니다"
 
@@ -39,6 +41,25 @@ class Message {
         var NOTIFICATION_MESSAGE = "깜빡한 도토리가 있지 않나요?"
 
         var OLD_EXTENSION_VERSION = "익스텐션 버전이 오래되었습니다!"
+
         var LATEST_EXTENSION_VERSION = "최신 버전입니다."
+
+        var USER_PASSWORD_MISMATCH = "비밀번호가 일치하지 않습니다."
+
+        var SAME_PASSWORD = "현재 비밀번호와 동일합니다."
+
+        var CHANGE_PASSWORD_SUCCEED = "비밀번호가 정상적으로 변경되었습니다."
+
+        var DELETE_ACCOUNT_SUCCEED = "정상적으로 탈퇴되었습니다."
+
+        var PASSWORD_VALID_MESSAGE = "특수문자를 포함하여 영문 대소문자, 숫자 중 2종류 이상을 조합하여 8~16자의 비밀번호를 생성해주세요."
+
+        var NOT_EXIST_EMAIL = "존재하지 않는 이메일 입니다."
+
+        var EXIST_EMAIL = "이미 가입한 이메일 주소입니다."
+
+        var SUCCESS_SEND_MAIL = "회원의 이메일에 임시 비밀번호가 정상적으로 발송되었습니다."
+
+        var SUCCESS_EXIST_EMAIL = "입력하신 이메일 주소가 정상적으로 확인되었습니다."
     }
 }

@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <configuration>
     <!-- 변수 설정 -->
-    <property name="LOG_DIR" value="./logs"/>
-    <property name="LOG_FILE" value="${LOG_DIR}/logfile.log"/>
+    <property name="LOG_DIR_SERVER" value="/home/ec2-user/logs"/>
+    <property name="LOG_FILE" value="logfile.log"/>
+
+    <property name="LOG_FILE_PROD"  value="${LOG_DIR_SERVER}/${LOG_FILE}"/>
+    <property name="LOG_FILE_DEV"   value="${LOG_DIR_SERVER}/${LOG_FILE}"/>
+    <property name="LOG_FILE_LOCAL" value="./log/${LOG_FILE}"/>
 
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
@@ -11,12 +16,34 @@
     </appender>
 
     <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>./log/debug.log</file>
+        <springProfile name="prod">
+            <file>${LOG_FILE_PROD}</file>
+        </springProfile>
+
+        <springProfile name="dev">
+            <file>${LOG_FILE_DEV}</file>
+        </springProfile>
+
+        <springProfile name="local">
+            <file>${LOG_FILE_LOCAL}</file>
+        </springProfile>
+
         <!-- 사이즈 & 일자별로 로그 파일 적용 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>./log/%d{yyyy-MM}/log.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <springProfile name="prod">
+                <fileNamePattern>${LOG_DIR_SERVER}/%d{yyyy-MM}/log.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            </springProfile>
+
+            <springProfile name="dev">
+                <fileNamePattern>${LOG_DIR_SERVER}/%d{yyyy-MM}/log.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            </springProfile>
+
+            <springProfile name="local">
+                <fileNamePattern>./log/%d{yyyy-MM}/log.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            </springProfile>
+
             <maxFileSize>10MB</maxFileSize>
-            <maxHistory>90</maxHistory>
+            <maxHistory>180</maxHistory>
         </rollingPolicy>
         <encoder>
             <Pattern>[%d{yyyy-MM-dd HH:mm:ss}][%thread] %-5level %logger{36} - %msg%n</Pattern>

@@ -20,7 +20,7 @@ import javax.validation.Valid
 class FolderController(
     private val folderService: FolderService
 ) {
-    @ApiOperation(value = "폴더 생성")
+    @ApiOperation(value = "폴더 생성 API")
     @PostMapping
     fun createFolder(
         servletRequest: HttpServletRequest,
@@ -31,7 +31,7 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(folderId?.let { Folder.FolderCreateResponse(it) })
     }
 
-    @ApiOperation("폴더 수정")
+    @ApiOperation("폴더 수정 API")
     @PatchMapping("/{folderId}")
     fun updateFolder(
         @PathVariable @ApiParam(value = "폴더 ID", example = "4", required = true) folderId: Long,
@@ -112,6 +112,7 @@ class FolderController(
     }
 
     // TODO: 2022/06/22 유저 정보 확인
+    @ApiOperation(value = "암호화된 폴더 ID 조회 API")
     @GetMapping("encrypt/{folderId}")
     fun getEncryptFolderId(@PathVariable folderId: Long): ResponseEntity<FolderTokenDto> {
         return ResponseEntity.status(HttpStatus.OK).body(folderService.encryptFolderId(folderId))

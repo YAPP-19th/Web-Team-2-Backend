@@ -192,8 +192,7 @@ class FolderService(
 
     @Transactional(readOnly = true)
     fun findByFolderId(folderId: Long): Folder {
-        return folderRepository.findById(folderId)
-            .orElseThrow { folderNotFoundException }
+        return folderRepository.findById(folderId).orElseThrow { folderNotFoundException }
     }
 
     fun deleteFolder(folder: Folder) {

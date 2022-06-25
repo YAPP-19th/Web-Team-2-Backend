@@ -28,18 +28,21 @@ class AccountController(
         private val log = LoggerFactory.getLogger(AccountController::class.java)
     }
 
+    @ApiOperation("프로필 조회 API")
     @GetMapping("/profileInfo")
     fun getProfile(request: HttpServletRequest): ResponseEntity<Account.AccountProfile> {
         val token = ControllerUtil.extractAccessToken(request)
         return ResponseEntity.status(HttpStatus.OK).body(accountService.getProfile(token))
     }
 
+    @ApiOperation("리마인드 조회 API")
     @GetMapping("/remindInfo")
     fun getRemind(request: HttpServletRequest): ResponseEntity<Account.RemindElements> {
         val token = ControllerUtil.extractAccessToken(request)
         return ResponseEntity.status(HttpStatus.OK).body(accountService.getRemindElements(token))
     }
 
+    @ApiOperation("소셜로그인 API")
     @PostMapping("/oauth2Login")
     fun oauth2Login(
         @RequestBody @ApiParam(value = "회원 정보", required = true) request: Account.AccountProfile
@@ -48,7 +51,7 @@ class AccountController(
         return ResponseEntity.status(HttpStatus.OK).body(loginSuccess)
     }
 
-    @ApiOperation(value = "토큰 재발급")
+    @ApiOperation(value = "토큰 재발급 API")
     @GetMapping("/reIssuanceAccessToken")
     fun reIssuanceAccessToken(request: HttpServletRequest): ResponseEntity<TokenDto> {
         val accessToken = ControllerUtil.extractAccessToken(request)
@@ -57,6 +60,7 @@ class AccountController(
         return ResponseEntity.status(HttpStatus.OK).body(tokenDto)
     }
 
+    @ApiOperation(value = "프로필 이미지 변경 API")
     @PostMapping("/uploadProfileImage")
     fun uploadProfileImage(@RequestBody image: MultipartFile): ResponseEntity<Account.ImageUrl> {
         var imageUrl: Account.ImageUrl = Account.ImageUrl("")
@@ -68,34 +72,53 @@ class AccountController(
         return ResponseEntity.status(HttpStatus.OK).body(imageUrl)
     }
 
+    @ApiOperation(value = "프로필 편집 API")
     @PostMapping("/changeProfile")
-    fun changeProfile(request: HttpServletRequest, @RequestBody @Valid profileChanged: Account.ProfileChanged): ResponseEntity<String> {
+    fun changeProfile(
+        request: HttpServletRequest,
+        @RequestBody @Valid @ApiParam(value = "프로필 이미지, 닉네임 정보")
+        profileChanged: Account.ProfileChanged
+    ): ResponseEntity<String> {
         val token = ControllerUtil.extractAccessToken(request)
         accountService.changeProfile(token, profileChanged)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
+    @ApiOperation(value = "닉네임 비교 API")
     @PostMapping("/nickNameCheck")
-    fun nickNameCheck(request: HttpServletRequest, @RequestBody @Valid nickName: Account.NextNickName): ResponseEntity<String> {
+    fun nickNameCheck(
+        request: HttpServletRequest,
+        @RequestBody @Valid @ApiParam(value = "비교할 닉네임") nickName: Account.NextNickName
+    ): ResponseEntity<String> {
         val token = ControllerUtil.extractAccessToken(request)
         val result = accountService.checkNickNameDuplication(token, nickName)
         return ResponseEntity.status(HttpStatus.OK).body(result)
     }
 
+    @ApiOperation(value = "닉네임 변경 API")
     @PostMapping("/nickNameChange")
-    fun nickNameChange(request: HttpServletRequest, @RequestBody nickName: Account.NextNickName): ResponseEntity<String> {
+    fun nickNameChange(
+        request: HttpServletRequest,
+        @RequestBody @ApiParam(value = "변경할 닉네임") nickName: Account.NextNickName
+    ): ResponseEntity<String> {
         val token = ControllerUtil.extractAccessToken(request)
         accountService.changeNickName(token, nickName)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
+    @ApiOperation(value = "배경 색상 변경 API")
     @PostMapping("/changeBackgroundColor")
-    fun changeBackgroundColor(request: HttpServletRequest, changeUrl: String): ResponseEntity<String> {
+    fun changeBackgroundColor(
+        request: HttpServletRequest,
+        @RequestBody @ApiParam(value = "변경할 색상 정보")
+        dto: AccountRequestDto.ChangeBackgroundColorRequest
+    ): ResponseEntity<String> {
         val token = ControllerUtil.extractAccessToken(request)
-        accountService.changeBackgroundColor(token, changeUrl)
+        accountService.changeBackgroundColor(token, dto)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
+    @ApiOperation(value = "익스텐션 버전 조회 API")
     @GetMapping("/{extensionVersion}")
     fun checkExtensionVersion(@PathVariable extensionVersion: String): ResponseEntity<String> {
         return ResponseEntity.status(HttpStatus.OK).body(accountService.checkExtension(extensionVersion))
@@ -107,4 +130,96 @@ class AccountController(
         accountService.acceptInvitation(token, folderToken)
         return ResponseEntity.status(HttpStatus.OK).body("good")
     }
+
+    @ApiOperation("회원가입 API")
+    @PostMapping("/signUp")
+    fun singUp(
+        @RequestBody @Valid @ApiParam(value = "회원가입 정보", required = true)
+        request: AccountRequestDto.SignUpRequest
+    ): ResponseEntity<Account.AccountLoginSuccess> {
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.signUp(request))
+    }
+
+    @ApiOperation("회원가입 시 이메일 존재여부 확인 API")
+    @PostMapping("/signUp/emailCheck")
+    fun checkEmail(
+        @RequestBody @Valid @ApiParam(value = "회원가입 시 등록 이메일", required = true)
+        request: AccountRequestDto.SignUpEmailRequest
+    ): ResponseEntity<String> {
+        return when (accountService.checkEmail(request)) {
+            true -> ResponseEntity.status(HttpStatus.CONFLICT).body(Message.EXIST_EMAIL)
+            false -> ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
+        }
+    }
+
+    @ApiOperation("FCM Token 설정 API")
+    @PostMapping("/fcm-token")
+    fun registerFcmToken(
+        request: HttpServletRequest,
+        @RequestBody @Valid @ApiParam(value = "FCM Token") dto: AccountRequestDto.FcmToken
+    ): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        accountService.registerFcmToken(token, dto)
+
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
+    }
+
+    @ApiOperation("일반 로그인 API")
+    @PostMapping("/signIn")
+    fun signIn(
+        @RequestBody @Valid @ApiParam(value = "로그인 정보", required = true)
+        request: AccountRequestDto.SignInRequest
+    ): ResponseEntity<Account.AccountLoginSuccess> {
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.signIn(request))
+    }
+
+    @ApiOperation(value = "현재 비밀번호와 입력받은 비밀번호 비교 API")
+    @PostMapping("/passwordCheck")
+    fun comparePassword(
+        request: HttpServletRequest,
+        @RequestBody @Valid @ApiParam(value = "현재(기존) 비밀번호") dto: AccountRequestDto.CurrentPassword
+    ): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.comparePassword(token, dto))
+    }
+
+    @ApiOperation(value = "비밀번호 변경 API")
+    @PatchMapping("/password")
+    fun changePassword(
+        request: HttpServletRequest,
+        @RequestBody @Valid @ApiParam(value = "기존 비밀번호와 새 비밀번호") dto: AccountRequestDto.PasswordChangeRequest
+    ): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.changePassword(token, dto))
+    }
+
+    @ApiOperation(value = "회원 탈퇴 API")
+    @DeleteMapping("/unregister")
+    fun deleteAccount(request: HttpServletRequest): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        accountService.softDelete(token)
+
+        return ResponseEntity.status(HttpStatus.OK).body(Message.DELETE_ACCOUNT_SUCCEED)
+    }
+
+    @ApiOperation(value = "비밀번호 재설정 - 이메일이 존재 여부 확인 API")
+    @PostMapping("/password/emailCheck")
+    fun checkEmailExist(
+        request: HttpServletRequest,
+        @RequestBody @Valid @ApiParam(value = "이메일 주소") dto: AccountRequestDto.EmailCheckRequest
+    ): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.checkEmailExist(token, dto))
+    }
+
+    @ApiOperation(value = "비밀번호 재설정 - 임시 비밀번호 생성 및 메일 발송 API")
+    @PostMapping("/password/reset")
+    fun sendTempPasswordToEmail(request: HttpServletRequest): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        val tempPassword = accountService.createTempPassword()
+        accountService.updatePassword(token, tempPassword)
+
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.sendMail(token, tempPassword))
+    }
+
 }
