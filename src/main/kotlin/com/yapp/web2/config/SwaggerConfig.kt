@@ -54,11 +54,11 @@ class SwaggerConfig {
         val authorizationScope = AuthorizationScope("global", "accessEverything")
         val authorizationScopes = arrayOfNulls<AuthorizationScope>(1)
         authorizationScopes[0] = authorizationScope
-        return listOf(SecurityReference("JWT", authorizationScopes))
+        return listOf(SecurityReference("accessToken", authorizationScopes))
     }
 
     fun apiKey(): ApiKey {
-        return ApiKey("JWT", "AccessToken", "header")
+        return ApiKey("accessToken", "accessToken", "header")
     }
 
     private fun metaInfo(): ApiInfo {

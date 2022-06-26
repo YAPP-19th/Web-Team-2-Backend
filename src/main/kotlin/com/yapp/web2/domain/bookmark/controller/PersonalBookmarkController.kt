@@ -4,7 +4,6 @@ import com.yapp.web2.domain.bookmark.BookmarkDto
 import com.yapp.web2.domain.bookmark.service.PersonalBookmarkService
 import com.yapp.web2.util.ControllerUtil
 import com.yapp.web2.util.Message
-import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import org.springframework.http.HttpStatus
@@ -18,42 +17,6 @@ import javax.validation.Valid
 class PersonalBookmarkController(
     private val personalBookmarkService: PersonalBookmarkService
 ) {
-
-    @ApiOperation(value = "북마크 생성 API")
-    @PostMapping("/{folderId}")
-    fun createBookmark(
-        request: HttpServletRequest,
-        @PathVariable @ApiParam(value = "북마크를 지정할 폴더 ID", example = "12", required = true) folderId: Long?,
-        @RequestBody @ApiParam(value = "북마크 생성 정보", required = true) bookmark: BookmarkDto.AddBookmarkDto
-    ): ResponseEntity<String> {
-        val token = ControllerUtil.extractAccessToken(request)
-        personalBookmarkService.addBookmark(token, folderId, bookmark)
-        return ResponseEntity.status(HttpStatus.OK).body(Message.SAVED)
-    }
-
-    @ApiOperation(value = "폴더에 속하지 않는 북마크 생성 API")
-    @PostMapping
-    fun createBookmarkNoFolder(
-        request: HttpServletRequest,
-        @RequestBody @ApiParam(value = "북마크 생성 정보", required = true) bookmark: BookmarkDto.AddBookmarkDto
-    ): ResponseEntity<String> {
-        val token = ControllerUtil.extractAccessToken(request)
-        personalBookmarkService.addBookmark(token, null, bookmark)
-        return ResponseEntity.status(HttpStatus.OK).body(Message.SAVED)
-    }
-
-    @ApiOperation(value = "여러개의 북마크 생성 API")
-    @PostMapping("/list/{folderId}")
-    fun createBookmarkList(
-        request: HttpServletRequest,
-        @PathVariable @ApiParam(value = "북마크가 저장될 폴더 ID", example = "12") folderId: Long?,
-        @RequestBody @ApiParam(value = "북마크 생성 리스트 정보", required = true) dto: BookmarkDto.AddBookmarkListDto
-    ): ResponseEntity<String> {
-        val token = ControllerUtil.extractAccessToken(request)
-        personalBookmarkService.addBookmarkList(token, folderId, dto)
-        return ResponseEntity.status(HttpStatus.OK).body(Message.SAVED)
-    }
-
     @ApiOperation(value = "북마크 삭제 API")
     @PostMapping("/delete")
     fun deleteBookmark(@RequestBody bookmarkList: BookmarkDto.BookmarkIdList): ResponseEntity<String> {

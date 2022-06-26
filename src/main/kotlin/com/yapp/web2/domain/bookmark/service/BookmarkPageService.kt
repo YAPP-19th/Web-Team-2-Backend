@@ -57,7 +57,6 @@ class BookmarkPageService(
     }
 
     fun getAllPageByEncryptFolderId(token: String, pageable: Pageable): Page<Bookmark> {
-        // TODO: 2022/05/14 복호화 후에 id가 제대로 나왔는지 확인하는 로직 필요
         val folderIdByString = aes256Util.decrypt(token)
         return bookmarkRepository.findAllByFolderIdAndDeleteTimeIsNull(folderIdByString.toLong(), pageable)
     }
