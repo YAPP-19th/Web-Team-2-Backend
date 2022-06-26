@@ -75,7 +75,7 @@ class BookmarkDto {
     @ApiModel(description = "북마크 생성 리스트 DTO")
     data class AddBookmarkListDto(
         @ApiModelProperty(value = "북마크 객체 리스트", required = true)
-        val addBookmarkList: ImmutableList<AddBookmarkDto>
+        val addBookmarkList: MutableList<AddBookmarkDto>
     )
 
     @ApiModel(description = "북마크 이동 API(폴더별 이동)")
