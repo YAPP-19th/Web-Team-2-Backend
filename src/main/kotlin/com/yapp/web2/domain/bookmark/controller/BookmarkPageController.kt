@@ -1,5 +1,6 @@
 package com.yapp.web2.domain.bookmark.controller
 
+import com.yapp.web2.domain.bookmark.BookmarkDto
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.service.BookmarkPageService
 import com.yapp.web2.domain.bookmark.service.BookmarkSearchService
@@ -73,7 +74,7 @@ class BookmarkPageController(
     fun getBookmarkPageByFolderToken(
         @PathVariable folderToken: String,
         pageable: Pageable
-    ): ResponseEntity<Page<Bookmark>> {
+    ): ResponseEntity<Page<BookmarkDto.BookmarkRequestDto>> {
         return ResponseEntity.status(HttpStatus.OK)
             .body(bookmarkPageService.getAllPageByEncryptFolderId(folderToken, pageable))
     }

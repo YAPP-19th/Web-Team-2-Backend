@@ -1,10 +1,15 @@
 package com.yapp.web2.domain.bookmark.service
 
+import com.yapp.web2.domain.bookmark.BookmarkDto
 import com.yapp.web2.domain.bookmark.entity.Bookmark
+import com.yapp.web2.domain.bookmark.entity.BookmarkInterface
+import com.yapp.web2.domain.bookmark.repository.BookmarkInterfaceRepository
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.util.AES256Util
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -13,6 +18,7 @@ import java.time.LocalDate
 @Service
 class BookmarkPageService(
     private val bookmarkRepository: BookmarkRepository,
+    private val bookmarkInterfaceRepository: BookmarkInterfaceRepository,
     private val jwtProvider: JwtProvider,
     private val aes256Util: AES256Util
 ) {
@@ -56,8 +62,60 @@ class BookmarkPageService(
         )
     }
 
-    fun getAllPageByEncryptFolderId(token: String, pageable: Pageable): Page<Bookmark> {
+    fun getAllPageByEncryptFolderId(token: String, pageable: Pageable): Page<BookmarkDto.BookmarkRequestDto> {
         val folderIdByString = aes256Util.decrypt(token)
-        return bookmarkRepository.findAllByFolderIdAndDeleteTimeIsNull(folderIdByString.toLong(), pageable)
+        val bookmarkList =
+            bookmarkToBookmarkRequestDto(bookmarkRepository.findAllByFolderIdAndDeleteTimeIsNull(folderIdByString.toLong()))
+        val bookmarkInterfaceList = bookmarkInterfaceToBookmarkRequestDto(bookmarkInterfaceRepository.findAllByFolderId(folderIdByString.toLong()))
+
+        val list = bookmarkList + bookmarkInterfaceList
+
+        return PageImpl(list, pageable, list.size.toLong())
+    }
+
+    private fun bookmarkToBookmarkRequestDto(bookmarkList: List<Bookmark>): List<BookmarkDto.BookmarkRequestDto> {
+        val result = mutableListOf<BookmarkDto.BookmarkRequestDto>()
+        for (bookmark in bookmarkList) {
+            result.add(BookmarkDto.BookmarkRequestDto(
+                bookmark.id,
+                bookmark.userId,
+                bookmark.link,
+                bookmark.title,
+                bookmark.description,
+                bookmark.image,
+                bookmark.folderId,
+                bookmark.folderEmoji,
+                bookmark.folderName,
+                bookmark.clickCount,
+                bookmark.deleteTime,
+                bookmark.deleted,
+                bookmark.saveTime,
+                null
+            ))
+        }
+        return result
+    }
+
+    private fun bookmarkInterfaceToBookmarkRequestDto(bookmarkList: List<BookmarkInterface>): List<BookmarkDto.BookmarkRequestDto> {
+        val result = mutableListOf<BookmarkDto.BookmarkRequestDto>()
+        for (bookmark in bookmarkList) {
+            result.add(BookmarkDto.BookmarkRequestDto(
+                bookmark.id,
+                bookmark.userId,
+                bookmark.link,
+                bookmark.title,
+                bookmark.description,
+                bookmark.image,
+                bookmark.folderId,
+                bookmark.folderEmoji,
+                bookmark.folderName,
+                bookmark.clickCount,
+                bookmark.deleteTime,
+                bookmark.deleted,
+                bookmark.saveTime,
+                null
+            ))
+        }
+        return result
     }
 }
