@@ -18,6 +18,8 @@ interface BookmarkRepository : MongoRepository<Bookmark, String> {
 
     fun findAllByFolderIdAndDeleteTimeIsNull(folderId: Long, pageable: Pageable): Page<Bookmark>
 
+    fun findAllByFolderIdAndDeleteTimeIsNull(folderId: Long): List<Bookmark>
+
     fun findAllByUserIdAndRemindTimeIsNotNullAndDeleteTimeIsNull(userId: Long, pageable: Pageable): Page<Bookmark>
 
     fun findAllByUserIdAndDeleteTimeIsNull(userId: Long, pageable: Pageable): Page<Bookmark>
