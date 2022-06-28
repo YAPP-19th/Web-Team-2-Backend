@@ -14,6 +14,7 @@ import com.yapp.web2.exception.custom.ImageNotFoundException
 import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.util.Message
 import org.apache.commons.lang3.RandomStringUtils
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
@@ -42,6 +43,7 @@ class AccountService(
 
     companion object {
         private const val DIR_NAME = "static"
+        private val log = LoggerFactory.getLogger(AccountService::class.java)
     }
 
     fun getRemindElements(token: String): Account.RemindElements {
@@ -69,6 +71,7 @@ class AccountService(
 
         account2 = when (existAccount) {
             null -> {
+                log.info("OAuth2 login => ${account.email} account not exist!")
                 isRegistered = false
                 val newAccount = createUser(account)
                 folderService.createDefaultFolder(account)
@@ -84,6 +87,7 @@ class AccountService(
 
     fun signUp(dto: AccountRequestDto.SignUpRequest): Account.AccountLoginSuccess {
         if (accountRepository.findByEmail(dto.email) != null) {
+            log.info("${dto.email} account already exist!")
             throw IllegalStateException(Message.EXIST_USER)
         }
 
@@ -91,6 +95,8 @@ class AccountService(
         val nickName = getNickName(dto.email)
         val newAccount = createUser(Account.signUpToAccount(dto, encryptPassword, nickName))
         folderService.createDefaultFolder(newAccount)
+
+        log.info("${newAccount.email} account signUp succeed")
 
         return Account.AccountLoginSuccess(jwtProvider.createToken(newAccount), newAccount, false)
     }
@@ -183,6 +189,8 @@ class AccountService(
             throw IllegalStateException(Message.USER_PASSWORD_MISMATCH)
         }
 
+        log.info("base login => ${account.email} succeed")
+
         return Account.AccountLoginSuccess(jwtProvider.createToken(account), account, false)
     }
 
@@ -206,6 +214,8 @@ class AccountService(
     fun softDelete(token: String) {
         val account = jwtProvider.getAccountFromToken(token)
         account.softDeleteAccount()
+
+        log.info("${account.email} account successfully soft deleted")
     }
 
     fun checkEmailExist(token: String, request: AccountRequestDto.EmailCheckRequest): String {
@@ -229,6 +239,8 @@ class AccountService(
         mailMessage.setSubject("${account.name} 님의 임시비밀번호 안내 메일입니다.")
         mailMessage.setText("안녕하세요. \n\n 임시 비밀번호를 전달드립니다. \n\n 임시 비밀번호는: $tempPassword 입니다.")
         mailSender.send(mailMessage)
+
+        log.info("Send mail temp password succeed to ${account.email}")
 
         return Message.SUCCESS_SEND_MAIL
     }
