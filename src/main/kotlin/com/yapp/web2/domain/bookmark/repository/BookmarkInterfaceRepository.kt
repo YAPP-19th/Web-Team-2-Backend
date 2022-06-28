@@ -14,6 +14,7 @@ interface BookmarkInterfaceRepository : MongoRepository<BookmarkInterface, Strin
     fun findAllByParentBookmarkId(bookmarkId: String): List<BookmarkInterface>
     fun findAllByFolderId(folderId: Long): List<BookmarkInterface>
     fun findAllByFolderId(folderId: Long, pageable: Pageable): Page<BookmarkInterface>?
+    fun findAllByUserId(userId: Long): List<BookmarkInterface>
 
     // page 조회
     fun findAllByFolderIdAndDeleteTimeIsNull(folderId: Long): List<BookmarkInterface>
