@@ -7,8 +7,8 @@ import javax.validation.ConstraintValidatorContext
 class PasswordValidator : ConstraintValidator<CustomPassword, String> {
 
     override fun isValid(password: String, context: ConstraintValidatorContext?): Boolean {
-        // 특수문자 + (영문자 or 숫자) 조합으로 8~16자 사이
-        val passwordRegex = "^(?=.*[0-9a-zA-Z])(?=.*[!@#\$%^&*])(?=\\S+\$).{8,16}\$"
+        // 영문 대소문자, 숫자, 특수문자 중 2종류 이상을 조합하여 8~16자의 비밀번호
+        val passwordRegex = "^((?=.*[0-9])(?=.*[a-zA-Z])|(?=.*[0-9])(?=.*[!@#$%^&*?\\-_])|(?=.*[a-zA-Z])(?=.*[!@#$%^&*?\\-_]))(?=\\S+\$).{8,16}\$"
         val regex = Regex(passwordRegex)
         val isValidPassword = password.matches(regex)
 
