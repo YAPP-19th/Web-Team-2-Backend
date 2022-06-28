@@ -10,7 +10,6 @@ import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
-import io.mockk.MockKAnnotations
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -27,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.mail.javamail.JavaMailSender
@@ -36,7 +36,8 @@ import org.springframework.web.multipart.MultipartFile
 import java.util.Optional
 import kotlin.IllegalStateException
 
-internal class AccountServiceTest {
+@ExtendWith(MockKExtension::class)
+internal open class AccountServiceTest {
 
     @InjectMockKs
     private lateinit var accountService: AccountService
@@ -65,8 +66,6 @@ internal class AccountServiceTest {
 
     @BeforeEach
     internal fun init() {
-        MockKAnnotations.init(this)
-        accountService = AccountService(folderService, accountRepository, jwtProvider, s3Uploader, passwordEncoder, mailSender)
         testAccount = Account("test@gmail.com", "1234567!")
         validator = PasswordValidator()
     }
