@@ -5,6 +5,7 @@ import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
+import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.custom.AccountNotFoundException
@@ -450,6 +451,28 @@ internal open class FolderServiceTest {
 
         // then
         actual?.let { printJson(it) }
+    }
+
+    @Test
+    fun `공유 폴더에 존재하는 모든 멤버에 대한 리스트를 준다`() {
+        // given
+        val folderId = 3L
+        val testAccount = Account("test1")
+        testAccount.id = 1
+        testAccount.name = "test"
+        testAccount.image = "testImage"
+
+        folder.id = folderId
+        val testList = mutableListOf(AccountFolder(testAccount, folder), AccountFolder(testAccount, folder) ,AccountFolder(testAccount, folder))
+        folder.folders = testList
+
+        every { folderRepository.findFolderById(folderId) } returns folder
+
+        // when
+        val actual = folderService.getAccountListAtRootFolder(folderId)
+
+        // then
+        assertThat(actual.list.size).isEqualTo(3)
     }
 
     private fun printJson(actual: Any) {

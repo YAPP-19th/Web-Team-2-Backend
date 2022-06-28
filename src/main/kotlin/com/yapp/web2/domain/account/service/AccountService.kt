@@ -5,12 +5,17 @@ import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.config.S3Uploader
+import com.yapp.web2.domain.folder.entity.AccountFolder
+import com.yapp.web2.domain.folder.entity.Authority
 import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.exception.BusinessException
+import com.yapp.web2.exception.custom.AlreadyInvitedException
 import com.yapp.web2.exception.custom.EmailNotFoundException
 import com.yapp.web2.exception.custom.ExistNameException
+import com.yapp.web2.exception.custom.FolderNotRootException
 import com.yapp.web2.exception.custom.ImageNotFoundException
+import com.yapp.web2.util.AES256Util
 import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.util.Message
 import org.apache.commons.lang3.RandomStringUtils
@@ -30,6 +35,7 @@ class AccountService(
     private val folderService: FolderService,
     private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider,
+    private val aes256Util: AES256Util,
     private val s3Uploader: S3Uploader,
     private val passwordEncoder: PasswordEncoder,
     private val mailSender: JavaMailSender
@@ -138,6 +144,7 @@ class AccountService(
         }
     }
 
+    @Transactional
     fun changeNickName(token: String, nextNickName: Account.NextNickName) {
         val account = jwtProvider.getAccountFromToken(token)
 
@@ -147,6 +154,7 @@ class AccountService(
         }
     }
 
+    @Transactional
     fun changeProfile(token: String, profileChanged: Account.ProfileChanged) {
         val account = jwtProvider.getAccountFromToken(token)
         account.let {
@@ -156,6 +164,7 @@ class AccountService(
         }
     }
 
+    @Transactional
     fun changeProfileImage(token: String, profile: MultipartFile): String {
         val account = jwtProvider.getAccountFromToken(token).let {
             it.image = s3Uploader.upload(profile, DIR_NAME)
@@ -164,6 +173,7 @@ class AccountService(
         return account.image
     }
 
+    @Transactional
     fun deleteProfileImage(token: String) {
         val account = jwtProvider.getAccountFromToken(token)
         account.let {
@@ -180,6 +190,23 @@ class AccountService(
     fun checkExtension(userVersion: String): String {
         return if (userVersion == extensionVersion) Message.LATEST_EXTENSION_VERSION
         else Message.OLD_EXTENSION_VERSION
+    }
+
+    @Transactional
+    fun acceptInvitation(token: String, folderToken: String) {
+        val account = jwtProvider.getAccountFromToken(token)
+        val folderId = aes256Util.decrypt(folderToken).toLong()
+        val rootFolder = folderService.findByFolderId(folderId)
+
+        if(rootFolder.rootFolderId != null) throw FolderNotRootException()
+
+        val accountFolder = AccountFolder(account, rootFolder)
+        accountFolder.changeAuthority(Authority.INVITEE)
+        // account에 굳이 추가하지 않아도 account-folder에 추가가 된다.
+        // 왜???
+        if(account.isInsideAccountFolder(accountFolder)) throw AlreadyInvitedException()
+//        account.addAccountFolder(accountFolder)
+        rootFolder.folders?.add(accountFolder)
     }
 
     fun signIn(request: AccountRequestDto.SignInRequest): Account.AccountLoginSuccess? {

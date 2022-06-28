@@ -1,7 +1,9 @@
 package com.yapp.web2.util
 
+import org.apache.catalina.util.URLEncoder
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.crypto.Cipher
@@ -30,7 +32,8 @@ class AES256Util(
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec)
 
         val encrypted = cipher.doFinal(text.toByteArray(StandardCharsets.UTF_8))
-        return Base64.getEncoder().encodeToString(encrypted)
+
+        return URLEncoder().encode(Base64.getEncoder().encodeToString(encrypted), StandardCharsets.UTF_8)
     }
 
     fun decrypt(cipherText: String): String {
@@ -40,7 +43,8 @@ class AES256Util(
 
         cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec)
 
-        val decodedBytes = Base64.getDecoder().decode(cipherText)
+        val aesCipherText = URLDecoder.decode(cipherText, StandardCharsets.UTF_8.toString())
+        val decodedBytes = Base64.getDecoder().decode(aesCipherText)
         val decrypted = cipher.doFinal(decodedBytes)
 
         return String(decrypted, StandardCharsets.UTF_8)

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference
 import com.yapp.web2.domain.BaseTimeEntity
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
+import org.springframework.transaction.annotation.Transactional
 import javax.persistence.*
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.PositiveOrZero
@@ -36,6 +37,11 @@ class Folder(
 
     @OneToMany(mappedBy = "folder", cascade = [CascadeType.ALL])
     var folders: MutableList<AccountFolder>? = mutableListOf()
+
+    // TODO: 2022/05/06 공유 북마크인지 확인하기 위해서 추가한 컬럼
+    var share: Boolean = false
+
+    var rootFolderId: Long? = null
 
     companion object {
         fun dtoToEntity(dto: FolderCreateRequest, index: Int): Folder {
@@ -162,5 +168,10 @@ class Folder(
 
     fun updateIndex(nextIndex: Int) {
         this.index = nextIndex
+    }
+
+    @Transactional
+    fun updateBookmarkCount(count: Int) {
+        this.bookmarkCount += count
     }
 }
