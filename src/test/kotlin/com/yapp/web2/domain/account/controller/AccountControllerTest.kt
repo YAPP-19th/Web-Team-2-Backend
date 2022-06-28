@@ -1,72 +1,34 @@
 package com.yapp.web2.domain.account.controller
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.ninjasquad.springmockk.MockkBean
-import com.yapp.web2.config.S3Uploader
-import com.yapp.web2.domain.ControllerTestUtil
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.entity.AccountRequestDto
-import com.yapp.web2.domain.account.service.AccountService
-import com.yapp.web2.security.jwt.JwtProvider
+import com.yapp.web2.domain.folder.controller.FolderController
 import com.yapp.web2.security.jwt.TokenDto
+import com.yapp.web2.util.AbstractControllerTest
 import com.yapp.web2.util.Message
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import org.apache.commons.lang3.RandomStringUtils
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.test.context.TestPropertySource
-import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
-import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import org.springframework.web.context.WebApplicationContext
-import org.springframework.web.filter.CharacterEncodingFilter
-import java.nio.charset.StandardCharsets
 
-@WebMvcTest(AccountController::class, excludeAutoConfiguration = [SecurityAutoConfiguration::class])
+@WebMvcTest(
+    value = [AccountController::class, FolderController::class],
+    excludeAutoConfiguration = [SecurityAutoConfiguration::class]
+)
 @AutoConfigureMockMvc(addFilters = false)
-@JsonIgnoreProperties(value = ["hibernateLazyInitializer", "handler"])
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestPropertySource(properties = ["extension.version=4.0.3"])
-class AccountControllerTest {
-
-    private lateinit var mockMvc: MockMvc
-
-    @Autowired
-    private lateinit var context: WebApplicationContext
-
-    @MockkBean
-    private lateinit var accountService: AccountService
-
-    @MockkBean
-    private lateinit var s3Uploader: S3Uploader
-
-    @MockkBean
-    private lateinit var jwtProvider: JwtProvider
-
-    private val util = ControllerTestUtil()
-
-    @Value("\${extension.version}")
-    private lateinit var extensionVersion: String
-
-    @BeforeAll
-    fun setup() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context)
-            .addFilters<DefaultMockMvcBuilder>(CharacterEncodingFilter(StandardCharsets.UTF_8.toString(), true))
-            .alwaysDo<DefaultMockMvcBuilder>(MockMvcResultHandlers.print())
-            .build()
-    }
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class AccountControllerTest: AbstractControllerTest() {
 
     @Test
     fun `현재 회원의 프로필을 조회한다`() {
