@@ -33,8 +33,9 @@ class SecurityConfig(
     override fun configure(web: WebSecurity?) {
         web!!.httpFirewall(defaultHttpFirewall())
             .ignoring()
-            .antMatchers("/api/v1/user/oauth2Login", "/api/v1/user/signUp", "/api/v1/user/signUp/emailCheck")
+            .antMatchers("/api/v1/user/oauth2Login", "/api/v1/user/signIn", "/api/v1/user/signUp", "/api/v1/user/signUp/emailCheck")
             .antMatchers("/api/v1/user/reIssuanceAccessToken")
+            .antMatchers("/api/v1/page/open/**", "/api/v1/page/open/**", "/api/v1/folder/encrypt/**", "/api/v1/folder/name/**")
             .antMatchers("/swagger-resources/**", "/v3/api-docs/**", "/swagger-ui/**")
     }
 
@@ -46,7 +47,7 @@ class SecurityConfig(
 
         http.authorizeRequests()
             .antMatchers("/actuator/**").permitAll()
-            .antMatchers("/api/v1/page/open/**").permitAll()
+//            .antMatchers("/api/v1/page/open/**").permitAll()
             .anyRequest().authenticated()
 
         http.apply(JwtSecurityConfig(jwtProvider))

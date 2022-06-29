@@ -1,11 +1,9 @@
 package com.yapp.web2.domain.folder.controller
 
-import com.ninjasquad.springmockk.MockkBean
 import com.yapp.web2.domain.BaseTimeEntity
-import com.yapp.web2.domain.ControllerTestUtil
+import com.yapp.web2.domain.account.controller.AccountController
 import com.yapp.web2.domain.folder.entity.Folder
-import com.yapp.web2.domain.folder.service.FolderService
-import com.yapp.web2.security.jwt.JwtProvider
+import com.yapp.web2.util.AbstractControllerTest
 import com.yapp.web2.util.FolderTokenDto
 import com.yapp.web2.util.Message
 import io.mockk.Runs
@@ -13,30 +11,24 @@ import io.mockk.every
 import io.mockk.just
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
+import org.junit.jupiter.api.TestInstance
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-@WebMvcTest(FolderController::class, excludeAutoConfiguration = [SecurityAutoConfiguration::class])
+@WebMvcTest(
+    value = [AccountController::class, FolderController::class],
+    excludeAutoConfiguration = [SecurityAutoConfiguration::class]
+)
 @AutoConfigureMockMvc(addFilters = false)
-internal class FolderControllerTest {
-
-    @Autowired
-    private lateinit var mockMvc: MockMvc
-
-    @MockkBean
-    private lateinit var folderService: FolderService
-
-    @MockkBean
-    private lateinit var jwtProvider: JwtProvider
-
-    val util = ControllerTestUtil()
+@TestPropertySource(properties = ["extension.version=4.0.3"])
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+internal class FolderControllerTest: AbstractControllerTest() {
 
     @Test
     fun `폴더를 생성한다`() {

@@ -5,15 +5,21 @@ import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.config.S3Uploader
+import com.yapp.web2.domain.folder.entity.AccountFolder
+import com.yapp.web2.domain.folder.entity.Authority
 import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.exception.BusinessException
+import com.yapp.web2.exception.custom.AlreadyInvitedException
 import com.yapp.web2.exception.custom.EmailNotFoundException
 import com.yapp.web2.exception.custom.ExistNameException
+import com.yapp.web2.exception.custom.FolderNotRootException
 import com.yapp.web2.exception.custom.ImageNotFoundException
+import com.yapp.web2.util.AES256Util
 import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.util.Message
 import org.apache.commons.lang3.RandomStringUtils
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
@@ -29,6 +35,7 @@ class AccountService(
     private val folderService: FolderService,
     private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider,
+    private val aes256Util: AES256Util,
     private val s3Uploader: S3Uploader,
     private val passwordEncoder: PasswordEncoder,
     private val mailSender: JavaMailSender
@@ -42,6 +49,7 @@ class AccountService(
 
     companion object {
         private const val DIR_NAME = "static"
+        private val log = LoggerFactory.getLogger(AccountService::class.java)
     }
 
     fun getRemindElements(token: String): Account.RemindElements {
@@ -69,6 +77,7 @@ class AccountService(
 
         account2 = when (existAccount) {
             null -> {
+                log.info("OAuth2 login => ${account.email} account not exist!")
                 isRegistered = false
                 val newAccount = createUser(account)
                 folderService.createDefaultFolder(account)
@@ -84,6 +93,7 @@ class AccountService(
 
     fun signUp(dto: AccountRequestDto.SignUpRequest): Account.AccountLoginSuccess {
         if (accountRepository.findByEmail(dto.email) != null) {
+            log.info("${dto.email} account already exist!")
             throw IllegalStateException(Message.EXIST_USER)
         }
 
@@ -91,6 +101,8 @@ class AccountService(
         val nickName = getNickName(dto.email)
         val newAccount = createUser(Account.signUpToAccount(dto, encryptPassword, nickName))
         folderService.createDefaultFolder(newAccount)
+
+        log.info("${newAccount.email} account signUp succeed")
 
         return Account.AccountLoginSuccess(jwtProvider.createToken(newAccount), newAccount, false)
     }
@@ -132,6 +144,7 @@ class AccountService(
         }
     }
 
+    @Transactional
     fun changeNickName(token: String, nextNickName: Account.NextNickName) {
         val account = jwtProvider.getAccountFromToken(token)
 
@@ -141,6 +154,7 @@ class AccountService(
         }
     }
 
+    @Transactional
     fun changeProfile(token: String, profileChanged: Account.ProfileChanged) {
         val account = jwtProvider.getAccountFromToken(token)
         account.let {
@@ -150,6 +164,7 @@ class AccountService(
         }
     }
 
+    @Transactional
     fun changeProfileImage(token: String, profile: MultipartFile): String {
         val account = jwtProvider.getAccountFromToken(token).let {
             it.image = s3Uploader.upload(profile, DIR_NAME)
@@ -158,6 +173,7 @@ class AccountService(
         return account.image
     }
 
+    @Transactional
     fun deleteProfileImage(token: String) {
         val account = jwtProvider.getAccountFromToken(token)
         account.let {
@@ -176,12 +192,31 @@ class AccountService(
         else Message.OLD_EXTENSION_VERSION
     }
 
+    @Transactional
+    fun acceptInvitation(token: String, folderToken: String) {
+        val account = jwtProvider.getAccountFromToken(token)
+        val folderId = aes256Util.decrypt(folderToken).toLong()
+        val rootFolder = folderService.findByFolderId(folderId)
+
+        if(rootFolder.rootFolderId != null) throw FolderNotRootException()
+
+        val accountFolder = AccountFolder(account, rootFolder)
+        accountFolder.changeAuthority(Authority.INVITEE)
+        // account에 굳이 추가하지 않아도 account-folder에 추가가 된다.
+        // 왜???
+        if(account.isInsideAccountFolder(accountFolder)) throw AlreadyInvitedException()
+//        account.addAccountFolder(accountFolder)
+        rootFolder.folders?.add(accountFolder)
+    }
+
     fun signIn(request: AccountRequestDto.SignInRequest): Account.AccountLoginSuccess? {
         val account = accountRepository.findByEmail(request.email) ?: throw IllegalStateException(Message.NOT_EXIST_EMAIL)
 
         if (!passwordEncoder.matches(request.password, account.password)) {
             throw IllegalStateException(Message.USER_PASSWORD_MISMATCH)
         }
+
+        log.info("base login => ${account.email} succeed")
 
         return Account.AccountLoginSuccess(jwtProvider.createToken(account), account, false)
     }
@@ -206,6 +241,8 @@ class AccountService(
     fun softDelete(token: String) {
         val account = jwtProvider.getAccountFromToken(token)
         account.softDeleteAccount()
+
+        log.info("${account.email} account successfully soft deleted")
     }
 
     fun checkEmailExist(token: String, request: AccountRequestDto.EmailCheckRequest): String {
@@ -229,6 +266,8 @@ class AccountService(
         mailMessage.setSubject("${account.name} 님의 임시비밀번호 안내 메일입니다.")
         mailMessage.setText("안녕하세요. \n\n 임시 비밀번호를 전달드립니다. \n\n 임시 비밀번호는: $tempPassword 입니다.")
         mailSender.send(mailMessage)
+
+        log.info("Send mail temp password succeed to ${account.email}")
 
         return Message.SUCCESS_SEND_MAIL
     }

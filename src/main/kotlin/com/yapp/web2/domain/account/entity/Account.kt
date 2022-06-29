@@ -5,9 +5,8 @@ import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.security.jwt.TokenDto
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.OneToMany
+import org.springframework.transaction.annotation.Transactional
+import javax.persistence.*
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
 
@@ -27,7 +26,13 @@ class Account(
         }
 
         fun accountToProfile(account: Account): AccountProfile {
-            return AccountProfile(account.email, account.name, account.image, account.socialType, account.fcmToken ?: "")
+            return AccountProfile(
+                account.email,
+                account.name,
+                account.image,
+                account.socialType,
+                account.fcmToken ?: ""
+            )
         }
 
         fun accountToRemindElements(account: Account): RemindElements {
@@ -52,6 +57,18 @@ class Account(
         this.name = nickname
         this.socialType = socialType
         this.fcmToken = fcmToken
+    }
+
+    fun addAccountFolder(accountFolder: AccountFolder) {
+        this.accountFolderList.add(accountFolder)
+    }
+
+    @Transactional
+    fun isInsideAccountFolder(accountFolder: AccountFolder): Boolean {
+        accountFolderList.forEach {
+            if (it.folder.id == accountFolder.folder.id) return true
+        }
+        return false
     }
 
     @Column(nullable = true)
@@ -82,7 +99,7 @@ class Account(
     var deleted: Boolean = false
 
     @OneToMany(mappedBy = "account")
-    var accountFolderList: MutableList<AccountFolder>? = mutableListOf()
+    var accountFolderList: MutableList<AccountFolder> = mutableListOf()
 
     @ApiModel(description = "소셜로그인 DTO")
     class AccountProfile(
@@ -94,14 +111,22 @@ class Account(
         @field: NotEmpty(message = "닉네임을 입력해주세요")
         val name: String,
 
-        @ApiModelProperty(value = "이미지", example = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/static/61908b14-a736-46ef-9d89-3ef12ef57e38")
+        @ApiModelProperty(
+            value = "이미지",
+            example = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/static/61908b14-a736-46ef-9d89-3ef12ef57e38"
+        )
         val image: String,
 
         @ApiModelProperty(value = "소셜로그인 종류", required = true, example = "google")
         @field: NotEmpty(message = "소셜타입을 입력해주세요")
         val socialType: String,
 
-        @ApiModelProperty(value = "FCM 토큰", required = true, example = "dOOUnnp-iBs:APA91bF1i7mobIF7kEhi3aVlFuv6A5--P1S...")
+        @ApiModelProperty(
+            value = "FCM 토큰",
+            required = true,
+            example = "dOOUnnp-iBs:APA91bF1i7mobIF7kEhi3aVlFuv6A5--P1S..."
+        )
+        @field: NotEmpty(message = "FCM 토큰을 입력해주세요")
         val fcmToken: String
     )
 
@@ -140,6 +165,13 @@ class Account(
         @field: NotBlank(message = "이름을 입력해주세요")
         val nickName: String
     )
+
+    fun hasAccountFolder(accountFolder: AccountFolder): Boolean {
+        for (af in this.accountFolderList)
+            if (accountFolder == af) return true
+
+        return false
+    }
 
     fun softDeleteAccount() {
         this.deleted = true

@@ -14,13 +14,15 @@ interface BookmarkRepository : MongoRepository<Bookmark, String> {
 
     fun findAllByFolderId(folderId: Long): List<Bookmark>
 
-    fun findAllByFolderIdAndDeleteTimeIsNullAndRemindTimeIsNotNull(folderId: Long, pageable: Pageable): Page<Bookmark>
+    fun findAllByFolderIdAndDeleteTimeIsNullAndRemindTimeIsNotNull(folderId: Long, pageable: Pageable): List<Bookmark>
 
-    fun findAllByFolderIdAndDeleteTimeIsNull(folderId: Long, pageable: Pageable): Page<Bookmark>
+    fun findAllByFolderIdAndDeleteTimeIsNull(folderId: Long, pageable: Pageable): List<Bookmark>
 
-    fun findAllByUserIdAndRemindTimeIsNotNullAndDeleteTimeIsNull(userId: Long, pageable: Pageable): Page<Bookmark>
+    fun findAllByFolderIdAndDeleteTimeIsNull(folderId: Long): List<Bookmark>
 
-    fun findAllByUserIdAndDeleteTimeIsNull(userId: Long, pageable: Pageable): Page<Bookmark>
+    fun findAllByUserIdAndRemindTimeIsNotNullAndDeleteTimeIsNull(userId: Long, pageable: Pageable): List<Bookmark>
+
+    fun findAllByUserIdAndDeleteTimeIsNull(userId: Long, pageable: Pageable): List<Bookmark>
 
     fun findAllByUserIdAndDeleteTimeIsNotNullAndRemindTimeIsNotNull(userId: Long, pageable: Pageable): Page<Bookmark>
 

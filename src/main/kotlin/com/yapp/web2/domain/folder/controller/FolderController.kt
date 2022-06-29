@@ -1,5 +1,7 @@
 package com.yapp.web2.domain.folder.controller
 
+import com.yapp.web2.domain.account.AccountDto
+import com.yapp.web2.domain.folder.FolderDto
 import com.yapp.web2.domain.folder.entity.Folder
 
 import com.yapp.web2.domain.folder.service.FolderService
@@ -110,9 +112,24 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(folderService.findAllParentFolderList(folderId))
     }
 
+    // TODO: 2022/06/22 유저 정보 확인
     @ApiOperation(value = "암호화된 폴더 ID 조회 API")
     @GetMapping("encrypt/{folderId}")
     fun getEncryptFolderId(@PathVariable folderId: Long): ResponseEntity<FolderTokenDto> {
         return ResponseEntity.status(HttpStatus.OK).body(folderService.encryptFolderId(folderId))
+    }
+
+    @ApiOperation(value = "보관함에 속한 유저 리스트 조회 API")
+    @GetMapping("belong/{folderId}")
+    fun getAccountList(@PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long):
+        ResponseEntity<AccountDto.FolderBelongAccountListDto> {
+        return ResponseEntity.status(HttpStatus.OK).body(folderService.getAccountListAtRootFolder(folderId))
+    }
+
+    @ApiOperation(value = "폴더의 이름 조회 API")
+    @GetMapping("name/{folderId}")
+    fun getFolderName(@PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long)
+    : ResponseEntity<FolderDto.FolderNameDto> {
+        return ResponseEntity.status(HttpStatus.OK).body(folderService.getFolderName(folderId))
     }
 }

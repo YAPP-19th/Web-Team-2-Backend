@@ -5,16 +5,21 @@ import com.yapp.web2.config.S3Uploader
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.account.repository.AccountRepository
+import com.yapp.web2.domain.folder.entity.AccountFolder
+import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.exception.BusinessException
+import com.yapp.web2.exception.custom.AlreadyInvitedException
+import com.yapp.web2.exception.custom.FolderNotRootException
 import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
-import io.mockk.MockKAnnotations
+import com.yapp.web2.util.AES256Util
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
 import io.mockk.just
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
@@ -26,6 +31,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.mail.javamail.JavaMailSender
@@ -35,7 +42,8 @@ import org.springframework.web.multipart.MultipartFile
 import java.util.Optional
 import kotlin.IllegalStateException
 
-internal class AccountServiceTest {
+@ExtendWith(MockKExtension::class)
+internal open class AccountServiceTest {
 
     @InjectMockKs
     private lateinit var accountService: AccountService
@@ -48,6 +56,9 @@ internal class AccountServiceTest {
 
     @MockK
     private lateinit var jwtProvider: JwtProvider
+
+    @MockK
+    private lateinit var aeS256Util: AES256Util
 
     @MockK
     private lateinit var s3Uploader: S3Uploader
@@ -64,8 +75,6 @@ internal class AccountServiceTest {
 
     @BeforeEach
     internal fun init() {
-        MockKAnnotations.init(this)
-        accountService = AccountService(folderService, accountRepository, jwtProvider, s3Uploader, passwordEncoder, mailSender)
         testAccount = Account("test@gmail.com", "1234567!")
         validator = PasswordValidator()
     }
@@ -166,16 +175,35 @@ internal class AccountServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["1234567!", "a1234567!", "12341234!@", "!1234567", "!abcdefg"])
-    fun `비밀번호는 특수문자를 포함하여 영문자 및 숫자 조합으로 8자에서 16자 사이여야 한다`(successPassword: String) {
+    @ValueSource(strings = ["abcd1234", "1234abcd", "a1b2c3d4e5f6", "a123456789", "1abcdefg"])
+    fun `비밀번호가 영문자와 숫자의 조합으로 8자에서 16자 사이의 길이일 경우 검증에 성공한다`(successPassword: String) {
         assertThat(validator.isValid(successPassword, null)).isTrue
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["12345678", "abcdefgh", "1234abcd", "1a2b3c4d"])
-    fun `특수문자가 포함되지 않은 패스워드는 검증에 실패한다`(failPassword: String) {
+    @ValueSource(strings = ["abcdefg!", "abcdefg-", "!@#$%^&a", "asdasd!@#", "a!b@c#de%f"])
+    fun `비밀번호가 영문자와 특수문자의 조합으로 8자에서 16자 사이의 길이일 경우 검증에 성공한다`(successPassword: String) {
+        assertThat(validator.isValid(successPassword, null)).isTrue
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["1234567!", "1!2@3#4$5%", "1!@#$%^&", "12345678!@#$%^&"])
+    fun `비밀번호가 숫자와 특수문자의 조합으로 8자에서 16자 사이의 길이일 경우 검증에 성공한다`(successPassword: String) {
+        assertThat(validator.isValid(successPassword, null)).isTrue
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["abc1234!@", "1!abcdefg", "a1!b2@c3#", "123Abcd!@#", "1!2@3#abcd"])
+    fun `비밀번호가 영문자 숫자 특수문자 조합으로 8자에서 16자 사이의 길이일 경우 검증에 성공한다`(successPassword: String) {
+        assertThat(validator.isValid(successPassword, null)).isTrue
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["123456789", "abcdabcd", "!@#$!@#$!@"])
+    fun `영문자 숫자 특수문자 중 2종류 이상의 조합이 아닌 비밀번호의 경우 검증에 실패한다`(failPassword: String) {
         assertThat(validator.isValid(failPassword, null)).isFalse
     }
+
 
     @ParameterizedTest
     @ValueSource(strings = ["", " ", "1234", "abcd", "1234567", "123456!", "0123456789abcdefgh"])
@@ -276,6 +304,53 @@ internal class AccountServiceTest {
             // given
             // when
             // then
+        }
+
+        @Test
+        fun `보관함에 유저가 추가된다`() {
+            // given
+            val testFolder = Folder("test", 0, 0, null)
+            val testFolderToken = "testFolderToken"
+
+            every { jwtProvider.getAccountFromToken(any()) } returns testAccount
+            every { aeS256Util.decrypt(testFolderToken) } returns "3"
+            every { folderService.findByFolderId(any()) } returns testFolder
+
+            // when
+            accountService.acceptInvitation(testToken, testFolderToken)
+
+            // then
+            assertThat(testFolder.folders?.size).isEqualTo(1)
+        }
+
+        @Test
+        fun `초대받은 링크가 보관함이 아닐 경우에 예외를 던진다`() {
+            // given
+            val testFolder = Folder("test", 0, 0, null)
+            testFolder.rootFolderId = 1L
+            val testFolderToken = "testFolderToken"
+
+            every { jwtProvider.getAccountFromToken(any()) } returns testAccount
+            every { aeS256Util.decrypt(testFolderToken) } returns "3"
+            every { folderService.findByFolderId(any()) } returns testFolder
+
+            // when + then
+            assertThrows<FolderNotRootException> { accountService.acceptInvitation(testToken, testFolderToken) }
+        }
+
+        @Test
+        fun `초대받은 링크를 이미 사용한 경우에는 예외를 던진다`() {
+            // given
+            val testFolder = Folder("test", 0, 0, null)
+            val testFolderToken = "testFolderToken"
+            testAccount.accountFolderList.add(AccountFolder(testAccount, testFolder))
+
+            every { jwtProvider.getAccountFromToken(any()) } returns testAccount
+            every { aeS256Util.decrypt(testFolderToken) } returns "3"
+            every { folderService.findByFolderId(any()) } returns testFolder
+
+            // when + then
+            assertThrows<AlreadyInvitedException> { accountService.acceptInvitation(testToken, testFolderToken) }
         }
     }
 

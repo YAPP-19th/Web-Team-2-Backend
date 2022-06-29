@@ -125,6 +125,13 @@ class AccountController(
         return ResponseEntity.status(HttpStatus.OK).body(accountService.checkExtension(extensionVersion))
     }
 
+    @GetMapping("/invite/{folderToken}")
+    fun acceptInvitation(request: HttpServletRequest, @PathVariable folderToken: String): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        accountService.acceptInvitation(token, folderToken)
+        return ResponseEntity.status(HttpStatus.OK).body("good")
+    }
+
     @ApiOperation("회원가입 API")
     @PostMapping("/signUp")
     fun singUp(

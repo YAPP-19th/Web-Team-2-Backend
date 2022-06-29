@@ -1,32 +1,43 @@
 package com.yapp.web2.domain.bookmark.entity
 
+import com.yapp.web2.domain.account.entity.Account
 import java.time.LocalDate
-import java.time.LocalDateTime
-import javax.persistence.Id
 
 class PersonalBookmark : BookmarkInterface {
 
-    @Id
-    override var id: String = ""
-    override var userId: Long? = null
-    override var link: String = ""
-    override var title: String = ""
-    override var description: String = ""
-    override var image: String? = null
-
-    override var folderId: Long? = null
-    override var folderEmoji: String? = ""
-    override var folderName: String = ""
-    override var clickCount: Int = 0
-
-    override var deleteTime: LocalDateTime? = null
-    override var deleted: Boolean = false
-
-    override var saveTime: LocalDateTime = LocalDateTime.now()
-    var parentBookmarkId: String? = null
     var remindTime: String? = null
     var remindCheck: Boolean = false
     var remindStatus: Boolean = false
+
+    //using constructor NO_CONSTRUCTOR with arguments
+    constructor() // 조회할 때, 빈 constructor가 존재하지 않으면 예외를 던진다.
+
+    constructor(
+        account: Account,
+        link: String,
+        title: String,
+        image: String?,
+        description: String,
+        remind: Boolean
+    ) : super(account, link, title, image, description) {
+        if (remind) remindOn(account.remindCycle.toLong())
+    }
+
+    constructor(
+        account: Account,
+        link: String,
+        title: String,
+        image: String?,
+        description: String,
+        parentId: String
+    ) : super(account, link, title, image, description) {
+        this.parentBookmarkId = parentId
+        remindOn(account.remindCycle.toLong())
+    }
+
+    constructor(title: String) {
+        this.title = title
+    }
 
     override fun moveFolder(nextFolderId: Long) {
         this.folderId = nextFolderId

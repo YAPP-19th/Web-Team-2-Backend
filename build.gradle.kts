@@ -75,7 +75,7 @@ dependencies {
         exclude(group = "org.mockito")
     }
     testImplementation("org.springframework.batch:spring-batch-test")
-    testImplementation("com.ninja-squad:springmockk:2.0.3")
+    testImplementation("com.ninja-squad:springmockk:3.0.1")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
 }
 

@@ -1,5 +1,6 @@
 package com.yapp.web2.domain.bookmark.controller
 
+import com.yapp.web2.domain.bookmark.BookmarkDto
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.service.BookmarkPageService
 import com.yapp.web2.domain.bookmark.service.BookmarkSearchService
@@ -22,7 +23,7 @@ class BookmarkPageController(
         @PathVariable folderId: Long,
         pageable: Pageable,
         @RequestParam remind: Boolean
-    ): ResponseEntity<Page<Bookmark>> {
+    ): ResponseEntity<Page<BookmarkDto.BookmarkRequestDto>> {
         return ResponseEntity.status(HttpStatus.OK)
             .body(bookmarkPageService.getAllPageByFolderId(folderId, pageable, remind))
     }
@@ -32,7 +33,7 @@ class BookmarkPageController(
         request: HttpServletRequest,
         pageable: Pageable,
         @RequestParam remind: Boolean
-    ): ResponseEntity<Page<Bookmark>> {
+    ): ResponseEntity<Page<BookmarkDto.BookmarkRequestDto>> {
         val token = ControllerUtil.extractAccessToken(request)
         return ResponseEntity.status(HttpStatus.OK)
             .body(bookmarkPageService.getAllPageByUserId(token, pageable, remind))
@@ -73,7 +74,7 @@ class BookmarkPageController(
     fun getBookmarkPageByFolderToken(
         @PathVariable folderToken: String,
         pageable: Pageable
-    ): ResponseEntity<Page<Bookmark>> {
+    ): ResponseEntity<Page<BookmarkDto.BookmarkRequestDto>> {
         return ResponseEntity.status(HttpStatus.OK)
             .body(bookmarkPageService.getAllPageByEncryptFolderId(folderToken, pageable))
     }
