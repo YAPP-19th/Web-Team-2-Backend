@@ -40,7 +40,7 @@ class BookmarkDto {
     }
 
     @ApiModel(description = "북마크 수정 DTO")
-    class UpdateBookmarkDto(
+    data class UpdateBookmarkDto(
         @ApiModelProperty(value = "북마크 이름", required = true, example = "Change Bookmark")
         @field:NotEmpty(message = "제목을 입력해주세요")
         var title: String,
