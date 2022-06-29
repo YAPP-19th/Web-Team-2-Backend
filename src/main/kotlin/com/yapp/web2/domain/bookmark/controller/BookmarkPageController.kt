@@ -23,7 +23,7 @@ class BookmarkPageController(
         @PathVariable folderId: Long,
         pageable: Pageable,
         @RequestParam remind: Boolean
-    ): ResponseEntity<Page<Bookmark>> {
+    ): ResponseEntity<Page<BookmarkDto.BookmarkRequestDto>> {
         return ResponseEntity.status(HttpStatus.OK)
             .body(bookmarkPageService.getAllPageByFolderId(folderId, pageable, remind))
     }
@@ -33,7 +33,7 @@ class BookmarkPageController(
         request: HttpServletRequest,
         pageable: Pageable,
         @RequestParam remind: Boolean
-    ): ResponseEntity<Page<Bookmark>> {
+    ): ResponseEntity<Page<BookmarkDto.BookmarkRequestDto>> {
         val token = ControllerUtil.extractAccessToken(request)
         return ResponseEntity.status(HttpStatus.OK)
             .body(bookmarkPageService.getAllPageByUserId(token, pageable, remind))
