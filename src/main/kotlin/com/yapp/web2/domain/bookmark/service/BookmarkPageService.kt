@@ -9,7 +9,6 @@ import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.util.AES256Util
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -61,7 +60,8 @@ class BookmarkPageService(
         }
 
         val bookmarkList = bookmarkToBookmarkRequestDto(list)
-        val bookmarkInterfaceList = bookmarkInterfaceToBookmarkRequestDto(bookmarkInterfaceRepository.findAllByUserId(idFromToken))
+        val bookmarkInterfaceList =
+            bookmarkInterfaceToBookmarkRequestDto(bookmarkInterfaceRepository.findAllByUserId(idFromToken))
 
         val result = bookmarkList + bookmarkInterfaceList
         return PageImpl(result, pageable, result.size.toLong())
