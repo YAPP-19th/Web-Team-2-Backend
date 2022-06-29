@@ -39,7 +39,7 @@ class Folder(
     var folders: MutableList<AccountFolder>? = mutableListOf()
 
     // TODO: 2022/05/06 공유 북마크인지 확인하기 위해서 추가한 컬럼
-    var share: Boolean = false
+    var share: Boolean? = false
 
     var rootFolderId: Long? = null
 
