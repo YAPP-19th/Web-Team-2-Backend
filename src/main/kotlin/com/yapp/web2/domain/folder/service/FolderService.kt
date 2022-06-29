@@ -4,6 +4,7 @@ import com.yapp.web2.domain.account.AccountDto
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
+import com.yapp.web2.domain.folder.FolderDto
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Authority
 import com.yapp.web2.domain.folder.entity.Folder
@@ -341,5 +342,10 @@ class FolderService(
         }
 
         return AccountDto.FolderBelongAccountListDto(accountList)
+    }
+
+    fun getFolderName(folderId: Long): FolderDto.FolderNameDto {
+        val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
+        return FolderDto.FolderNameDto(folder.name)
     }
 }

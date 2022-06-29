@@ -1,6 +1,7 @@
 package com.yapp.web2.domain.folder.controller
 
 import com.yapp.web2.domain.account.AccountDto
+import com.yapp.web2.domain.folder.FolderDto
 import com.yapp.web2.domain.folder.entity.Folder
 
 import com.yapp.web2.domain.folder.service.FolderService
@@ -123,5 +124,12 @@ class FolderController(
     fun getAccountList(@PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long):
         ResponseEntity<AccountDto.FolderBelongAccountListDto> {
         return ResponseEntity.status(HttpStatus.OK).body(folderService.getAccountListAtRootFolder(folderId))
+    }
+
+    @ApiOperation(value = "폴더의 이름 조회 API")
+    @GetMapping("name/{folderId}")
+    fun getFolderName(@PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long)
+    : ResponseEntity<FolderDto.FolderNameDto> {
+        return ResponseEntity.status(HttpStatus.OK).body(folderService.getFolderName(folderId))
     }
 }
