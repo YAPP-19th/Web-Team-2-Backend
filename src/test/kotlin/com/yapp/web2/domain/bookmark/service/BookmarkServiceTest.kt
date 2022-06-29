@@ -2,25 +2,41 @@ package com.yapp.web2.domain.bookmark.service
 
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.repository.AccountRepository
-import com.yapp.web2.domain.bookmark.entity.*
+import com.yapp.web2.domain.bookmark.entity.Bookmark
+import com.yapp.web2.domain.bookmark.entity.Remind
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
-import com.yapp.web2.exception.*
-import com.yapp.web2.exception.custom.BookmarkNotFoundException
+import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.ObjectNotFoundException
+import com.yapp.web2.exception.custom.BookmarkNotFoundException
 import com.yapp.web2.exception.custom.SameBookmarkException
 import com.yapp.web2.security.jwt.JwtProvider
-import io.mockk.*
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
+import io.mockk.just
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.repository.findByIdOrNull
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-internal class BookmarkServiceTest {
+@ExtendWith(MockKExtension::class)
+internal open class BookmarkServiceTest {
+
+    @InjectMockKs
+    private lateinit var bookmarkService: BookmarkService
+
     @MockK
     private lateinit var bookmarkRepository: BookmarkRepository
 
@@ -32,13 +48,6 @@ internal class BookmarkServiceTest {
 
     @MockK
     private lateinit var accountRepository: AccountRepository
-    private lateinit var bookmarkService: BookmarkService
-
-    @BeforeEach
-    internal fun init() {
-        MockKAnnotations.init(this)
-        bookmarkService = BookmarkService(bookmarkRepository, folderRepository, jwtProvider)
-    }
 
     @Nested
     inner class SaveBookmark {
@@ -248,7 +257,7 @@ internal class BookmarkServiceTest {
 
             //when & then
             assertThrows(RuntimeException::class.java) {
-            bookmarkService.toggleOffRemindBookmark(testToken, bookmark.id)
+                bookmarkService.toggleOffRemindBookmark(testToken, bookmark.id)
             }
         }
 
@@ -307,7 +316,6 @@ internal class BookmarkServiceTest {
         private var testBookmarkId: String = "0"
         private var prevFolderId: Long = 0
         private var nextFolderId: Long = 1
-        private var moveBookmarkDto = Bookmark.MoveBookmarkDto(mutableListOf(testBookmarkId), nextFolderId)
 
         @BeforeEach
         fun setUp() {
@@ -336,8 +344,8 @@ internal class BookmarkServiceTest {
 
     @Nested
     inner class RestoreBookmark {
-        private val bookmark1 = Bookmark(1, 2, "www.naver.com")
-        private val bookmark2 = Bookmark(2, 1, "www.naver.com")
+        private lateinit var bookmark1: Bookmark
+        private lateinit var bookmark2: Bookmark
 
         @Test
         fun `휴지통에서 북마크를 복원한다`() {

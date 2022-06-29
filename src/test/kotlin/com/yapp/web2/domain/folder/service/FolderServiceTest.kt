@@ -28,7 +28,6 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.repository.findByIdOrNull
 import java.util.Optional
-import javax.swing.text.html.Option
 
 @ExtendWith(MockKExtension::class)
 internal open class FolderServiceTest {

@@ -43,7 +43,7 @@ class AES256Util(
 
         cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec)
 
-        val aesCipherText = URLDecoder.decode(cipherText, StandardCharsets.UTF_8)
+        val aesCipherText = URLDecoder.decode(cipherText, StandardCharsets.UTF_8.toString())
         val decodedBytes = Base64.getDecoder().decode(aesCipherText)
         val decrypted = cipher.doFinal(decodedBytes)
 
