@@ -344,8 +344,9 @@ class FolderService(
         return AccountDto.FolderBelongAccountListDto(accountList)
     }
 
-    fun getFolderName(folderId: Long): FolderDto.FolderNameDto {
-        val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
+    fun getFolderName(folderToken: String): FolderDto.FolderNameDto {
+        val folderId = aeS256Util.decrypt(folderToken)
+        val folder = folderRepository.findFolderById(folderId.toLong()) ?: throw FolderNotFoundException()
         return FolderDto.FolderNameDto(folder.name)
     }
 }
