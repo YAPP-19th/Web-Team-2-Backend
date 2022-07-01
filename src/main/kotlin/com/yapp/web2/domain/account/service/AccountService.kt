@@ -218,7 +218,7 @@ class AccountService(
 
         log.info("base login => ${account.email} succeed")
 
-        return Account.AccountLoginSuccess(jwtProvider.createToken(account), account, false)
+        return Account.AccountLoginSuccess(jwtProvider.createToken(account), account, true)
     }
 
     fun comparePassword(token: String, dto: AccountRequestDto.CurrentPassword): String {
