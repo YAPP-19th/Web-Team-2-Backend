@@ -27,9 +27,8 @@
         </springProfile>
 
         <springProfile name="dev">
-            <file>${LOG_FILE_DEV}</file>
             <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-                <fileNamePattern>${LOG_DIR_SERVER}/%d{yyyy-MM}/log.%d{yyyy-MM-dd}_%i.log</fileNamePattern>
+                <fileNamePattern>./log/%d{yyyy-MM}/log.%d{yyyy-MM-dd}_%i.log</fileNamePattern>
                 <maxFileSize>50MB</maxFileSize>
                 <maxHistory>180</maxHistory>
             </rollingPolicy>
@@ -44,6 +43,9 @@
             </rollingPolicy>
         </springProfile>
 
+        <encoder>
+            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
+        </encoder>
     </appender>
 
     <!-- Logging level - TRACE > DEBUG > INFO > WARN > ERROR > FATAL -->
