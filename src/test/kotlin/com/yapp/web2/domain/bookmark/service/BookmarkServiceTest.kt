@@ -344,8 +344,8 @@ internal open class BookmarkServiceTest {
 
     @Nested
     inner class RestoreBookmark {
-        private lateinit var bookmark1: Bookmark
-        private lateinit var bookmark2: Bookmark
+        private val bookmark1 = Bookmark(1, 2, "www.naver.com")
+        private val bookmark2 = Bookmark(2, 1, "www.naver.com")
 
         @Test
         fun `휴지통에서 북마크를 복원한다`() {
