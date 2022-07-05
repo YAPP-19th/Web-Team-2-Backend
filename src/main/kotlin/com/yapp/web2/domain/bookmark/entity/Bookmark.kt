@@ -119,6 +119,10 @@ class Bookmark(
         remindList.remove(Remind(userId))
     }
 
+    fun remindOff() {
+        remindList = mutableListOf()
+    }
+
     fun remindOn(remind: Remind) {
         remindList.add(remind)
     }
