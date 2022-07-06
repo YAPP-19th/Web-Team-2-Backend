@@ -138,4 +138,8 @@ class Bookmark(
     fun successRemind() {
         this.remindStatus = true
     }
+
+    fun hitClickCount() {
+        this.clickCount++
+    }
 }
