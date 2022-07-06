@@ -67,11 +67,11 @@ class BookmarkPageService(
         return PageImpl(result, pageable, result.size.toLong())
     }
 
-    fun getTodayRemindBookmark(token: String): Bookmark.RemindList {
+    fun getTodayRemindBookmark(token: String): BookmarkDto.RemindList {
         val idFromToken = jwtProvider.getIdFromToken(token)
         val yesterday = LocalDate.now().minusDays(1).toString()
 
-        return Bookmark.RemindList(
+        return BookmarkDto.RemindList(
             bookmarkRepository.findAllByRemindTimeAfterAndUserIdAndDeleteTimeIsNull(
                 yesterday,
                 idFromToken

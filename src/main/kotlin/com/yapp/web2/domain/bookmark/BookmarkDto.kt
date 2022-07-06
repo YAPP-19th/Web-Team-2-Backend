@@ -27,6 +27,10 @@ class BookmarkDto {
             )
         }
 
+        fun addBookmarkDtoToBookmark(bookmarkDto: AddBookmarkDto, account: Account): Bookmark {
+            return Bookmark(account, bookmarkDto.link, bookmarkDto.title, bookmarkDto.image, bookmarkDto.description, bookmarkDto.remind)
+        }
+
         fun addBookmarkDtoToSharedBookmark(bookmarkDto: AddBookmarkDto, account: Account, folder: Folder): BookmarkInterface {
             return SharedBookmark(
                 account,
