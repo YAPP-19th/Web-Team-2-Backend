@@ -1,35 +1,24 @@
 package com.yapp.web2.domain.bookmark.service
 
+import com.google.common.collect.ImmutableList
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.repository.AccountRepository
+import com.yapp.web2.domain.bookmark.BookmarkDto
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.entity.Remind
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
-import com.yapp.web2.exception.BusinessException
-import com.yapp.web2.exception.custom.ObjectNotFoundException
-import com.yapp.web2.exception.custom.BookmarkNotFoundException
-import com.yapp.web2.exception.custom.SameBookmarkException
 import com.yapp.web2.security.jwt.JwtProvider
-import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.just
-import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.data.repository.findByIdOrNull
-import java.time.LocalDate
-import java.time.LocalDateTime
 
 @ExtendWith(MockKExtension::class)
 internal open class BookmarkServiceTest {
@@ -49,346 +38,209 @@ internal open class BookmarkServiceTest {
     @MockK
     private lateinit var accountRepository: AccountRepository
 
-    @Nested
-    inner class SaveBookmark {
         private lateinit var bookmark: Bookmark
         private lateinit var folder: Folder
-        private lateinit var bookmarkDto: Bookmark.AddBookmarkDto
-        private lateinit var token: String
+        private lateinit var bookmarkDto: BookmarkDto.AddBookmarkDto
         private lateinit var account: Account
+
+        private val testToken = "testToken"
+        private val testFolderId = 1L
 
         @BeforeEach
         internal fun setUp() {
             folder = Folder("Folder", 0, parentFolder = null)
             folder.id = 0
-            token = "testToken"
-            bookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", "test", false, null, null)
+            bookmarkDto = BookmarkDto.AddBookmarkDto("www.naver.com", "test", false, "test", "testDes")
             bookmark = Bookmark(0, 0, "www.naver.com")
             bookmark.id = "0"
             account = Account("testEmail")
             account.id = 0
-            every { jwtProvider.getAccountFromToken(token) } returns account
+            account.fcmToken = "testFcm"
         }
 
         @Test
-        fun `북마크를 추가할 때, 폴더가 존재하지 않으면 예외를 던진다`() {
+        fun `foider id가 존재하는 경우 북마크를 저장한다`() {
             //given
-            every { folderRepository.findFolderById(folder.id!!) } returns null
-            val predictException = ObjectNotFoundException()
+            val testDto = BookmarkDto.AddBookmarkDto("testLink", "testTitle", true, "testImage", "testDes")
 
-            //when
-            val actualException = assertThrows(ObjectNotFoundException::class.java) {
-                bookmarkService.addBookmark(token, folder.id!!, bookmarkDto)
-            }
-
-            //then
-            assertEquals(predictException.message, actualException.message)
-        }
-
-        @Test
-        fun `같은 폴더에 같은 북마크가 존재한다면, 예외를 던진다`() {
-            //given
-            val sameBookmarkDto = Bookmark.AddBookmarkDto("www.naver.com", "test", false, null, null)
-            val predictException = SameBookmarkException()
-            every { folderRepository.findFolderById(folder.id!!) } returns folder
-            every { bookmarkRepository.findAllByFolderId(folder.id!!) } returns listOf(bookmark)
-
-            //when
-            val actualException = assertThrows(BusinessException::class.java) {
-                bookmarkService.addBookmark(token, folder.id!!, sameBookmarkDto)
-            }
-
-            //then
-            assertEquals(predictException.message, actualException.message)
-        }
-    }
-
-    @Nested
-    inner class DeleteBookmark {
-        private lateinit var bookmark: Bookmark
-        private lateinit var bookmarkIdList: Bookmark.BookmarkIdList
-        private lateinit var folder: Folder
-        private var folderId: Long = 0
-
-        @BeforeEach
-        internal fun setUp() {
-            bookmark = Bookmark(1, 1, "www.naver.com")
-            folder = Folder("Folder", 0, parentFolder = null)
-            bookmark.id = "0"
-            folderId = 1
-            bookmarkIdList = Bookmark.BookmarkIdList(mutableListOf(bookmark.id))
-        }
-
-        @Test
-        fun `북마크가 존재하지 않으면 예외를 던진다`() {
-            //given
-            val predictException = BookmarkNotFoundException()
-            every { bookmarkRepository.findBookmarkById(bookmark.id) } returns null
-
-            //when
-            val actualException = assertThrows(BookmarkNotFoundException::class.java) {
-                bookmarkService.deleteBookmark(bookmarkIdList)
-            }
-
-            //then
-            assertEquals(predictException.message, actualException.message)
-        }
-    }
-
-    @Nested
-    inner class UpdateBookmark {
-        private lateinit var bookmark: Bookmark
-        private lateinit var testToken: String
-        private lateinit var updateBookmarkDto: Bookmark.UpdateBookmarkDto
-        private lateinit var account: Account
-
-        @BeforeEach
-        internal fun setUp() {
-            bookmark = Bookmark(1, 1, "www.naver.com")
-            testToken = "testToken"
-            updateBookmarkDto = Bookmark.UpdateBookmarkDto("제목", "test")
-            account = Account("testEmail")
-            account.id = 0
-            bookmark.id = "0"
             every { jwtProvider.getAccountFromToken(testToken) } returns account
-        }
-
-        @Test
-        fun `존재하지 않는 북마크라면 예외를 던진다`() {
-            //given
-            updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", "test")
-            every { bookmarkRepository.findBookmarkById(bookmark.id) } returns null
-
-            //when & then
-            assertThrows(BookmarkNotFoundException::class.java) {
-                bookmarkService.updateBookmark(bookmark.id, updateBookmarkDto)
-            }
-        }
-
-        @Test
-        fun `북마크의 title을 변경한다`() {
-            //given
-            val updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", "test2")
-            val predictBookmark = bookmark
-            predictBookmark.title = updateBookmarkDto.title
-            predictBookmark.description = updateBookmarkDto.description
-            every { bookmarkRepository.findBookmarkById(any()) } returns bookmark
-            every { bookmarkRepository.save(predictBookmark) } returns predictBookmark
+            every { bookmarkRepository.findAllByFolderId(testFolderId) } returns mutableListOf()
+            every { folderRepository.findFolderById(testFolderId) } returns folder
+            every { bookmarkRepository.save(any()) } returns BookmarkDto.addBookmarkDtoToBookmark(testDto, account)
 
             //when
-            val actualBookmark = bookmarkService.updateBookmark(bookmark.id, updateBookmarkDto)
+            val actual = bookmarkService.addBookmark(testToken, testFolderId, testDto)
 
             //then
-            assertEquals(predictBookmark.title, actualBookmark.title)
+            assertEquals("testLink", actual.link)
+            assertEquals("testTitle", actual.title)
+            assertEquals("testImage", actual.image)
+            assertEquals("testDes", actual.description)
+            assertEquals(1, folder.bookmarkCount)
         }
 
         @Test
-        fun `북마크의 description을 변경한다`() {
-            //given
-            val updateBookmarkDto = Bookmark.UpdateBookmarkDto("test2", "test2")
-            val predictBookmark = bookmark
-            predictBookmark.title = updateBookmarkDto.title
-            predictBookmark.description = updateBookmarkDto.description
-            every { bookmarkRepository.findBookmarkById(any()) } returns bookmark
-            every { bookmarkRepository.save(predictBookmark) } returns predictBookmark
-
-            //when
-            val actualBookmark = bookmarkService.updateBookmark(bookmark.id, updateBookmarkDto)
-
-            //then
-            assertEquals(predictBookmark.description, actualBookmark.description)
-        }
-
-        @Test
-        fun `북마크 리마인드 설정할 때, remindList에 해당하는 fcmToken이 존재하면 예외를 던진다`() {
-            //given
-            val now = LocalDate.now()
-            val testFcmToken = "testFcmToken"
-            bookmark.remindList.add(Remind(now.toString(), testFcmToken))
-            account.fcmToken = testFcmToken
-            every { accountRepository.findAccountById(any()) } returns account
-            every { bookmarkRepository.findBookmarkById(any()) } returns bookmark
-
-            //when & then
-            assertThrows(RuntimeException::class.java) {
-                bookmarkService.toggleOnRemindBookmark(testToken, bookmark.id)
-            }
-        }
-
-        @Test
-        fun `북마크 리마인드 설정할 때, fcmToken이 존재하지 않으면 예외를 던진다`() {
-            //given
-            val now = LocalDate.now()
-            val testFcmToken = "testFcmToken"
-            bookmark.remindList.add(Remind(now.toString(), testFcmToken))
-            every { accountRepository.findAccountById(any()) } returns account
-            every { bookmarkRepository.findBookmarkById(any()) } returns bookmark
-
-            //when & then
-            assertThrows(RuntimeException::class.java) {
-                bookmarkService.toggleOnRemindBookmark(testToken, bookmark.id)
-            }
-        }
-
-        @Test
-        fun `북마크 리마인드 설정할 때, remindList에 해당하는 remind가 추가된다`() {
-            //given
-            val testFcmToken = "testFcmToken"
-            account.fcmToken = testFcmToken
-            every { accountRepository.findAccountById(any()) } returns account
-            every { bookmarkRepository.findBookmarkById(any()) } returns bookmark
-            every { bookmarkRepository.save(any()) } returns bookmark
-
-            //when
-            bookmarkService.toggleOnRemindBookmark(testToken, bookmark.id)
-
-            //then
-            assertEquals(1, bookmark.remindList.size)
-        }
-
-        @Test
-        fun `북마크 리마인드 해제할 때, remindList에 해당하는 fcmToken이 존재하지 않으면 예외를 던진다`() {
-            //given
-            val now = LocalDate.now()
-            val testFcmToken = "testFcmToken"
-            account.fcmToken = testFcmToken
-            every { accountRepository.findAccountById(any()) } returns account
-            every { bookmarkRepository.findBookmarkById(any()) } returns bookmark
-
-            //when & then
-            assertThrows(RuntimeException::class.java) {
-                bookmarkService.toggleOffRemindBookmark(testToken, bookmark.id)
-            }
-        }
-
-        @Test
-        fun `북마크 리마인드 해제할 때, fcmToken이 존재하지 않으면 예외를 던진다`() {
-            //given
-            val now = LocalDate.now()
-            val testFcmToken = "testFcmToken"
-            bookmark.remindList.add(Remind(now.toString(), testFcmToken))
-            every { accountRepository.findAccountById(any()) } returns account
-            every { bookmarkRepository.findBookmarkById(any()) } returns bookmark
-
-            //when & then
-            assertThrows(RuntimeException::class.java) {
-                bookmarkService.toggleOffRemindBookmark(testToken, bookmark.id)
-            }
-        }
-
-        @Test
-        fun `북마크 리마인드 해제할 때, remindList에 해당하는 remind가 삭제된다`() {
-            //given
-            val now = LocalDate.now()
-            val testFcmToken = "testFcmToken"
-            account.fcmToken = testFcmToken
-            bookmark.remindList.add(Remind(now.toString(), testFcmToken))
-            every { accountRepository.findAccountById(any()) } returns account
-            every { bookmarkRepository.findBookmarkById(any()) } returns bookmark
-            every { bookmarkRepository.save(any()) } returns bookmark
-
-            //when
-            bookmarkService.toggleOffRemindBookmark(testToken, bookmark.id)
-
-            //then
-            assertEquals(0, bookmark.remindList.size)
-        }
-
-        @Test
-        fun `북마크의 clickCount를 올린다`() {
-            //given
-            every { bookmarkRepository.findBookmarkById(bookmark.id) } returns bookmark
-            every { bookmarkRepository.save(any()) } returns bookmark
-            val predictClickCount = 1
-
-            //when
-            val actualBookmark = bookmarkService.increaseBookmarkClickCount(bookmark.id)
-
-            //then
-            assertEquals(predictClickCount, actualBookmark.clickCount)
-        }
-    }
-
-    @Nested
-    inner class MoveBookmark {
-        private lateinit var folder: Folder
-        private lateinit var testBookmark: Bookmark
-        private var testBookmarkId: String = "0"
-        private var prevFolderId: Long = 0
-        private var nextFolderId: Long = 1
-
-        @BeforeEach
-        fun setUp() {
-            folder = Folder("Folder", 0, parentFolder = null)
-            testBookmark = Bookmark(1, 0, "www.naver.com")
-            testBookmark.id = "0"
-            every { bookmarkRepository.findBookmarkById(testBookmarkId) } returns testBookmark
-            every { bookmarkRepository.save(any()) } returns testBookmark
-            every { folderRepository.findFolderById(prevFolderId) } returns folder
-            every { folderRepository.findFolderById(nextFolderId) } returns folder
-        }
-
-        @Test
-        fun `같은 폴더로 변경한다면 변경하지 않는다`() {
-            //given
-            var sameFolderId: Long = 0
-            var testMoveBookmarkDto = Bookmark.MoveBookmarkDto(mutableListOf(testBookmarkId), sameFolderId)
-
-            //when
-            bookmarkService.moveBookmark(testBookmarkId, testMoveBookmarkDto)
-
-            //then
-            assertEquals(sameFolderId, testBookmark.folderId)
-        }
-    }
-
-    @Nested
-    inner class RestoreBookmark {
-        private lateinit var bookmark1: Bookmark
-        private lateinit var bookmark2: Bookmark
-
-        @Test
-        fun `휴지통에서 북마크를 복원한다`() {
+        fun `folder id가 존재하지 않는 경우 북마크를 저장한다`() {
             // given
-            val list = mutableListOf("1", "2")
-            bookmark1.deleted = true
-            bookmark1.deleteTime = LocalDateTime.now()
-            bookmark2.deleted = true
-            bookmark2.deleteTime = LocalDateTime.now()
+            val testDto = BookmarkDto.AddBookmarkDto("testLink", "testTitle", true, "testImage", "testDes")
 
-            every { bookmarkRepository.findByIdOrNull("1") } returns bookmark1
-            every { bookmarkRepository.findByIdOrNull("2") } returns bookmark2
+            every { jwtProvider.getAccountFromToken(testToken) } returns account
+            every { bookmarkRepository.findAllByFolderId(testFolderId) } returns mutableListOf()
+            every { bookmarkRepository.save(any()) } returns BookmarkDto.addBookmarkDtoToBookmark(testDto, account)
+
+            // when
+            val actual = bookmarkService.addBookmark(testToken, folderId = null, testDto)
+
+            // then
+            assertEquals("testLink", actual.link)
+            assertEquals("testTitle", actual.title)
+            assertEquals("testImage", actual.image)
+            assertEquals("testDes", actual.description)
+        }
+
+        @Test
+        fun `여러개의 북마크를 저장한다`() {
+            // given
+            val testDto1 = BookmarkDto.AddBookmarkDto("testLink1", "testTitle1", true, "testImage", "testDes")
+            val testDto2 = BookmarkDto.AddBookmarkDto("testLink2", "testTitle2", true, "testImage", "testDes")
+            val testDto3 = BookmarkDto.AddBookmarkDto("testLink3", "testTitle3", true, "testImage", "testDes")
+            val bookmark1 = BookmarkDto.addBookmarkDtoToBookmark(testDto1, account)
+
+            every { jwtProvider.getAccountFromToken(testToken) } returns account
             every { bookmarkRepository.save(any()) } returns bookmark1
 
+            // when + then
+            Assertions.assertDoesNotThrow {
+                bookmarkService.addBookmarkList(
+                    testToken, folderId = null, BookmarkDto.AddBookmarkListDto(
+                        ImmutableList.of(testDto1, testDto2, testDto3)
+                    )
+                )
+            }
+        }
+        @Test
+        fun `북마크의 폴더 id가 존재하지 않아도, 북마크가 삭제된다`() {
+            // given
+            val bookmarkIdList = BookmarkDto.BookmarkIdList(mutableListOf("1", "2"))
+            val testBookmark1 = Bookmark(0, null, "testLink1")
+            val testBookmark2 = Bookmark(0, null, "testLink2")
+            testBookmark1.id = "1"
+            testBookmark2.id = "2"
+
+            every { bookmarkRepository.findAllById(bookmarkIdList.dotoriIdList) } returns mutableListOf(testBookmark1, testBookmark2)
+            every { bookmarkRepository.saveAll(mutableListOf(testBookmark1, testBookmark2)) } returns mutableListOf(testBookmark1, testBookmark2)
+
             // when
-            bookmarkService.restore(list)
+            bookmarkService.deleteBookmark(bookmarkIdList)
 
             // then
-            assertAll(
-                { assertThat(bookmark1.deleted).isEqualTo(false) },
-                { assertThat(bookmark1.deleteTime).isNull() },
-                { assertThat(bookmark2.deleted).isEqualTo(false) },
-                { assertThat(bookmark2.deleteTime).isNull() }
-            )
+            Assertions.assertTrue(testBookmark1.deleted)
+            Assertions.assertTrue(testBookmark2.deleted)
         }
+
+    @Test
+    fun `북마크의 폴더 id가 존재하여도, 북마크가 삭제된다`() {
+        // given
+        val bookmarkIdList = BookmarkDto.BookmarkIdList(mutableListOf("1", "2"))
+        val testBookmark1 = Bookmark(0, null, "testLink1")
+        val testBookmark2 = Bookmark(0, null, "testLink2")
+        testBookmark1.id = "1"
+        testBookmark2.id = "2"
+        testBookmark1.folderId = testFolderId
+        testBookmark2.folderId = testFolderId
+
+        every { bookmarkRepository.findAllById(bookmarkIdList.dotoriIdList) } returns mutableListOf(testBookmark1, testBookmark2)
+        every { bookmarkRepository.saveAll(mutableListOf(testBookmark1, testBookmark2)) } returns mutableListOf(testBookmark1, testBookmark2)
+        every { folderRepository.findFolderById(testFolderId) } returns folder
+
+        // when
+        bookmarkService.deleteBookmark(bookmarkIdList)
+
+        // then
+        assertEquals(-2, folder.bookmarkCount)
     }
 
-    @Nested
-    inner class TruncateBookmark {
-        private val bookmark = Bookmark(1, 2, "www.naver.com")
+    @Test
+    fun `북마크의 제목과 설명을 변경한다`() {
+        // given
+        val testDto = BookmarkDto.UpdateBookmarkDto("changeTitle", "changeDes")
+        val testBookmark = Bookmark(0, null, "testLink1")
+        testBookmark.id = "1"
 
-        @Test
-        fun `휴지통에서 북마크를 영구 삭제한다`() {
-            // given
-            val list = mutableListOf("1", "2")
-            every { bookmarkRepository.findByIdOrNull(any()) } returns bookmark
-            every { bookmarkRepository.delete(any()) } just Runs
+        every { bookmarkRepository.findBookmarkById("1") } returns testBookmark
+        every { bookmarkRepository.save(any()) } returns testBookmark
 
-            // when
-            bookmarkService.permanentDelete(list)
+        // when
+        bookmarkService.updateBookmark("1", testDto)
 
-            // then
-            verify(exactly = list.size) { bookmarkRepository.delete(any()) }
-        }
+        // then
+        assertEquals("changeTitle", testBookmark.title)
+        assertEquals("changeDes", testBookmark.description)
+    }
+
+    @Test
+    fun `북마크들을 이동시킨다`() {
+        // given
+        val nextFolder = Folder("testFolder", 0, 0, parentFolder = null)
+        val nextFolderId = 2L
+        val testBookmarkIdList = mutableListOf("1", "2")
+        val testDto = BookmarkDto.MoveBookmarkDto(testFolderId, testBookmarkIdList, nextFolderId)
+        val testBookmark1 = Bookmark(0, null, "testLink1")
+        val testBookmark2 = Bookmark(0, null, "testLink2")
+        testBookmark1.id = "1"
+        testBookmark2.id = "2"
+        testBookmark1.folderId = testFolderId
+        testBookmark2.folderId = testFolderId
+        nextFolder.id = nextFolderId
+
+        every { bookmarkRepository.findAllById(testBookmarkIdList) } returns mutableListOf(testBookmark1, testBookmark2)
+        every { folderRepository.findFolderById(nextFolderId) } returns nextFolder
+        every { folderRepository.findFolderById(testFolderId) } returns folder
+        every { bookmarkRepository.saveAll(mutableListOf(testBookmark1, testBookmark2)) } returns mutableListOf()
+
+        // when
+        bookmarkService.moveBookmarkList(testDto)
+
+        // then
+        assertEquals(nextFolderId, testBookmark1.folderId)
+        assertEquals(-2, folder.bookmarkCount)
+        assertEquals(nextFolderId, testBookmark1.folderId)
+        assertEquals(2, nextFolder.bookmarkCount)
+    }
+
+    @Test
+    fun `북마크를 리마인드한다`() {
+        // given
+        val testBookmarkId = "!"
+        account.fcmToken = "testFcmToken"
+
+        every { jwtProvider.getAccountFromToken(testToken) } returns account
+        every { bookmarkRepository.findBookmarkById(testBookmarkId) } returns bookmark
+        every { bookmarkRepository.save(bookmark) } returns bookmark
+
+        // when
+        bookmarkService.toggleOnRemindBookmark(testToken, testBookmarkId)
+
+        // then
+        assertEquals(1, bookmark.remindList.size)
+    }
+
+    @Test
+    fun `북마크 리마인드를 해제한다`() {
+        // given
+        val testBookmarkId = "!"
+        val testRemind = Remind(1L)
+        bookmark.remindList.add(testRemind)
+        account.id = 1L
+
+        every { jwtProvider.getAccountFromToken(testToken) } returns account
+        every { bookmarkRepository.findBookmarkById(testBookmarkId) } returns bookmark
+        every { bookmarkRepository.save(bookmark) } returns bookmark
+
+        // when
+        bookmarkService.toggleOffRemindBookmark(testToken, testBookmarkId)
+
+        // then
+        assertEquals(0, bookmark.remindList.size)
     }
 }
