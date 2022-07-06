@@ -123,6 +123,10 @@ class Bookmark(
         remindList = mutableListOf()
     }
 
+    fun isRemindExist(remind: Remind): Boolean {
+        return remindList.contains(remind)
+    }
+
     fun remindOn(remind: Remind) {
         remindList.add(remind)
     }

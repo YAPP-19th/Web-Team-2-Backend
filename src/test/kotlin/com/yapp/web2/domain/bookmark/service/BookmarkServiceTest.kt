@@ -9,16 +9,22 @@ import com.yapp.web2.domain.bookmark.entity.Remind
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
+import com.yapp.web2.exception.custom.AlreadyExistRemindException
 import com.yapp.web2.security.jwt.JwtProvider
+import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import org.junit.jupiter.api.Assertions
+import io.mockk.just
+import io.mockk.verify
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.data.repository.findByIdOrNull
+import java.time.LocalDateTime
 
 @ExtendWith(MockKExtension::class)
 internal open class BookmarkServiceTest {
@@ -242,5 +248,72 @@ internal open class BookmarkServiceTest {
 
         // then
         assertEquals(0, bookmark.remindList.size)
+    }
+
+    @Test
+    fun `북마크에 이미 remind를 한 경우 예외를 던진다`() {
+        //given
+        val testBookmarkId = "!"
+        account.fcmToken = "testFcmToken"
+        val testRemind = Remind(1L)
+        bookmark.remindList.add(testRemind)
+        account.id = 1L
+
+        every { jwtProvider.getAccountFromToken(testToken) } returns account
+        every { bookmarkRepository.findBookmarkById(testBookmarkId) } returns bookmark
+        every { bookmarkRepository.save(bookmark) } returns bookmark
+
+        //when + then
+        assertThrows<AlreadyExistRemindException> { bookmarkService.toggleOnRemindBookmark(testToken, testBookmarkId) }
+    }
+
+    @Nested
+    inner class RestoreBookmark {
+        private val bookmark1 = Bookmark(1, 2, "www.naver.com")
+        private val bookmark2 = Bookmark(2, 1, "www.naver.com")
+
+        @Test
+        fun `휴지통에서 북마크를 복원한다`() {
+            // given
+            val list = mutableListOf("1", "2")
+            bookmark1.deleted = true
+            bookmark1.deleteTime = LocalDateTime.now()
+            bookmark2.deleted = true
+            bookmark2.deleteTime = LocalDateTime.now()
+
+            every { bookmarkRepository.findByIdOrNull("1") } returns bookmark1
+            every { bookmarkRepository.findByIdOrNull("2") } returns bookmark2
+            every { bookmarkRepository.save(any()) } returns bookmark1
+
+            // when
+            bookmarkService.restore(list)
+
+            // then
+            assertAll(
+                { assertThat(bookmark1.deleted).isEqualTo(false) },
+                { assertThat(bookmark1.deleteTime).isNull() },
+                { assertThat(bookmark2.deleted).isEqualTo(false) },
+                { assertThat(bookmark2.deleteTime).isNull() }
+            )
+        }
+    }
+
+    @Nested
+    inner class TruncateBookmark {
+        private val bookmark = Bookmark(1, 2, "www.naver.com")
+
+        @Test
+        fun `휴지통에서 북마크를 영구 삭제한다`() {
+            // given
+            val list = mutableListOf("1", "2")
+            every { bookmarkRepository.findByIdOrNull(any()) } returns bookmark
+            every { bookmarkRepository.delete(any()) } just Runs
+
+            // when
+            bookmarkService.permanentDelete(list)
+
+            // then
+            verify(exactly = list.size) { bookmarkRepository.delete(any()) }
+        }
     }
 }

@@ -47,7 +47,7 @@ class BookmarkController(
     }
 
     @ApiOperation(value = "여러개의 북마크 생성 API")
-    @PostMapping
+    @PostMapping("/list")
     fun createBookmarkList(
         request: HttpServletRequest,
         @RequestParam(required = false) @ApiParam(value = "북마크가 저장될 폴더 ID", example = "12") folderId: Long?,
@@ -76,9 +76,10 @@ class BookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
     }
 
+    @ApiOperation(value = "여러 북마크 이동 API")
     @PostMapping("/moveList")
     fun moveBookmarkList(
-        @RequestBody moveBookmarkDto: BookmarkDto.MoveBookmarkDto
+        @RequestBody @ApiParam(value = "북마크 이동 정보", required = true) moveBookmarkDto: BookmarkDto.MoveBookmarkDto
     ): ResponseEntity<String> {
         bookmarkService.moveBookmarkList(moveBookmarkDto)
         return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
@@ -95,14 +96,14 @@ class BookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.MOVED)
     }
 
-    @PostMapping("/remind/{bookmarkId}")
+    @GetMapping("/remindOn/{bookmarkId}")
     fun toggleOnRemindBookmark(request: HttpServletRequest, @PathVariable bookmarkId: String): ResponseEntity<String> {
         val token = ControllerUtil.extractAccessToken(request)
         bookmarkService.toggleOnRemindBookmark(token, bookmarkId)
         return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
     }
 
-    @DeleteMapping("/remind/{bookmarkId}")
+    @GetMapping("/remindOff/{bookmarkId}")
     fun toggleOffRemindBookmark(request: HttpServletRequest, @PathVariable bookmarkId: String): ResponseEntity<String> {
         val token = ControllerUtil.extractAccessToken(request)
         bookmarkService.toggleOffRemindBookmark(token, bookmarkId)
