@@ -1,22 +1,17 @@
 package com.yapp.web2.domain.account.service
 
-import com.yapp.web2.domain.account.entity.Account
-import com.yapp.web2.domain.account.repository.AccountRepository
-import com.yapp.web2.security.jwt.JwtProvider
-import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.config.S3Uploader
+import com.yapp.web2.domain.account.entity.Account
+import com.yapp.web2.domain.account.entity.AccountRequestDto
+import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Authority
-import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.exception.BusinessException
-import com.yapp.web2.exception.custom.AlreadyInvitedException
-import com.yapp.web2.exception.custom.EmailNotFoundException
-import com.yapp.web2.exception.custom.ExistNameException
-import com.yapp.web2.exception.custom.FolderNotRootException
-import com.yapp.web2.exception.custom.ImageNotFoundException
+import com.yapp.web2.exception.custom.*
+import com.yapp.web2.security.jwt.JwtProvider
+import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.util.AES256Util
-import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.util.Message
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
@@ -26,7 +21,6 @@ import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.lang.IllegalStateException
 import javax.transaction.Transactional
 
 @Service
@@ -254,7 +248,7 @@ class AccountService(
         return Message.SUCCESS_EXIST_EMAIL
     }
 
-    internal fun createTempPassword(): String {
+    fun createTempPassword(): String {
         return RandomStringUtils.randomAlphanumeric(12) + "!"
     }
 
