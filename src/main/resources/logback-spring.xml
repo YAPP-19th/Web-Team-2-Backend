@@ -2,7 +2,7 @@
 
 <configuration>
     <!-- 변수 설정 -->
-    <property name="LOG_DIR_SERVER" value="/home/ec2-user/logs"/>
+    <property name="LOG_DIR_SERVER" value="/var/log"/>
     <property name="LOG_FILE" value="logfile.log"/>
 
     <property name="LOG_FILE_PROD" value="${LOG_DIR_SERVER}/${LOG_FILE}"/>
@@ -27,9 +27,11 @@
         </springProfile>
 
         <springProfile name="dev">
-            <file>${LOG_FILE_DEV}</file>
+<!--            <file>${LOG_FILE_DEV}</file>-->
+            <file>${LOG_FILE_LOCAL}</file>
             <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-                <fileNamePattern>${LOG_DIR_SERVER}/%d{yyyy-MM}/log.%d{yyyy-MM-dd}_%i.log</fileNamePattern>
+<!--                <fileNamePattern>${LOG_DIR_SERVER}/%d{yyyy-MM}/log.%d{yyyy-MM-dd}_%i.log</fileNamePattern>-->
+                <fileNamePattern>./log/%d{yyyy-MM}/log.%d{yyyy-MM-dd}_%i.log</fileNamePattern>
                 <maxFileSize>50MB</maxFileSize>
                 <maxHistory>180</maxHistory>
             </rollingPolicy>
