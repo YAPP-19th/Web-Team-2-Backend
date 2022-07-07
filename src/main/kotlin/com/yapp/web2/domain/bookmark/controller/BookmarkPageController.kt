@@ -20,12 +20,14 @@ class BookmarkPageController(
 ) {
     @GetMapping("/{folderId}")
     fun getBookmarkPage(
+        request: HttpServletRequest,
         @PathVariable folderId: Long,
         pageable: Pageable,
         @RequestParam remind: Boolean
-    ): ResponseEntity<Page<BookmarkDto.BookmarkRequestDto>> {
+    ): ResponseEntity<Page<Bookmark>> {
+        val accessToken = ControllerUtil.extractAccessToken(request)
         return ResponseEntity.status(HttpStatus.OK)
-            .body(bookmarkPageService.getAllPageByFolderId(folderId, pageable, remind))
+            .body(bookmarkPageService.getAllPageByFolderId(accessToken, folderId, pageable, remind))
     }
 
     @GetMapping("/main")
@@ -33,7 +35,7 @@ class BookmarkPageController(
         request: HttpServletRequest,
         pageable: Pageable,
         @RequestParam remind: Boolean
-    ): ResponseEntity<Page<BookmarkDto.BookmarkRequestDto>> {
+    ): ResponseEntity<Page<Bookmark>> {
         val token = ControllerUtil.extractAccessToken(request)
         return ResponseEntity.status(HttpStatus.OK)
             .body(bookmarkPageService.getAllPageByUserId(token, pageable, remind))
@@ -42,12 +44,11 @@ class BookmarkPageController(
     @GetMapping("/trash")
     fun getTrashBookmarkPage(
         request: HttpServletRequest,
-        pageable: Pageable,
-        @RequestParam remind: Boolean
+        pageable: Pageable
     ): ResponseEntity<Page<Bookmark>> {
         val token = ControllerUtil.extractAccessToken(request)
         return ResponseEntity.status(HttpStatus.OK)
-            .body(bookmarkPageService.getTrashPageByUserId(token, pageable, remind))
+            .body(bookmarkPageService.getTrashPageByUserId(token, pageable))
     }
 
     @GetMapping("/search/{keyWord}")
@@ -74,7 +75,7 @@ class BookmarkPageController(
     fun getBookmarkPageByFolderToken(
         @PathVariable folderToken: String,
         pageable: Pageable
-    ): ResponseEntity<Page<BookmarkDto.BookmarkRequestDto>> {
+    ): ResponseEntity<Page<Bookmark>> {
         return ResponseEntity.status(HttpStatus.OK)
             .body(bookmarkPageService.getAllPageByEncryptFolderId(folderToken, pageable))
     }

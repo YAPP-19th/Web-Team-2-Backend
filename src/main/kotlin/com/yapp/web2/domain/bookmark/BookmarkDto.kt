@@ -125,21 +125,4 @@ class BookmarkDto {
         val title: String,
         val description: String
     )
-
-    data class BookmarkRequestDto(
-        val id: String,
-        val userId: Long?,
-        val link: String,
-        val title: String?,
-        val description: String?,
-        val image: String?,
-        val folderId: Long?,
-        val folderEmoji: String?,
-        val folderName: String?,
-        val clickCount: Int,
-        val deleteTime: LocalDateTime?,
-        val deleted: Boolean,
-        val saveTime: LocalDateTime,
-        val parentBookmarkId: String?
-    )
 }
