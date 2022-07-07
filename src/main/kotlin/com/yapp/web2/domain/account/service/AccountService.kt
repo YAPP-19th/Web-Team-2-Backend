@@ -15,7 +15,6 @@ import com.yapp.web2.exception.custom.EmailNotFoundException
 import com.yapp.web2.exception.custom.ExistNameException
 import com.yapp.web2.exception.custom.FolderNotRootException
 import com.yapp.web2.exception.custom.ImageNotFoundException
-import com.yapp.web2.util.AES256Util
 import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.util.Message
 import org.apache.commons.lang3.RandomStringUtils
@@ -35,7 +34,6 @@ class AccountService(
     private val folderService: FolderService,
     private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider,
-    private val aes256Util: AES256Util,
     private val s3Uploader: S3Uploader,
     private val passwordEncoder: PasswordEncoder,
     private val mailSender: JavaMailSender
@@ -195,7 +193,7 @@ class AccountService(
     @Transactional
     fun acceptInvitation(token: String, folderToken: String) {
         val account = jwtProvider.getAccountFromToken(token)
-        val folderId = aes256Util.decrypt(folderToken).toLong()
+        val folderId = jwtProvider.getIdFromToken(folderToken)
         val rootFolder = folderService.findByFolderId(folderId)
 
         if(rootFolder.rootFolderId != null) throw FolderNotRootException()

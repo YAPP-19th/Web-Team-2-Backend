@@ -15,7 +15,6 @@ import com.yapp.web2.domain.folder.service.move.inner.FolderMoveWithEqualParentO
 import com.yapp.web2.exception.custom.AccountNotFoundException
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
-import com.yapp.web2.util.AES256Util
 import com.yapp.web2.util.FolderTokenDto
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -27,8 +26,7 @@ class FolderService(
     private val folderRepository: FolderRepository,
     private val bookmarkRepository: BookmarkRepository,
     private val accountRepository: AccountRepository,
-    private val jwtProvider: JwtProvider,
-    private val aeS256Util: AES256Util
+    private val jwtProvider: JwtProvider
 ) {
     companion object {
         private val folderNotFoundException = FolderNotFoundException()
@@ -328,7 +326,7 @@ class FolderService(
 
     fun encryptFolderId(folderId: Long): FolderTokenDto {
         val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
-        return FolderTokenDto(aeS256Util.encrypt(folder.id.toString()))
+        return FolderTokenDto(jwtProvider.createFolderToken(folderId = folder.id!!))
     }
 
     fun getAccountListAtRootFolder(folderId: Long): AccountDto.FolderBelongAccountListDto {
@@ -345,8 +343,8 @@ class FolderService(
     }
 
     fun getFolderName(folderToken: String): FolderDto.FolderNameDto {
-        val folderId = aeS256Util.decrypt(folderToken)
-        val folder = folderRepository.findFolderById(folderId.toLong()) ?: throw FolderNotFoundException()
+        val folderId = jwtProvider.getIdFromToken(folderToken)
+        val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
         return FolderDto.FolderNameDto(folder.name)
     }
 }

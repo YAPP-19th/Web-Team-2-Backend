@@ -5,7 +5,6 @@ import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.security.jwt.JwtProvider
-import com.yapp.web2.util.AES256Util
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -17,8 +16,7 @@ import java.time.LocalDate
 @Transactional(readOnly = true)
 class BookmarkPageService(
     private val bookmarkRepository: BookmarkRepository,
-    private val jwtProvider: JwtProvider,
-    private val aes256Util: AES256Util
+    private val jwtProvider: JwtProvider
 ) {
 
     fun getAllPageByFolderId(
@@ -40,7 +38,7 @@ class BookmarkPageService(
     }
 
     fun getAllPageByEncryptFolderId(token: String, pageable: Pageable): Page<Bookmark> {
-        val folderId = aes256Util.decrypt(token).toLong()
+        val folderId = jwtProvider.getIdFromToken(token)
         return bookmarkRepository.findAllByFolderIdAndDeletedIsFalse(folderId, pageable)
     }
 
