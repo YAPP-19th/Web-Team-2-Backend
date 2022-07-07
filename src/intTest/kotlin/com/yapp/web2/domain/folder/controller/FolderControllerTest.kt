@@ -17,7 +17,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @WebMvcTest(
     value = [AccountController::class, FolderController::class],
@@ -26,7 +28,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 @AutoConfigureMockMvc(addFilters = false)
 @TestPropertySource(properties = ["extension.version=4.0.3"])
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class FolderControllerTest: AbstractControllerTest() {
+internal class FolderControllerTest : AbstractControllerTest() {
 
     @Test
     fun `폴더를 생성한다`() {
