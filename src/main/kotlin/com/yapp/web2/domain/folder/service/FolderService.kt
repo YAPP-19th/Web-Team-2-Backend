@@ -342,9 +342,9 @@ class FolderService(
         return AccountDto.FolderBelongAccountListDto(accountList)
     }
 
-    fun getFolderName(folderToken: String): FolderDto.FolderNameDto {
+    fun getFolderInfo(folderToken: String): FolderDto.FolderInfoDto {
         val folderId = jwtProvider.getIdFromToken(folderToken)
         val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
-        return FolderDto.FolderNameDto(folder.name)
+        return FolderDto.FolderInfoDto(folder.name, folder.emoji?: "")
     }
 }
