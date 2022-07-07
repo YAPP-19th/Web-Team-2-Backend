@@ -17,9 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 
 @WebMvcTest(
     value = [AccountController::class, FolderController::class],
@@ -28,7 +26,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 @AutoConfigureMockMvc(addFilters = false)
 @TestPropertySource(properties = ["extension.version=4.0.3"])
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AccountControllerTest: AbstractControllerTest() {
+class AccountControllerTest : AbstractControllerTest() {
 
     @Test
     fun `현재 회원의 프로필을 조회한다`() {
@@ -97,7 +95,7 @@ class AccountControllerTest: AbstractControllerTest() {
     fun `토큰을 재발급 한다`() {
         // given
         val tokenDto = TokenDto("Re-AccessToken", "Re-RefreshToken")
-        every { accountService.reIssuedAccessToken(any(), any()) } returns tokenDto
+        every { accountService.reIssuedAccessToken(any(), any()) } returns tokenDto // slow?
 
         // when
         val resultAction = util.getResultAction("/api/v1/user/reIssuanceAccessToken", mockMvc)
@@ -172,7 +170,6 @@ class AccountControllerTest: AbstractControllerTest() {
     fun `현재 회원의 익스텐션 버전을 조회한다`() {
         // given
         every { accountService.checkExtension(any()) } returns extensionVersion
-        println("exten: $extensionVersion")
 
         // when
         val resultAction = util.getResultAction("/api/v1/user/$extensionVersion", mockMvc)
