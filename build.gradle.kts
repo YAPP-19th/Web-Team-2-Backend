@@ -121,7 +121,8 @@ val integrationTest = task<Test>("integrationTest") {
     shouldRunAfter("test")
 }
 
-tasks.check { dependsOn(integrationTest) }
+// execute integrationTest after test
+tasks.test { dependsOn(integrationTest) }
 
 jacoco {
     toolVersion = "0.8.7"
