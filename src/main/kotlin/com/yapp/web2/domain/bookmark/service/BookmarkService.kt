@@ -157,7 +157,7 @@ class BookmarkService(
         val bookmark = getBookmarkIfPresent(bookmarkId)
 
         // TODO: 2022/04/21 이전 버전에서 리마인드를 설정하는 부분 완벽히 공유로 변경한 후에는 제거하기
-        bookmark.remindTime = LocalDate.now().plusDays(account.remindCycle!!.toLong()).toString()
+        bookmark.remindTime = LocalDate.now().plusDays(account.remindCycle.toLong()).toString()
 
         val remindList = bookmark.remindList
         val remindNow = Remind(
