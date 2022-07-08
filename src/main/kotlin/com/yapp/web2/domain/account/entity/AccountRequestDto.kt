@@ -41,7 +41,7 @@ class AccountRequestDto {
         val email: String,
 
         @ApiModelProperty(value = "비밀번호", required = true, example = "!1234567")
-//        @field: CustomPassword
+        @field: CustomPassword
         val password: String
     )
 
@@ -56,12 +56,12 @@ class AccountRequestDto {
     class PasswordChangeRequest(
         @ApiModelProperty(value = "기존 비밀번호", required = true, example = "1234567!")
         @field: NotBlank(message = "기존 비밀번호를 입력해주세요")
-//        @field: CustomPassword
+        @field: CustomPassword
         val currentPassword: String,
 
         @ApiModelProperty(value = "새 비밀번호", required = true, example = "12345678!")
         @field: NotBlank(message = "새 비밀번호를 입력해주세요")
-//        @field: CustomPassword
+        @field: CustomPassword
         val newPassword: String
     )
 
