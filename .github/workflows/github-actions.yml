@@ -7,7 +7,8 @@ on:
   push:
     branches:
       - main
-      - develop
+#      - develop
+      - feature/#140-리팩터링
 
 permissions:
   contents: read
