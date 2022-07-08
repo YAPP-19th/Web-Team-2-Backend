@@ -28,7 +28,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 @AutoConfigureMockMvc(addFilters = false)
 @TestPropertySource(properties = ["extension.version=4.0.3"])
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class FolderControllerTest: AbstractControllerTest() {
+internal class FolderControllerTest : AbstractControllerTest() {
 
     @Test
     fun `폴더를 생성한다`() {

@@ -51,6 +51,7 @@
 <br>
 
 ## API 문서
+- http://3.39.95.212:8080/swagger-ui/index.html#/
 
 <br>
 
