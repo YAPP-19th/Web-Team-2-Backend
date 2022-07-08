@@ -18,7 +18,7 @@ class AccountRequestDto {
 
         @ApiModelProperty(value = "비밀번호", required = true, example = "!1234567")
         @field: NotBlank(message = "비밀번호를 입력해주세요")
-//        @field: CustomPassword
+        @field: CustomPassword
         val password: String,
 
         @ApiModelProperty(value = "FCM 토큰", required = true, example = "dOOUnnp-iBs:APA91bF1i7mobIF7kEhi3aVlFuv6A5--P1S...")
