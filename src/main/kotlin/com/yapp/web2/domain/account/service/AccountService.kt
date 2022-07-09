@@ -34,7 +34,6 @@ class AccountService(
     private val folderService: FolderService,
     private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider,
-    private val aes256Util: AES256Util,
     private val s3Uploader: S3Uploader,
     private val passwordEncoder: PasswordEncoder,
     private val mailSender: JavaMailSender
@@ -194,7 +193,7 @@ class AccountService(
     @Transactional
     fun acceptInvitation(token: String, folderToken: String) {
         val account = jwtProvider.getAccountFromToken(token)
-        val folderId = aes256Util.decrypt(folderToken).toLong()
+        val folderId = jwtProvider.getIdFromToken(folderToken)
         val rootFolder = folderService.findByFolderId(folderId)
 
         if(rootFolder.rootFolderId != null) throw FolderNotRootException()

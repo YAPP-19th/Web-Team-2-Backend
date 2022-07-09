@@ -14,7 +14,6 @@ import com.yapp.web2.exception.custom.FolderNotRootException
 import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
-import com.yapp.web2.util.AES256Util
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -56,9 +55,6 @@ internal open class AccountServiceTest {
 
     @MockK
     private lateinit var jwtProvider: JwtProvider
-
-    @MockK
-    private lateinit var aeS256Util: AES256Util
 
     @MockK
     private lateinit var s3Uploader: S3Uploader
@@ -313,7 +309,6 @@ internal open class AccountServiceTest {
             val testFolderToken = "testFolderToken"
 
             every { jwtProvider.getAccountFromToken(any()) } returns testAccount
-            every { aeS256Util.decrypt(testFolderToken) } returns "3"
             every { folderService.findByFolderId(any()) } returns testFolder
 
             // when
@@ -331,7 +326,6 @@ internal open class AccountServiceTest {
             val testFolderToken = "testFolderToken"
 
             every { jwtProvider.getAccountFromToken(any()) } returns testAccount
-            every { aeS256Util.decrypt(testFolderToken) } returns "3"
             every { folderService.findByFolderId(any()) } returns testFolder
 
             // when + then
@@ -346,7 +340,6 @@ internal open class AccountServiceTest {
             testAccount.accountFolderList.add(AccountFolder(testAccount, testFolder))
 
             every { jwtProvider.getAccountFromToken(any()) } returns testAccount
-            every { aeS256Util.decrypt(testFolderToken) } returns "3"
             every { folderService.findByFolderId(any()) } returns testFolder
 
             // when + then

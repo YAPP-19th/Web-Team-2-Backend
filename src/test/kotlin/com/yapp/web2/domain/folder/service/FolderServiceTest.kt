@@ -12,7 +12,6 @@ import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.custom.AccountNotFoundException
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
-import com.yapp.web2.util.AES256Util
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -47,9 +46,6 @@ internal open class FolderServiceTest {
 
     @MockK
     private lateinit var jwtProvider: JwtProvider
-
-    @MockK
-    private lateinit var aeS256Util: AES256Util
 
     private lateinit var folder: Folder
     private lateinit var changeEmoji: String
@@ -366,7 +362,7 @@ internal open class FolderServiceTest {
         val expected = "YanblGzXpM13KWrqVqhMYA=="
         folder.id = 1L
         every { folderRepository.findFolderById(any()) } returns folder
-        every { aeS256Util.encrypt(any()) } returns expected
+        every { jwtProvider.createFolderToken(any()) } returns expected
 
         // when
         val actual = folderService.encryptFolderId(folder.id!!)

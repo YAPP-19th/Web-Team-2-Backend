@@ -129,7 +129,7 @@ class FolderController(
     @ApiOperation(value = "폴더의 이름 조회 API")
     @GetMapping("name/{folderToken}")
     fun getFolderName(@PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderToken: String)
-    : ResponseEntity<FolderDto.FolderNameDto> {
-        return ResponseEntity.status(HttpStatus.OK).body(folderService.getFolderName(folderToken))
+    : ResponseEntity<FolderDto.FolderInfoDto> {
+        return ResponseEntity.status(HttpStatus.OK).body(folderService.getFolderInfo(folderToken))
     }
 }
