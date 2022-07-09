@@ -2,7 +2,8 @@ package com.yapp.web2.domain.folder
 
 class FolderDto {
 
-    data class FolderNameDto(
-        val name: String
+    data class FolderInfoDto(
+        val name: String,
+        val emoji: String
     )
 }

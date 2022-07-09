@@ -1,12 +1,10 @@
 package com.yapp.web2.domain.bookmark.entity
 
-import io.swagger.annotations.ApiModel
-import io.swagger.annotations.ApiModelProperty
+import com.yapp.web2.domain.account.entity.Account
+import com.yapp.web2.domain.folder.entity.Folder
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 import javax.persistence.Id
-import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.NotNull
 
 @Document(collection = "Bookmark")
 class Bookmark(
@@ -18,13 +16,36 @@ class Bookmark(
         this.title = title
     }
 
-    constructor(userId: Long, folderId: Long?, link: String, title: String?, remindTime: String?) : this(userId, folderId, link, title) {
+    constructor(userId: Long, folderId: Long?, link: String, title: String?, remindTime: String?) : this(
+        userId,
+        folderId,
+        link,
+        title
+    ) {
         this.remindTime = remindTime
     }
 
-    constructor(userId: Long, folderId: Long?, link: String, title: String?, remindTime: String?, image: String?, description: String?) : this(userId, folderId, link, title, remindTime) {
+    constructor(
+        userId: Long,
+        folderId: Long?,
+        link: String,
+        title: String?,
+        image: String?,
+        description: String?
+    ) : this(userId, folderId, link, title) {
         this.description = description
         this.image = image
+    }
+
+    constructor(
+        account: Account,
+        link: String,
+        title: String,
+        image: String?,
+        description: String,
+        remind: Boolean
+    ) : this(account.id!!, folderId = null, link, title, image, description) {
+        if (remind) remindOn(Remind(account))
     }
 
     constructor(
@@ -64,70 +85,15 @@ class Bookmark(
 
     var remindList = mutableListOf<Remind>()
 
-    @ApiModel(description = "북마크 수정 DTO")
-    class UpdateBookmarkDto(
-        @ApiModelProperty(value = "북마크 이름", required = true, example = "Change Bookmark")
-        @field:NotEmpty(message = "제목을 입력해주세요")
-        var title: String,
-
-        @ApiModelProperty(value = "북마크 설명", example = "description")
-        @field:NotNull(message = "description이 null입니다!")
-        var description: String
-    )
-
-    @ApiModel(description = "북마크 생성 DTO")
-    class AddBookmarkDto(
-
-        // TODO: 2021/12/04 RequestParam 데이터 검증
-        @ApiModelProperty(value = "북마크 url", required = true, example = "https://www.naver.com")
-        var url: String,
-
-        @ApiModelProperty(value = "북마크 제목", example = "Bookmark Title")
-        var title: String?,
-
-        @ApiModelProperty(value = "북마크 리마인드 여부", required = true, example = "true")
-        var remind: Boolean,
-
-        @ApiModelProperty(value = "북마크 이미지", example = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png")
-        var image: String?,
-
-        @ApiModelProperty(value = "description", example = "설명 예제...")
-        var description: String?
-    )
-
-    @ApiModel(description = "북마크 이동 API(폴더별 이동)")
-    class MoveBookmarkDto(
-        val bookmarkIdList: MutableList<String>,
-        @ApiModelProperty(value = "이동 후 폴더 ID", required = true, example = "2")
-        val nextFolderId: Long
-    )
-
-    @ApiModel(description = "휴지통 복원 API")
-    class RestoreBookmarkRequest(
-
-        @ApiModelProperty(value = "복원할 북마크 ID 리스트")
-        val bookmarkIdList: MutableList<String>?
-    )
-
-    @ApiModel(description = "휴지통 영구삭제 API")
-    class TruncateBookmarkRequest(
-
-        @ApiModelProperty(value = "영구삭제할 북마크 ID 리스트")
-        val bookmarkIdList: MutableList<String>?
-    )
-
-    class RemindList(
-        val remindBookmarkList: List<Bookmark>
-    )
-
-    class BookmarkIdList(
-        val dotoriIdList: MutableList<String>
-    )
-
     fun restore(): Bookmark {
         this.deleted = false
         this.deleteTime = null
         return this
+    }
+
+    fun updateBookmark(title: String, description: String) {
+        this.title = title
+        this.description = description
     }
 
     fun deletedByFolder() {
@@ -138,15 +104,46 @@ class Bookmark(
         this.deleteTime = LocalDateTime.now()
     }
 
+    fun deleteBookmark() {
+        this.deleted = true
+        this.deleteTime = LocalDateTime.now()
+    }
+
+    fun changeFolderInfo(folder: Folder) {
+        this.folderId = folder.id
+        this.folderName = folder.name
+        this.folderEmoji = folder.emoji
+    }
+
+    fun remindOff(userId: Long) {
+        remindList.remove(Remind(userId))
+    }
+
     fun remindOff() {
-        this.remindTime = null
+        remindList = mutableListOf()
+    }
+
+    fun isRemindExist(remind: Remind): Boolean {
+        return remindList.contains(remind)
+    }
+
+    fun remindOn(remind: Remind) {
+        remindList.add(remind)
     }
 
     fun updateRemindCheck() {
         this.remindCheck = true
     }
 
+    fun moveFolder(nextFolderId: Long) {
+        this.folderId = nextFolderId
+    }
+
     fun successRemind() {
         this.remindStatus = true
+    }
+
+    fun hitClickCount() {
+        this.clickCount++
     }
 }
