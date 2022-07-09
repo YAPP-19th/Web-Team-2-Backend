@@ -5,6 +5,7 @@ import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
+import com.yapp.web2.domain.folder.FolderDto
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.repository.FolderRepository
@@ -469,6 +470,30 @@ internal open class FolderServiceTest {
 
         // then
         assertThat(actual.list.size).isEqualTo(3)
+    }
+
+    @Test
+    fun `폴더의 이름을 조회한다`() {
+        // given
+        val expected = FolderDto.FolderNameDto("Folder")
+        every { folderRepository.findFolderById(any()) } returns folder
+        every { aeS256Util.decrypt(any()) } returns "1"
+
+        // when
+        val actual = folderService.getFolderName("token")
+
+        // then
+        assertThat(actual.name).isEqualTo(expected.name)
+    }
+
+    @Test
+    fun `폴더 이름 조회 시 폴더가 존재하지 않으면 예외가 발생한다`() {
+        // given
+        every { folderRepository.findFolderById(any()) } returns null
+        every { aeS256Util.decrypt(any()) } returns "1"
+
+        // then
+        assertThrows<FolderNotFoundException> { folderService.getFolderName("token") }
     }
 
     private fun printJson(actual: Any) {
