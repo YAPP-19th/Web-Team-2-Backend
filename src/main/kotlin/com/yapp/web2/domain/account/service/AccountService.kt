@@ -16,7 +16,6 @@ import com.yapp.web2.exception.custom.ImageNotFoundException
 import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
-import com.yapp.web2.util.AES256Util
 import com.yapp.web2.util.Message
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
