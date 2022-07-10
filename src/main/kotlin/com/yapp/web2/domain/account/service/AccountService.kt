@@ -9,7 +9,6 @@ import com.yapp.web2.domain.folder.entity.Authority
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.AlreadyInvitedException
-import com.yapp.web2.exception.custom.EmailNotFoundException
 import com.yapp.web2.exception.custom.ExistNameException
 import com.yapp.web2.exception.custom.FolderNotRootException
 import com.yapp.web2.exception.custom.ImageNotFoundException
@@ -17,7 +16,7 @@ import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.util.Message
-import org.apache.commons.lang3.RandomStringUtils
+import com.yapp.web2.util.RandomUtils
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.SimpleMailMessage
@@ -243,16 +242,21 @@ class AccountService(
     }
 
     fun checkEmailExist(token: String, request: AccountRequestDto.EmailCheckRequest): String {
-        accountRepository.findByEmail(request.email)?.let {
-            if (it.email != request.email) {
-                throw EmailNotFoundException()
+        accountRepository.findByEmail(request.email).let {
+            if (it?.email == request.email) {
+                return Message.SUCCESS_EXIST_EMAIL
             }
         }
-        return Message.SUCCESS_EXIST_EMAIL
+        log.info("${request.email} is not exist!")
+
+        return Message.NOT_EXIST_EMAIL
     }
 
+    // 비밀번호는 8 ~ 16자 사이
     fun createTempPassword(): String {
-        return RandomStringUtils.randomAlphanumeric(12) + "!"
+        val randomAlphanumeric = RandomUtils.getRandomAlphanumeric(14)
+        val randomSpecialCharacter = RandomUtils.getRandomSpecialCharacter()
+        return RandomUtils.shuffleCharacters(randomAlphanumeric + randomSpecialCharacter)
     }
 
     fun sendMail(token: String, tempPassword: String): String {
