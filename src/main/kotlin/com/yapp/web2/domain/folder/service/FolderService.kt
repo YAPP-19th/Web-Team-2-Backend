@@ -16,6 +16,7 @@ import com.yapp.web2.exception.custom.AccountNotFoundException
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.util.FolderTokenDto
+import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -30,6 +31,7 @@ class FolderService(
 ) {
     companion object {
         private val folderNotFoundException = FolderNotFoundException()
+        private val log = LoggerFactory.getLogger(FolderService::class.java)
     }
 
     fun createDefaultFolder(account: Account) {
@@ -41,6 +43,8 @@ class FolderService(
     }
 
     fun createFolder(request: Folder.FolderCreateRequest, accessToken: String): Folder {
+        require(request.parentId >= 0) { "parentId must be greater than or equal to zero" }
+
         val accountId = jwtProvider.getIdFromToken(accessToken)
         val account = accountRepository.findById(accountId).orElseThrow { AccountNotFoundException() }
         val folder = when (isParentFolder(request.parentId)) {
@@ -60,6 +64,9 @@ class FolderService(
         account: Account,
         request: Folder.FolderCreateRequest
     ): Folder {
+        require(accountId > 0) { "accountId must be greater than zero" }
+        require(request.parentId >= 0) { "parentId must be greater than or equal to zero" }
+
         val index = folderRepository.findAllByParentFolderCount(accountId)
         val folder = Folder.dtoToEntity(request, index)
         val accountFolder = AccountFolder(account, folder)
@@ -75,6 +82,9 @@ class FolderService(
         account: Account,
         request: Folder.FolderCreateRequest
     ): Folder {
+        require(accountId > 0) { "accountId must be greater than zero" }
+        require(request.parentId >= 0) { "parentId must be greater than or equal to zero" }
+
         val parentFolder: Folder = folderRepository.findById(request.parentId).get()
         val index = folderRepository.findAllByFolderCount(accountId, request.parentId)
         val folder = Folder.dtoToEntity(request, parentFolder, index)
@@ -87,6 +97,8 @@ class FolderService(
     private fun isParentFolder(parentId: Long) = parentId == 0L
 
     fun changeFolder(folderId: Long, request: Folder.FolderChangeRequest) {
+        require(folderId > 0) { "folderId must be greater than zero" }
+
         folderRepository.findByIdOrNull(folderId)?.let { folder ->
             request.name?.let { requestName ->
                 folder.name = requestName
@@ -124,6 +136,9 @@ class FolderService(
      * @param accessToken: Jwt Token
      */
     fun moveFolderByDragAndDrop(folderId: Long, request: Folder.FolderMoveRequest, accessToken: String) {
+        require(folderId >= 0) { "folderId must be greater than or equal to zero" }
+        require(request.nextIndex >= 0) { "nextIndex must be greater than or equal to zero" }
+
         val userId = jwtProvider.getIdFromToken(accessToken)
         val user = accountRepository.findById(userId).get()
         val moveFolder = folderRepository.findById(folderId).get()
@@ -292,6 +307,8 @@ class FolderService(
 
     @Transactional(readOnly = true)
     fun findFolderChildList(folderId: Long): MutableList<Folder.FolderListResponse> {
+        require(folderId > 0) { "folderId must be greater than zero" }
+
         val childList: MutableList<Folder.FolderListResponse> = mutableListOf()
 
         folderRepository.findByIdOrNull(folderId)?.let {
@@ -305,6 +322,8 @@ class FolderService(
 
     @Transactional(readOnly = true)
     fun findAllParentFolderList(folderId: Long): MutableList<Folder.FolderListResponse>? {
+        require(folderId > 0) { "folderId must be greater than zero" }
+
         val childList: MutableList<Folder.FolderListResponse> = mutableListOf()
         val folder = folderRepository.findByIdOrNull(folderId)
         var parentFolder = folder
@@ -325,11 +344,15 @@ class FolderService(
     }
 
     fun encryptFolderId(folderId: Long): FolderTokenDto {
+        require(folderId > 0) { "folderId must be greater than zero" }
+
         val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
         return FolderTokenDto(jwtProvider.createFolderToken(folderId = folder.id!!))
     }
 
     fun getAccountListAtRootFolder(folderId: Long): AccountDto.FolderBelongAccountListDto {
+        require(folderId > 0) { "folderId must be greater than zero" }
+
         // 사용자가 account-folder에 속하여있지 않다면, 예외를 던진다. -> 필요할까?
         // folder를 통하여 account list를 받아와서 account를 dto로 변환한 리스트를 return한다.
         val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
@@ -338,13 +361,12 @@ class FolderService(
         folder.folders?.forEach {
             accountList.add(AccountDto.accountToFolderBelongAccountInfo(it.account))
         }
-
         return AccountDto.FolderBelongAccountListDto(accountList)
     }
 
     fun getFolderInfo(folderToken: String): FolderDto.FolderInfoDto {
         val folderId = jwtProvider.getIdFromToken(folderToken)
         val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
-        return FolderDto.FolderInfoDto(folder.name, folder.emoji?: "")
+        return FolderDto.FolderInfoDto(folder.name, folder.emoji ?: "")
     }
 }
