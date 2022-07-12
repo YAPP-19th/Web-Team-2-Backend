@@ -1,13 +1,7 @@
 package com.yapp.web2.domain.folder.entity
 
 import com.yapp.web2.domain.account.entity.Account
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.ManyToOne
-import javax.persistence.FetchType
-import javax.persistence.GenerationType
+import javax.persistence.*
 
 @Entity
 class AccountFolder(
@@ -29,5 +23,6 @@ class AccountFolder(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
+    @Enumerated(EnumType.STRING)
     var authority: Authority = Authority.NONE
 }
