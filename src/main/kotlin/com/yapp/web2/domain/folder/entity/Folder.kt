@@ -174,4 +174,10 @@ class Folder(
     fun updateBookmarkCount(count: Int) {
         this.bookmarkCount += count
     }
+
+    fun setRootFolder(folder: Folder) {
+        folder.rootFolderId?.let {
+            this.rootFolderId = it
+        } ?: let { this.rootFolderId = folder.id }
+    }
 }
