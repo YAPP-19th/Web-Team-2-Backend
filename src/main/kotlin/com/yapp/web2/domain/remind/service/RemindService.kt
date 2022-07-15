@@ -3,12 +3,17 @@ package com.yapp.web2.domain.remind.service
 import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
-import com.yapp.web2.domain.remind.entity.dto.*
+import com.yapp.web2.domain.remind.entity.dto.ReadRemindListRequest
+import com.yapp.web2.domain.remind.entity.dto.RemindCycleRequest
+import com.yapp.web2.domain.remind.entity.dto.RemindListResponse
+import com.yapp.web2.domain.remind.entity.dto.RemindListResponseWrapper
+import com.yapp.web2.domain.remind.entity.dto.RemindToggleRequest
 import com.yapp.web2.exception.custom.BookmarkNotFoundException
 import com.yapp.web2.infra.fcm.FirebaseService
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.util.Message
 import com.yapp.web2.util.RemindCycleUtil
+import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -25,6 +30,7 @@ class RemindService(
 
     companion object {
         private val bookmarkNotFoundException = BookmarkNotFoundException()
+        private val log = LoggerFactory.getLogger(RemindService::class.java)
     }
 
     fun getRemindBookmark(): List<Bookmark> {
@@ -34,9 +40,17 @@ class RemindService(
 
     fun sendNotification(bookmark: Bookmark) {
         val user = accountRepository.findAccountById(bookmark.userId)
-        val fcmToken = user?.fcmToken ?: throw IllegalStateException("${user!!.name} 님은 FCM Token을 가지고 있지 않습니다.")
 
-        firebaseService.sendMessage(fcmToken, Message.NOTIFICATION_MESSAGE, bookmark.title!!)
+        requireNotNull(user) { "Account does not exist" }
+
+        val fcmToken: String = user.fcmToken ?: {
+            log.info("'${user.email}' account does not have a FCM-Token")
+            throw IllegalStateException("${user.email} 님은 FCM-Token이 존재하지 않습니다.")
+        }.toString()
+
+        val response = firebaseService.sendMessage(fcmToken, Message.NOTIFICATION_MESSAGE, bookmark.title!!)
+
+        log.info("Send notification to '${user.email}' succeed, Response => $response")
     }
 
     @Transactional
@@ -81,7 +95,8 @@ class RemindService(
         val userId = jwtProvider.getIdFromToken(accessToken)
         val responseWrapper = RemindListResponseWrapper()
         val remindList = responseWrapper.contents
-        val bookmarks = bookmarkRepository.findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrueAndRemindTimeIsNotNull(userId)
+        val bookmarks =
+            bookmarkRepository.findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrueAndRemindTimeIsNotNull(userId)
 
         bookmarks.stream()
             .forEach { bookmark ->
