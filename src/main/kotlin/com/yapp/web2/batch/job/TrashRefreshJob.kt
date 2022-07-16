@@ -48,9 +48,10 @@ class TrashRefreshJob(
 
     @Bean
     fun deleteBookmarkReader(): ListItemReader<Bookmark> {
-        val deleteBookmarkList = bookmarkRepository.findAllByDeletedIsTrueAndDeleteTimeIsAfter(
+        val deleteBookmarkList = bookmarkRepository.findAllByDeletedIsTrueAndDeleteTimeBefore(
             LocalDateTime.now().minusDays(30)
         )
+        log.info("휴지통에서 30일이 지난 북마크는 자동으로 삭제합니다. 삭제할 북마크 갯수: ${deleteBookmarkList.size}")
 
         return ListItemReader(deleteBookmarkList)
     }
@@ -58,7 +59,7 @@ class TrashRefreshJob(
     @Bean
     fun deleteBookmarkProcessor(): ItemProcessor<Bookmark, Bookmark> {
         return ItemProcessor {
-            log.info("휴지통에서 30일이 지난 북마크는 자동으로 제거합니다.. Bookmark Info => userId: ${it.userId}, title: ${it.title}")
+            log.info("Bookmark to delete info => userId: ${it.userId}, folderId: ${it.folderId}, folderName: ${it.folderName} title: ${it.title}")
             bookmarkRepository.delete(it)
             it
         }

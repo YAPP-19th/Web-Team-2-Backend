@@ -31,7 +31,7 @@ interface BookmarkRepository : MongoRepository<Bookmark, String> {
 
     fun findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrueAndRemindTimeIsNotNull(userId: Long): List<Bookmark>
 
-    fun findAllByDeletedIsTrueAndDeleteTimeIsAfter(time: LocalDateTime): List<Bookmark>
+    fun findAllByDeletedIsTrueAndDeleteTimeBefore(time: LocalDateTime): List<Bookmark>
 
     @Query(value = "{ 'remindList': { \$elemMatch: { 'fcmToken' : ?0 } } }")
     fun findAllBookmarkByFcmToken(fcmToken: String): List<Bookmark>
