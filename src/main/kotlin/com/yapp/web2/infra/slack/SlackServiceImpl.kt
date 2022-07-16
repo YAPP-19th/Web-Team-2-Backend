@@ -17,20 +17,20 @@ class SlackServiceImpl : SlackService {
     @Value("\${slack.monitor.channel.id}")
     lateinit var defaultChannel: String
 
-    override fun sendMessage(message: String) {
-        sendMessage(defaultChannel, message)
+    override fun sendMessage(text: String) {
+        sendMessage(defaultChannel, text)
     }
 
     /**
      * Send Slack Alarm
      */
-    override fun sendMessage(channelId: String, message: String) {
+    override fun sendMessage(channel: String, text: String) {
         val client = Slack.getInstance().methods()
         runCatching {
             client.chatPostMessage {
                 it.token(token)
-                    .channel(channelId)
-                    .text(message)
+                    .channel(channel)
+                    .text(text)
             }
         }.onFailure { e ->
             log.error("Slack Send Error: {}", e.message, e)
