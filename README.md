@@ -43,7 +43,7 @@
 ## 프로젝트 구성도
 
 #### Now
-<img width="690" alt="프로젝트 구조도" src="https://user-images.githubusercontent.com/50076031/179347019-56699b54-5ea8-4396-8ec7-07b409ddddb9.png">
+<img width="960" alt="프로젝트 구조도" src="https://user-images.githubusercontent.com/50076031/179347019-56699b54-5ea8-4396-8ec7-07b409ddddb9.png">
 
 <br><br>
 
