@@ -41,7 +41,14 @@
 <br>
 
 ## 프로젝트 구성도
-<img width="838" alt="프로젝트 구조도" src="https://user-images.githubusercontent.com/50076031/147803664-473afc5e-9957-4fb0-be65-0a850c0914f9.png">
+
+#### Now
+<img width="690" alt="프로젝트 구조도" src="https://user-images.githubusercontent.com/50076031/179347019-56699b54-5ea8-4396-8ec7-07b409ddddb9.png">
+
+<br><br>
+
+#### Before
+<img width="690" alt="프로젝트 구조도" src="https://user-images.githubusercontent.com/50076031/147803664-473afc5e-9957-4fb0-be65-0a850c0914f9.png">
 
 <br>
 
