@@ -11,7 +11,6 @@ import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.exception.custom.AccountNotFoundException
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
-import com.yapp.web2.util.AES256Util
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -27,7 +26,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.repository.findByIdOrNull
-import java.util.Optional
+import java.util.*
 
 @ExtendWith(MockKExtension::class)
 internal open class FolderServiceTest {
@@ -46,9 +45,6 @@ internal open class FolderServiceTest {
 
     @MockK
     private lateinit var jwtProvider: JwtProvider
-
-    @MockK
-    private lateinit var aeS256Util: AES256Util
 
     private lateinit var folder: Folder
     private lateinit var changeEmoji: String
@@ -365,7 +361,7 @@ internal open class FolderServiceTest {
         val expected = "YanblGzXpM13KWrqVqhMYA=="
         folder.id = 1L
         every { folderRepository.findFolderById(any()) } returns folder
-        every { aeS256Util.encrypt(any()) } returns expected
+        every { jwtProvider.createFolderToken(any()) } returns expected
 
         // when
         val actual = folderService.encryptFolderId(folder.id!!)
@@ -474,6 +470,30 @@ internal open class FolderServiceTest {
         // then
         assertThat(actual.list.size).isEqualTo(3)
     }
+
+//    @Test
+//    fun `폴더의 이름을 조회한다`() {
+//        // given
+//        val expected = FolderDto.FolderNameDto("Folder")
+//        every { folderRepository.findFolderById(any()) } returns folder
+//        every { aeS256Util.decrypt(any()) } returns "1"
+//
+//        // when
+//        val actual = folderService.getFolderName("token")
+//
+//        // then
+//        assertThat(actual.name).isEqualTo(expected.name)
+//    }
+//
+//    @Test
+//    fun `폴더 이름 조회 시 폴더가 존재하지 않으면 예외가 발생한다`() {
+//        // given
+//        every { folderRepository.findFolderById(any()) } returns null
+//        every { aeS256Util.decrypt(any()) } returns "1"
+//
+//        // then
+//        assertThrows<FolderNotFoundException> { folderService.getFolderName("token") }
+//    }
 
     private fun printJson(actual: Any) {
         val mapper = ObjectMapper()

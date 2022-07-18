@@ -12,7 +12,7 @@ class FirebaseService {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun sendMessage(targetToken: String, title: String, body: String) {
+    fun sendMessage(targetToken: String, title: String, body: String): String {
         // 로컬 테스트
 //        val firebaseInit = FirebaseInit()
 //        firebaseInit.init()
@@ -20,8 +20,7 @@ class FirebaseService {
         val notification = makeNotification(title, body)
         val message = makeMessage(targetToken, notification)
         val firebaseApp = FirebaseApp.getInstance("app")
-        val response = FirebaseMessaging.getInstance(firebaseApp).send(message)
-        log.info("Firebase Cloud Messaging Response : $response")
+        return FirebaseMessaging.getInstance(firebaseApp).send(message)
     }
 
     fun makeMessage(targetToken: String, notification: Notification): Message {

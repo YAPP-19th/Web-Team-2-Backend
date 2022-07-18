@@ -27,6 +27,10 @@ class BookmarkDto {
             )
         }
 
+        fun addBookmarkDtoToBookmark(bookmarkDto: AddBookmarkDto, account: Account): Bookmark {
+            return Bookmark(account, bookmarkDto.link, bookmarkDto.title, bookmarkDto.image, bookmarkDto.description, bookmarkDto.remind)
+        }
+
         fun addBookmarkDtoToSharedBookmark(bookmarkDto: AddBookmarkDto, account: Account, folder: Folder): BookmarkInterface {
             return SharedBookmark(
                 account,
@@ -120,22 +124,5 @@ class BookmarkDto {
         val folderId: Long,
         val title: String,
         val description: String
-    )
-
-    data class BookmarkRequestDto(
-        val id: String,
-        val userId: Long?,
-        val link: String,
-        val title: String?,
-        val description: String?,
-        val image: String?,
-        val folderId: Long?,
-        val folderEmoji: String?,
-        val folderName: String?,
-        val clickCount: Int,
-        val deleteTime: LocalDateTime?,
-        val deleted: Boolean,
-        val saveTime: LocalDateTime,
-        val parentBookmarkId: String?
     )
 }

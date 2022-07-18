@@ -1,7 +1,7 @@
 package com.yapp.web2.domain.account.service
 
 import com.yapp.web2.common.PasswordValidator
-import com.yapp.web2.config.S3Uploader
+import com.yapp.web2.config.S3Client
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.account.repository.AccountRepository
@@ -14,7 +14,6 @@ import com.yapp.web2.exception.custom.FolderNotRootException
 import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
-import com.yapp.web2.util.AES256Util
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -40,7 +39,6 @@ import org.springframework.mock.web.MockMultipartFile
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.multipart.MultipartFile
 import java.util.Optional
-import kotlin.IllegalStateException
 
 @ExtendWith(MockKExtension::class)
 internal open class AccountServiceTest {
@@ -58,10 +56,7 @@ internal open class AccountServiceTest {
     private lateinit var jwtProvider: JwtProvider
 
     @MockK
-    private lateinit var aeS256Util: AES256Util
-
-    @MockK
-    private lateinit var s3Uploader: S3Uploader
+    private lateinit var s3Client: S3Client
 
     @MockK
     private lateinit var passwordEncoder: PasswordEncoder
@@ -313,7 +308,6 @@ internal open class AccountServiceTest {
             val testFolderToken = "testFolderToken"
 
             every { jwtProvider.getAccountFromToken(any()) } returns testAccount
-            every { aeS256Util.decrypt(testFolderToken) } returns "3"
             every { folderService.findByFolderId(any()) } returns testFolder
 
             // when
@@ -331,7 +325,6 @@ internal open class AccountServiceTest {
             val testFolderToken = "testFolderToken"
 
             every { jwtProvider.getAccountFromToken(any()) } returns testAccount
-            every { aeS256Util.decrypt(testFolderToken) } returns "3"
             every { folderService.findByFolderId(any()) } returns testFolder
 
             // when + then
@@ -346,7 +339,6 @@ internal open class AccountServiceTest {
             testAccount.accountFolderList.add(AccountFolder(testAccount, testFolder))
 
             every { jwtProvider.getAccountFromToken(any()) } returns testAccount
-            every { aeS256Util.decrypt(testFolderToken) } returns "3"
             every { folderService.findByFolderId(any()) } returns testFolder
 
             // when + then
@@ -435,7 +427,7 @@ internal open class AccountServiceTest {
             //given
             every { jwtProvider.getAccountFromToken(testToken) } returns account
             every { accountRepository.findById(any()) } returns Optional.empty()
-            every { s3Uploader.upload(any(), any()) } returns "good/test"
+            every { s3Client.upload(any(), any()) } returns "good/test"
             val expectedException = BusinessException("계정이 존재하지 않습니다.")
 
             //when

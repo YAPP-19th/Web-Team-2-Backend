@@ -24,5 +24,7 @@ class ExceptionMessage {
         const val PASSWORD_DIFFERENT_EXCEPTION = "비밀번호가 일치하지 않습니다."
 
         const val NOT_FOUND_EMAIL = "가입하신 이메일 주소를 찾을 수 없습니다."
+
+        const val ALREADY_EXIST_REMIND = "이미 리마인드되어 있습니다"
     }
 }
