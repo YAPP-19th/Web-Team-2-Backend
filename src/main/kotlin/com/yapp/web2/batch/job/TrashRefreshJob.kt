@@ -2,6 +2,7 @@ package com.yapp.web2.batch.job
 
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
+import org.slf4j.LoggerFactory
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing
@@ -24,6 +25,8 @@ class TrashRefreshJob(
     private val jobCompletionListener: JobCompletionListener
 ) {
 
+    private val log = LoggerFactory.getLogger(TrashRefreshJob::class.java)
+
     @Bean("bookmarkTrashRefreshJob")
     fun bookmarkTrashRefreshJob(): Job {
         return jobBuilderFactory.get("bookmarkTrashRefreshJob")
@@ -45,9 +48,10 @@ class TrashRefreshJob(
 
     @Bean
     fun deleteBookmarkReader(): ListItemReader<Bookmark> {
-        val deleteBookmarkList = bookmarkRepository.findAllByDeletedIsTrueAndDeleteTimeIsAfter(
+        val deleteBookmarkList = bookmarkRepository.findAllByDeletedIsTrueAndDeleteTimeBefore(
             LocalDateTime.now().minusDays(30)
         )
+        log.info("휴지통에서 30일이 지난 북마크는 자동으로 삭제합니다. 삭제할 북마크 갯수: ${deleteBookmarkList.size}")
 
         return ListItemReader(deleteBookmarkList)
     }
@@ -55,6 +59,7 @@ class TrashRefreshJob(
     @Bean
     fun deleteBookmarkProcessor(): ItemProcessor<Bookmark, Bookmark> {
         return ItemProcessor {
+            log.info("Bookmark to delete info => userId: ${it.userId}, folderId: ${it.folderId}, folderName: ${it.folderName} title: ${it.title}")
             bookmarkRepository.delete(it)
             it
         }

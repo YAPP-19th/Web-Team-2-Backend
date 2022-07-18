@@ -1,7 +1,7 @@
 package com.yapp.web2.domain.account.service
 
 import com.yapp.web2.common.PasswordValidator
-import com.yapp.web2.config.S3Uploader
+import com.yapp.web2.config.S3Client
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.account.repository.AccountRepository
@@ -39,7 +39,6 @@ import org.springframework.mock.web.MockMultipartFile
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.multipart.MultipartFile
 import java.util.Optional
-import kotlin.IllegalStateException
 
 @ExtendWith(MockKExtension::class)
 internal open class AccountServiceTest {
@@ -57,7 +56,7 @@ internal open class AccountServiceTest {
     private lateinit var jwtProvider: JwtProvider
 
     @MockK
-    private lateinit var s3Uploader: S3Uploader
+    private lateinit var s3Client: S3Client
 
     @MockK
     private lateinit var passwordEncoder: PasswordEncoder
@@ -428,7 +427,7 @@ internal open class AccountServiceTest {
             //given
             every { jwtProvider.getAccountFromToken(testToken) } returns account
             every { accountRepository.findById(any()) } returns Optional.empty()
-            every { s3Uploader.upload(any(), any()) } returns "good/test"
+            every { s3Client.upload(any(), any()) } returns "good/test"
             val expectedException = BusinessException("계정이 존재하지 않습니다.")
 
             //when

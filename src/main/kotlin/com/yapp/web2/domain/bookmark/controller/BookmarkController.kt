@@ -8,7 +8,14 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 
@@ -96,6 +103,7 @@ class BookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.MOVED)
     }
 
+    @ApiOperation(value = "북마크 리마인드 On")
     @GetMapping("/remindOn/{bookmarkId}")
     fun toggleOnRemindBookmark(request: HttpServletRequest, @PathVariable bookmarkId: String): ResponseEntity<String> {
         val token = ControllerUtil.extractAccessToken(request)
@@ -103,6 +111,7 @@ class BookmarkController(
         return ResponseEntity.status(HttpStatus.OK).body(Message.UPDATED)
     }
 
+    @ApiOperation(value = "북마크 리마인드 Off")
     @GetMapping("/remindOff/{bookmarkId}")
     fun toggleOffRemindBookmark(request: HttpServletRequest, @PathVariable bookmarkId: String): ResponseEntity<String> {
         val token = ControllerUtil.extractAccessToken(request)

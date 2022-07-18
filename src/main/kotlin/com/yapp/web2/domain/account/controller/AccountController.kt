@@ -1,7 +1,7 @@
 package com.yapp.web2.domain.account.controller
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import com.yapp.web2.config.S3Uploader
+import com.yapp.web2.config.S3Client
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.account.service.AccountService
@@ -29,7 +29,7 @@ import javax.validation.Valid
 @RequestMapping("/api/v1/user")
 class AccountController(
     private val accountService: AccountService,
-    private val s3Uploader: S3Uploader
+    private val s3Client: S3Client
 ) {
     companion object {
         private const val DIR_NAME = "static"
@@ -73,7 +73,7 @@ class AccountController(
     fun uploadProfileImage(@RequestBody image: MultipartFile): ResponseEntity<Account.ImageUrl> {
         var imageUrl: Account.ImageUrl = Account.ImageUrl("")
         try {
-            imageUrl = Account.ImageUrl(s3Uploader.upload(image, DIR_NAME))
+            imageUrl = Account.ImageUrl(s3Client.upload(image, DIR_NAME))
         } catch (e: AmazonS3Exception) {
             log.warn("Amazon S3 error (fileName: {}): {}", image.originalFilename, e.message, e)
         }

@@ -27,7 +27,10 @@ internal class RandomUtilsTest {
         val characters = "!@#$%^&*()"
         val randomSpecialCharacter = RandomUtils.getRandomSpecialCharacter()
 
-        assertTrue(characters.contains(randomSpecialCharacter))
+        assertAll(
+            { assertTrue(characters.contains(randomSpecialCharacter)) },
+            { assertThat(randomSpecialCharacter.length).isEqualTo(1) }
+        )
     }
 
     @Test
