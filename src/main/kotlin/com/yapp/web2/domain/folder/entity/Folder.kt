@@ -183,4 +183,9 @@ class Folder(
         if(parentFolder == null) return true
         return false
     }
+
+    fun isFolderSameRootFolder(folder: Folder): Boolean {
+        if(folder.rootFolderId == this.rootFolderId) return true
+        return false
+    }
 }

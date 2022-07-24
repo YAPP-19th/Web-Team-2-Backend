@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 
 @RestController
-@RequestMapping("/api/v1/sharedBookmark")
+@RequestMapping("/api/v1/shared")
 class SharedBookmarkController(
     private val sharedBookmarkService: SharedBookmarkService
 ) {
