@@ -175,9 +175,12 @@ class Folder(
         this.bookmarkCount += count
     }
 
-    fun setRootFolder(folder: Folder) {
-        folder.rootFolderId?.let {
-            this.rootFolderId = it
-        } ?: let { this.rootFolderId = folder.id }
+    fun folderToShared(rootFolderId: Long) {
+        this.rootFolderId = rootFolderId
+    }
+
+    fun isRootFolder(): Boolean {
+        if(parentFolder == null) return true
+        return false
     }
 }
