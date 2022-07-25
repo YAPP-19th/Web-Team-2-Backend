@@ -475,12 +475,12 @@ internal open class FolderServiceTest {
     @Test
     fun `폴더의 이름을 조회한다`() {
         // given
-        val expected = FolderDto.FolderNameDto("Folder")
+        val expected = FolderDto.FolderInfoDto("Folder", "test")
         every { folderRepository.findFolderById(any()) } returns folder
-        every { aeS256Util.decrypt(any()) } returns "1"
+        every { jwtProvider.getIdFromToken(any()) } returns 1
 
         // when
-        val actual = folderService.getFolderName("token")
+        val actual = folderService.getFolderInfo("token")
 
         // then
         assertThat(actual.name).isEqualTo(expected.name)
@@ -490,10 +490,10 @@ internal open class FolderServiceTest {
     fun `폴더 이름 조회 시 폴더가 존재하지 않으면 예외가 발생한다`() {
         // given
         every { folderRepository.findFolderById(any()) } returns null
-        every { aeS256Util.decrypt(any()) } returns "1"
+        every { jwtProvider.getIdFromToken(any()) } returns 1
 
         // then
-        assertThrows<FolderNotFoundException> { folderService.getFolderName("token") }
+        assertThrows<FolderNotFoundException> { folderService.getFolderInfo("token") }
     }
 
     private fun printJson(actual: Any) {
