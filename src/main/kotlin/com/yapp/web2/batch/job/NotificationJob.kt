@@ -51,9 +51,12 @@ class NotificationJob(
     fun remindBookmarkReader(): ListItemReader<Bookmark> {
         val bookmarkOfList = notificationService.getRemindBookmark()
 
+        log.info("리마인드 발송할 도토리 갯수: ${bookmarkOfList.size}")
+
         return ListItemReader(bookmarkOfList)
     }
 
+    // TODO: Notification 실패 처리 -> Queue(Kafka) 적재 후 Retry 처리
     @Bean
     fun remindBookmarkProcessor(): ItemProcessor<Bookmark, Bookmark> {
         return ItemProcessor {
@@ -68,7 +71,7 @@ class NotificationJob(
             it.stream().forEach { bookmark ->
                 bookmark.successRemind()
                 notificationService.save(bookmark)
-                log.info("{} -> {} 푸쉬 발송", bookmark.userId, bookmark.title)
+                log.info("{} -> {} Send Notification", bookmark.userId, bookmark.title)
             }
         }
     }
