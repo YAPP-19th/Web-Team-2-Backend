@@ -226,8 +226,9 @@ class AccountController(
         val token = ControllerUtil.extractAccessToken(request)
         val tempPassword = accountService.createTempPassword()
         accountService.updatePassword(token, tempPassword)
+        accountService.sendMail(token, tempPassword)
 
-        return ResponseEntity.status(HttpStatus.OK).body(accountService.sendMail(token, tempPassword))
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
 }
