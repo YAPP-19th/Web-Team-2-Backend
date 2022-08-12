@@ -2,6 +2,7 @@ package com.yapp.web2.domain.account.entity
 
 import com.yapp.web2.domain.BaseTimeEntity
 import com.yapp.web2.domain.folder.entity.AccountFolder
+import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.security.jwt.TokenDto
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
@@ -98,7 +99,7 @@ class Account(
     @Column
     var deleted: Boolean = false
 
-    @OneToMany(mappedBy = "account")
+    @OneToMany(mappedBy = "account", cascade = [CascadeType.ALL])
     var accountFolderList: MutableList<AccountFolder> = mutableListOf()
 
     @ApiModel(description = "소셜로그인 DTO")
@@ -166,11 +167,12 @@ class Account(
         val nickName: String
     )
 
-    fun hasAccountFolder(accountFolder: AccountFolder): Boolean {
-        for (af in this.accountFolderList)
-            if (accountFolder == af) return true
-
-        return false
+    fun removeFolderInAccountFolder(folder: Folder) {
+        for(af in this.accountFolderList)
+            if (af.folder == folder) {
+                accountFolderList.remove(af)
+                return
+            }
     }
 
     fun softDeleteAccount() {

@@ -58,7 +58,10 @@ class BookmarkService(
         val bookmarkList = bookmarkRepository.findAllByFolderId(folderId)
 
         for (savedBookmark in bookmarkList) {
-            if (savedBookmark.link == bookmark.link) throw SameBookmarkException()
+            if (savedBookmark.link == bookmark.link) {
+                if(savedBookmark.deleted) throw RuntimeException("휴지통에 존재하는 북마크와 url이 동일합니다!")
+                throw SameBookmarkException()
+            }
         }
     }
 

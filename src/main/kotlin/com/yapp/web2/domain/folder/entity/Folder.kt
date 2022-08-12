@@ -174,4 +174,18 @@ class Folder(
     fun updateBookmarkCount(count: Int) {
         this.bookmarkCount += count
     }
+
+    fun folderToShared(rootFolderId: Long) {
+        this.rootFolderId = rootFolderId
+    }
+
+    fun isRootFolder(): Boolean {
+        if(parentFolder == null) return true
+        return false
+    }
+
+    fun isFolderSameRootFolder(folder: Folder): Boolean {
+        if(folder.rootFolderId == this.rootFolderId) return true
+        return false
+    }
 }

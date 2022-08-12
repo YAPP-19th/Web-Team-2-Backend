@@ -85,6 +85,8 @@ class Bookmark(
 
     var remindList = mutableListOf<Remind>()
 
+    var shared: Boolean = false
+
     fun restore(): Bookmark {
         this.deleted = false
         this.deleteTime = null
@@ -94,6 +96,10 @@ class Bookmark(
     fun updateBookmark(title: String, description: String) {
         this.title = title
         this.description = description
+    }
+
+    fun changeSharedTrue() {
+        this.shared = true
     }
 
     fun deletedByFolder() {

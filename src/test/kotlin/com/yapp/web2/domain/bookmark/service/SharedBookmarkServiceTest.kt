@@ -92,7 +92,7 @@ internal class SharedBookmarkServiceTest {
 
         // then
         assertAll(
-            {Assertions.assertThat(actual.link).isEqualTo(testDto.link)},
+            {Assertions.assertThat(actual.link).isEqualTo(testDto.url)},
             {Assertions.assertThat(actual.title).isEqualTo(testDto.title)},
             {Assertions.assertThat(actual.image).isEqualTo(testDto.image)},
             {Assertions.assertThat(actual.image).isEqualTo(testDto.image)},
