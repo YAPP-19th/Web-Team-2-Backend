@@ -21,16 +21,14 @@ class SharedBookmarkService(
     private val jwtProvider: JwtProvider
 ) {
 
-    @Transactional(readOnly = true)
     fun checkAuthority(account: Account, folderId: Long) {
         var folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
 
         if (folder.rootFolderId != null) folder =
             folderRepository.findFolderById(folder.rootFolderId!!) ?: throw FolderNotFoundException()
 
-        // 존재하면? 일단 공유 멤버이니까 return
-        for (af in account.accountFolderList)
-            if (af.folder == folder && af.authority > Authority.NONE) return
+        for (af in folder.folders!!)
+            if (af.account == account && af.authority > Authority.NONE) return
 
         throw NoPermissionException()
     }
@@ -131,6 +129,8 @@ class SharedBookmarkService(
             bookmarkRepository.findBookmarkById(bookmarkId) ?: throw BookmarkNotFoundException()
         val folderId = bookmark.folderId ?: throw RuntimeException("폴더에 속해있지 않습니다!")
         val remind = Remind(account)
+
+        if(bookmark.isRemindExist(remind)) return
 
         checkAuthority(account, folderId)
 
