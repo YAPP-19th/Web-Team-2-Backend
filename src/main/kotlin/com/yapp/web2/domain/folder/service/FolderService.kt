@@ -330,7 +330,7 @@ class FolderService(
         if(!folder.isRootFolder()) throw RuntimeException("보관함이 아닙니다! 공유를 할 수 없습니다.")
 
         // 하위 폴더들 모두 rootFolderId 추가해주기
-        val sharedFolderIdList = folderToShared(folder, rootFolderId)
+        val sharedFolderIdList = changeFolderToShared(folder, rootFolderId)
 
         // 하위 북마크들 모두 shared가 true인 상태로 변경해주기
         changeBookmarkToShared(sharedFolderIdList)
@@ -346,14 +346,14 @@ class FolderService(
             bookmark.changeSharedTrue()
     }
 
-    private fun folderToShared(folder: Folder, rootFolderId: Long): List<Long?> {
+    private fun changeFolderToShared(folder: Folder, rootFolderId: Long): List<Long?> {
         val folderIdList = mutableListOf<Long?>()
         folder.folderToShared(rootFolderId)
         folderIdList.add(folder.id)
 
         folder.children?.let {
             for (child in it) {
-                folderIdList.addAll(folderToShared(child, rootFolderId))
+                folderIdList.addAll(changeFolderToShared(child, rootFolderId))
             }
         }
 
