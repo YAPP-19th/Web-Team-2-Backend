@@ -43,34 +43,6 @@ class Account(
         const val BASIC_IMAGE_URL: String = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png"
     }
 
-    constructor(email: String, password: String) : this(email) {
-        this.password = password
-    }
-
-    constructor(email: String, encryptPassword: String, fcmToken: String, name: String) : this(email) {
-        this.password = encryptPassword
-        this.fcmToken = fcmToken
-        this.name = name
-    }
-
-    constructor(email: String, image: String, nickname: String, socialType: String, fcmToken: String) : this(email) {
-        this.image = image
-        this.name = nickname
-        this.socialType = socialType
-        this.fcmToken = fcmToken
-    }
-
-    fun addAccountFolder(accountFolder: AccountFolder) {
-        this.accountFolderList.add(accountFolder)
-    }
-
-    @Transactional
-    fun isInsideAccountFolder(accountFolder: AccountFolder): Boolean {
-        accountFolderList.forEach {
-            if (it.folder.id == accountFolder.folder.id) return true
-        }
-        return false
-    }
 
     @Column(nullable = true)
     var password: String? = null
@@ -101,6 +73,35 @@ class Account(
 
     @OneToMany(mappedBy = "account", cascade = [CascadeType.ALL])
     var accountFolderList: MutableList<AccountFolder> = mutableListOf()
+
+    constructor(email: String, password: String) : this(email) {
+        this.password = password
+    }
+
+    constructor(email: String, encryptPassword: String, fcmToken: String, name: String) : this(email) {
+        this.password = encryptPassword
+        this.fcmToken = fcmToken
+        this.name = name
+    }
+
+    constructor(email: String, image: String, nickname: String, socialType: String, fcmToken: String) : this(email) {
+        this.image = image
+        this.name = nickname
+        this.socialType = socialType
+        this.fcmToken = fcmToken
+    }
+
+    fun addAccountFolder(accountFolder: AccountFolder) {
+        this.accountFolderList.add(accountFolder)
+    }
+
+    @Transactional
+    fun isInsideAccountFolder(accountFolder: AccountFolder): Boolean {
+        accountFolderList.forEach {
+            if (it.folder.id == accountFolder.folder.id) return true
+        }
+        return false
+    }
 
     @ApiModel(description = "소셜로그인 DTO")
     class AccountProfile(
