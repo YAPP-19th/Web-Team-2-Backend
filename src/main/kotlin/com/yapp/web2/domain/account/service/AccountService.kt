@@ -195,7 +195,7 @@ class AccountService(
         val folderId = jwtProvider.getIdFromToken(folderToken)
         val rootFolder = folderService.findByFolderId(folderId)
 
-        if (rootFolder.rootFolderId != null) throw FolderNotRootException()
+        if (rootFolder.rootFolderId != folderId) throw FolderNotRootException()
 
         val accountFolder = AccountFolder(account, rootFolder)
         accountFolder.changeAuthority(Authority.INVITEE)
@@ -206,13 +206,17 @@ class AccountService(
         rootFolder.folders?.add(accountFolder)
     }
 
-
+    @Transactional
     fun exitSharedFolder(folderId: Long, token: String) {
         val account = jwtProvider.getAccountFromToken(token)
         val folder = folderService.findByFolderId(folderId)
         var exitFolder = folder.rootFolderId?.let {
             folderService.findByFolderId(it)
         } ?: folder
+
+        exitFolder.folders?.let {
+            it.removeIf { x -> x.account == account }
+        }
 
         account.removeFolderInAccountFolder(exitFolder)
     }
