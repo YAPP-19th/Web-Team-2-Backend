@@ -35,7 +35,7 @@ class Folder(
     @JsonManagedReference
     var children: MutableList<Folder>? = mutableListOf()
 
-    @OneToMany(mappedBy = "folder", cascade = [CascadeType.ALL])
+    @OneToMany(mappedBy = "folder", cascade = [CascadeType.ALL], orphanRemoval = true)
     var folders: MutableList<AccountFolder>? = mutableListOf()
 
     // TODO: 2022/05/06 공유 북마크인지 확인하기 위해서 추가한 컬럼

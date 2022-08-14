@@ -71,7 +71,7 @@ class Account(
     @Column
     var deleted: Boolean = false
 
-    @OneToMany(mappedBy = "account", cascade = [CascadeType.ALL])
+    @OneToMany(mappedBy = "account", cascade = [CascadeType.ALL], orphanRemoval = true)
     var accountFolderList: MutableList<AccountFolder> = mutableListOf()
 
     constructor(email: String, password: String) : this(email) {
@@ -169,11 +169,9 @@ class Account(
     )
 
     fun removeFolderInAccountFolder(folder: Folder) {
-        for(af in this.accountFolderList)
-            if (af.folder == folder) {
-                accountFolderList.remove(af)
-                return
-            }
+        this.accountFolderList.let {
+            it.removeIf { af -> af.folder == folder }
+        }
     }
 
     fun softDeleteAccount() {
