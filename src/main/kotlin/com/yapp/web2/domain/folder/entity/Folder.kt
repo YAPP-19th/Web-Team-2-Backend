@@ -38,8 +38,10 @@ class Folder(
     @OneToMany(mappedBy = "folder", cascade = [CascadeType.ALL])
     var folders: MutableList<AccountFolder>? = mutableListOf()
 
-    // TODO: 2022/05/06 공유 북마크인지 확인하기 위해서 추가한 컬럼
-    var share: Boolean? = false
+    // 공유 상태 저장
+    var sharedType: SharedType = SharedType.CLOSED
+
+    var beforeSharedType: SharedType? = null
 
     var rootFolderId: Long? = null
 
