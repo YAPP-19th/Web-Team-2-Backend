@@ -40,9 +40,8 @@ class Folder(
     var folders: MutableList<AccountFolder>? = mutableListOf()
 
     // 공유 상태 저장
-    var sharedType: SharedType = SharedType.CLOSED
-
-    var beforeSharedType: SharedType? = null
+    @Enumerated(value = EnumType.STRING)
+    var sharedType: SharedType = SharedType.ALL_CLOSED
 
     var rootFolderId: Long? = null
 
@@ -189,6 +188,30 @@ class Folder(
 
     fun isFolderSameRootFolder(folder: Folder): Boolean {
         if(folder.rootFolderId == this.rootFolderId) return true
+        return false
+    }
+
+    fun changeSharedTypeToOpen() {
+        if(this.sharedType == SharedType.INVITE) this.sharedType = SharedType.INVITE_AND_OPEN
+        else this.sharedType = SharedType.OPEN
+    }
+
+    fun changeSharedTypeToInvite() {
+        if(this.sharedType == SharedType.OPEN) this.sharedType = SharedType.INVITE_AND_OPEN
+        else this.sharedType = SharedType.INVITE
+    }
+
+    fun inverseShareType() {
+        this.sharedType = this.sharedType.inversionState()
+    }
+
+    fun isInviteState(): Boolean {
+        if(this.sharedType == SharedType.INVITE || this.sharedType == SharedType.INVITE_AND_OPEN) return true
+        return false
+    }
+
+    fun isOpenState(): Boolean {
+        if(this.sharedType == SharedType.OPEN || this.sharedType == SharedType.INVITE_AND_OPEN) return true
         return false
     }
 }

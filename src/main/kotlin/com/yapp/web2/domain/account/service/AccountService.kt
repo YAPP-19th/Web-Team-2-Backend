@@ -196,6 +196,7 @@ class AccountService(
         val rootFolder = folderService.findByFolderId(folderId)
 
         if (rootFolder.rootFolderId != folderId) throw FolderNotRootException()
+        if(!rootFolder.isInviteState()) throw RuntimeException("보관함이 초대잠금상태입니다. 가입할 수 없습니다.")
 
         val accountFolder = AccountFolder(account, rootFolder)
         accountFolder.changeAuthority(Authority.INVITEE)
