@@ -45,6 +45,14 @@ class JwtProvider(
         return TokenDto(accessToken, refreshToken)
     }
 
+    fun createFolderToken(folderId: Long): String {
+        return Jwts.builder()
+            .setSubject(folderId.toString())
+            .setIssuedAt(Date())
+            .signWith(SignatureAlgorithm.HS512, secretKey)
+            .compact()
+    }
+
     fun reIssuedAccessToken(accessToken: String, refreshToken: String): TokenDto {
         val refreshToken = removePrefix(refreshToken)
         val idFromToken = getIdFromToken(refreshToken).toString()

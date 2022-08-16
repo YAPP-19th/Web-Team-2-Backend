@@ -96,7 +96,33 @@ sourceSets {
             srcDirs(listOf("src/main/resources", "src/main/resources/profiles"))
         }
     }
+
+    create("intTest") {
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
 }
+
+// https://docs.gradle.org/current/userguide/java_testing.html#sec:configuring_java_integration_tests
+val intTestImplementation by configurations.getting {
+    // all the declared dependencies of the production code also become dependencies of the integration tests
+    extendsFrom(configurations.implementation.get())
+}
+
+configurations["intTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get())
+configurations["intTestImplementation"].extendsFrom(configurations.testImplementation.get())
+
+val integrationTest = task<Test>("integrationTest") {
+    description = "Runs integration tests."
+    group = "verification"
+
+    testClassesDirs = sourceSets["intTest"].output.classesDirs
+    classpath = sourceSets["intTest"].runtimeClasspath
+    shouldRunAfter("test")
+}
+
+// execute integrationTest after test
+tasks.test { dependsOn(integrationTest) }
 
 jacoco {
     toolVersion = "0.8.7"
@@ -131,8 +157,8 @@ tasks.jacocoTestCoverageVerification {
                 // 측정한 커버리지를 어떠한 방식으로 보여줄 것인지 설정, Default: "COVEREDRATIO"
                 value = "COVEREDRATIO" // 커버된 비율(0 ~ 1)
 
-                // 테스트 커버리지 최솟값(0.80 -> 80%)
-                minimum = "0.80".toBigDecimal()
+//                // 테스트 커버리지 최솟값(0.80 -> 80%)
+//                minimum = "0.80".toBigDecimal()
             }
         }
     }

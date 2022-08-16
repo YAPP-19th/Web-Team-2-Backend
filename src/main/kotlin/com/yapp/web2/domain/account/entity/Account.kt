@@ -2,6 +2,7 @@ package com.yapp.web2.domain.account.entity
 
 import com.yapp.web2.domain.BaseTimeEntity
 import com.yapp.web2.domain.folder.entity.AccountFolder
+import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.security.jwt.TokenDto
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
@@ -42,34 +43,6 @@ class Account(
         const val BASIC_IMAGE_URL: String = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png"
     }
 
-    constructor(email: String, password: String) : this(email) {
-        this.password = password
-    }
-
-    constructor(email: String, encryptPassword: String, fcmToken: String, name: String) : this(email) {
-        this.password = encryptPassword
-        this.fcmToken = fcmToken
-        this.name = name
-    }
-
-    constructor(email: String, image: String, nickname: String, socialType: String, fcmToken: String) : this(email) {
-        this.image = image
-        this.name = nickname
-        this.socialType = socialType
-        this.fcmToken = fcmToken
-    }
-
-    fun addAccountFolder(accountFolder: AccountFolder) {
-        this.accountFolderList.add(accountFolder)
-    }
-
-    @Transactional
-    fun isInsideAccountFolder(accountFolder: AccountFolder): Boolean {
-        accountFolderList.forEach {
-            if (it.folder.id == accountFolder.folder.id) return true
-        }
-        return false
-    }
 
     @Column(nullable = true)
     var password: String? = null
@@ -98,8 +71,37 @@ class Account(
     @Column
     var deleted: Boolean = false
 
-    @OneToMany(mappedBy = "account")
+    @OneToMany(mappedBy = "account", cascade = [CascadeType.ALL], orphanRemoval = true)
     var accountFolderList: MutableList<AccountFolder> = mutableListOf()
+
+    constructor(email: String, password: String) : this(email) {
+        this.password = password
+    }
+
+    constructor(email: String, encryptPassword: String, fcmToken: String, name: String) : this(email) {
+        this.password = encryptPassword
+        this.fcmToken = fcmToken
+        this.name = name
+    }
+
+    constructor(email: String, image: String, nickname: String, socialType: String, fcmToken: String) : this(email) {
+        this.image = image
+        this.name = nickname
+        this.socialType = socialType
+        this.fcmToken = fcmToken
+    }
+
+    fun addAccountFolder(accountFolder: AccountFolder) {
+        this.accountFolderList.add(accountFolder)
+    }
+
+    @Transactional
+    fun isInsideAccountFolder(accountFolder: AccountFolder): Boolean {
+        accountFolderList.forEach {
+            if (it.folder.id == accountFolder.folder.id) return true
+        }
+        return false
+    }
 
     @ApiModel(description = "소셜로그인 DTO")
     class AccountProfile(
@@ -166,11 +168,10 @@ class Account(
         val nickName: String
     )
 
-    fun hasAccountFolder(accountFolder: AccountFolder): Boolean {
-        for (af in this.accountFolderList)
-            if (accountFolder == af) return true
-
-        return false
+    fun removeFolderInAccountFolder(folder: Folder) {
+        this.accountFolderList.let {
+            it.removeIf { af -> af.folder == folder }
+        }
     }
 
     fun softDeleteAccount() {

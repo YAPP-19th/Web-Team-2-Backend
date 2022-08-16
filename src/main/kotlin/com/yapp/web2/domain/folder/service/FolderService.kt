@@ -15,7 +15,6 @@ import com.yapp.web2.domain.folder.service.move.inner.FolderMoveWithEqualParentO
 import com.yapp.web2.exception.custom.AccountNotFoundException
 import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.security.jwt.JwtProvider
-import com.yapp.web2.util.AES256Util
 import com.yapp.web2.util.FolderTokenDto
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -27,8 +26,7 @@ class FolderService(
     private val folderRepository: FolderRepository,
     private val bookmarkRepository: BookmarkRepository,
     private val accountRepository: AccountRepository,
-    private val jwtProvider: JwtProvider,
-    private val aeS256Util: AES256Util
+    private val jwtProvider: JwtProvider
 ) {
     companion object {
         private val folderNotFoundException = FolderNotFoundException()
@@ -326,9 +324,45 @@ class FolderService(
         return childList
     }
 
+    fun createFolderInvitationToken(rootFolderId: Long): FolderTokenDto {
+        //그냥 재귀를 돌면서 Folder 리스트들을 다 받고, 그 후에 폴더들에 rootFolder 추가, 북마크 shared 변경 하면 되지 않을까? 굳이 재귀?
+        val folder = folderRepository.findFolderById(rootFolderId) ?: throw FolderNotFoundException()
+        if(!folder.isRootFolder()) throw RuntimeException("보관함이 아닙니다! 공유를 할 수 없습니다.")
+
+        // 하위 폴더들 모두 rootFolderId 추가해주기
+        val sharedFolderIdList = changeFolderToShared(folder, rootFolderId)
+
+        // 하위 북마크들 모두 shared가 true인 상태로 변경해주기
+        changeBookmarkToShared(sharedFolderIdList)
+
+        // 토큰 발급
+        return FolderTokenDto(jwtProvider.createFolderToken(rootFolderId))
+    }
+
+    private fun changeBookmarkToShared(sharedFolderIdList: List<Long?>) {
+        val bookmarkList = bookmarkRepository.findAllByFolderId(sharedFolderIdList)
+
+        for (bookmark in bookmarkList)
+            bookmark.changeSharedTrue()
+    }
+
+    private fun changeFolderToShared(folder: Folder, rootFolderId: Long): List<Long?> {
+        val folderIdList = mutableListOf<Long?>()
+        folder.folderToShared(rootFolderId)
+        folderIdList.add(folder.id)
+
+        folder.children?.let {
+            for (child in it) {
+                folderIdList.addAll(changeFolderToShared(child, rootFolderId))
+            }
+        }
+
+        return folderIdList
+    }
+
     fun encryptFolderId(folderId: Long): FolderTokenDto {
         val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
-        return FolderTokenDto(aeS256Util.encrypt(folder.id.toString()))
+        return FolderTokenDto(jwtProvider.createFolderToken(folderId = folder.id!!))
     }
 
     fun getAccountListAtRootFolder(folderId: Long): AccountDto.FolderBelongAccountListDto {
@@ -344,8 +378,9 @@ class FolderService(
         return AccountDto.FolderBelongAccountListDto(accountList)
     }
 
-    fun getFolderName(folderId: Long): FolderDto.FolderNameDto {
+    fun getFolderInfo(folderToken: String): FolderDto.FolderInfoDto {
+        val folderId = jwtProvider.getIdFromToken(folderToken)
         val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
-        return FolderDto.FolderNameDto(folder.name)
+        return FolderDto.FolderInfoDto(folder.name, folder.emoji?: "")
     }
 }

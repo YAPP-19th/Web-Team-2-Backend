@@ -1,6 +1,5 @@
 package com.yapp.web2.domain.bookmark
 
-import com.google.common.collect.ImmutableList
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.entity.BookmarkInterface
@@ -9,7 +8,6 @@ import com.yapp.web2.domain.bookmark.entity.SharedBookmark
 import com.yapp.web2.domain.folder.entity.Folder
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
-import java.time.LocalDateTime
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 
@@ -19,7 +17,7 @@ class BookmarkDto {
         fun addBookmarkDtoToPersonalBookmark(bookmarkDto: AddBookmarkDto, account: Account): BookmarkInterface {
             return PersonalBookmark(
                 account,
-                bookmarkDto.link,
+                bookmarkDto.url,
                 bookmarkDto.title,
                 bookmarkDto.image,
                 bookmarkDto.description,
@@ -27,10 +25,14 @@ class BookmarkDto {
             )
         }
 
+        fun addBookmarkDtoToBookmark(bookmarkDto: AddBookmarkDto, account: Account): Bookmark {
+            return Bookmark(account, bookmarkDto.url, bookmarkDto.title, bookmarkDto.image, bookmarkDto.description, bookmarkDto.remind)
+        }
+
         fun addBookmarkDtoToSharedBookmark(bookmarkDto: AddBookmarkDto, account: Account, folder: Folder): BookmarkInterface {
             return SharedBookmark(
                 account,
-                bookmarkDto.link,
+                bookmarkDto.url,
                 bookmarkDto.title,
                 bookmarkDto.image,
                 bookmarkDto.description,
@@ -55,7 +57,7 @@ class BookmarkDto {
 
         // TODO: 2021/12/04 RequestParam 데이터 검증
         @ApiModelProperty(value = "북마크 url", required = true, example = "https://www.naver.com")
-        var link: String,
+        var url: String,
 
         @ApiModelProperty(value = "북마크 제목", example = "Bookmark Title")
         var title: String,
@@ -120,22 +122,5 @@ class BookmarkDto {
         val folderId: Long,
         val title: String,
         val description: String
-    )
-
-    data class BookmarkRequestDto(
-        val id: String,
-        val userId: Long?,
-        val link: String,
-        val title: String?,
-        val description: String?,
-        val image: String?,
-        val folderId: Long?,
-        val folderEmoji: String?,
-        val folderName: String?,
-        val clickCount: Int,
-        val deleteTime: LocalDateTime?,
-        val deleted: Boolean,
-        val saveTime: LocalDateTime,
-        val parentBookmarkId: String?
     )
 }

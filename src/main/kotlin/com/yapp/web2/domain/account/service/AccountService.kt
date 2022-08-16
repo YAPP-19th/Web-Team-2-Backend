@@ -1,13 +1,11 @@
 package com.yapp.web2.domain.account.service
 
-import com.yapp.web2.domain.account.entity.Account
-import com.yapp.web2.domain.account.repository.AccountRepository
-import com.yapp.web2.security.jwt.JwtProvider
-import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.config.S3Uploader
+import com.yapp.web2.domain.account.entity.Account
+import com.yapp.web2.domain.account.entity.AccountRequestDto
+import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Authority
-import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.AlreadyInvitedException
@@ -15,8 +13,9 @@ import com.yapp.web2.exception.custom.EmailNotFoundException
 import com.yapp.web2.exception.custom.ExistNameException
 import com.yapp.web2.exception.custom.FolderNotRootException
 import com.yapp.web2.exception.custom.ImageNotFoundException
-import com.yapp.web2.util.AES256Util
 import com.yapp.web2.exception.custom.PasswordMismatchException
+import com.yapp.web2.security.jwt.JwtProvider
+import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.util.Message
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
@@ -26,7 +25,6 @@ import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.lang.IllegalStateException
 import javax.transaction.Transactional
 
 @Service
@@ -35,7 +33,6 @@ class AccountService(
     private val folderService: FolderService,
     private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider,
-    private val aes256Util: AES256Util,
     private val s3Uploader: S3Uploader,
     private val passwordEncoder: PasswordEncoder,
     private val mailSender: JavaMailSender
@@ -195,22 +192,38 @@ class AccountService(
     @Transactional
     fun acceptInvitation(token: String, folderToken: String) {
         val account = jwtProvider.getAccountFromToken(token)
-        val folderId = aes256Util.decrypt(folderToken).toLong()
+        val folderId = jwtProvider.getIdFromToken(folderToken)
         val rootFolder = folderService.findByFolderId(folderId)
 
-        if(rootFolder.rootFolderId != null) throw FolderNotRootException()
+        if (rootFolder.rootFolderId != folderId) throw FolderNotRootException()
 
         val accountFolder = AccountFolder(account, rootFolder)
         accountFolder.changeAuthority(Authority.INVITEE)
         // account에 굳이 추가하지 않아도 account-folder에 추가가 된다.
         // 왜???
-        if(account.isInsideAccountFolder(accountFolder)) throw AlreadyInvitedException()
+        if (account.isInsideAccountFolder(accountFolder)) throw AlreadyInvitedException()
 //        account.addAccountFolder(accountFolder)
         rootFolder.folders?.add(accountFolder)
     }
 
+    @Transactional
+    fun exitSharedFolder(folderId: Long, token: String) {
+        val account = jwtProvider.getAccountFromToken(token)
+        val folder = folderService.findByFolderId(folderId)
+        var exitFolder = folder.rootFolderId?.let {
+            folderService.findByFolderId(it)
+        } ?: folder
+
+        exitFolder.folders?.let {
+            it.removeIf { x -> x.account == account }
+        }
+
+        account.removeFolderInAccountFolder(exitFolder)
+    }
+
     fun signIn(request: AccountRequestDto.SignInRequest): Account.AccountLoginSuccess? {
-        val account = accountRepository.findByEmail(request.email) ?: throw IllegalStateException(Message.NOT_EXIST_EMAIL)
+        val account =
+            accountRepository.findByEmail(request.email) ?: throw IllegalStateException(Message.NOT_EXIST_EMAIL)
 
         if (!passwordEncoder.matches(request.password, account.password)) {
             throw IllegalStateException(Message.USER_PASSWORD_MISMATCH)
@@ -218,7 +231,7 @@ class AccountService(
 
         log.info("base login => ${account.email} succeed")
 
-        return Account.AccountLoginSuccess(jwtProvider.createToken(account), account, false)
+        return Account.AccountLoginSuccess(jwtProvider.createToken(account), account, true)
     }
 
     fun comparePassword(token: String, dto: AccountRequestDto.CurrentPassword): String {
@@ -254,7 +267,7 @@ class AccountService(
         return Message.SUCCESS_EXIST_EMAIL
     }
 
-    internal fun createTempPassword(): String {
+    fun createTempPassword(): String {
         return RandomStringUtils.randomAlphanumeric(12) + "!"
     }
 
