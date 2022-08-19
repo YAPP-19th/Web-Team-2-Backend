@@ -1,6 +1,6 @@
 package com.yapp.web2.domain.account.service
 
-import com.yapp.web2.config.S3Uploader
+import com.yapp.web2.config.S3Client
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.account.repository.AccountRepository
@@ -9,7 +9,6 @@ import com.yapp.web2.domain.folder.entity.Authority
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.AlreadyInvitedException
-import com.yapp.web2.exception.custom.EmailNotFoundException
 import com.yapp.web2.exception.custom.ExistNameException
 import com.yapp.web2.exception.custom.FolderNotRootException
 import com.yapp.web2.exception.custom.ImageNotFoundException
@@ -17,7 +16,7 @@ import com.yapp.web2.exception.custom.PasswordMismatchException
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.util.Message
-import org.apache.commons.lang3.RandomStringUtils
+import com.yapp.web2.util.RandomUtils
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.SimpleMailMessage
@@ -33,7 +32,7 @@ class AccountService(
     private val folderService: FolderService,
     private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider,
-    private val s3Uploader: S3Uploader,
+    private val s3Client: S3Client,
     private val passwordEncoder: PasswordEncoder,
     private val mailSender: JavaMailSender
 ) {
@@ -74,13 +73,14 @@ class AccountService(
 
         account2 = when (existAccount) {
             null -> {
-                log.info("OAuth2 login => ${account.email} account not exist!")
+                log.info("소셜로그인 => ${account.email} account not exist!")
                 isRegistered = false
                 val newAccount = createUser(account)
                 folderService.createDefaultFolder(account)
                 newAccount
             }
             else -> {
+                log.info("소셜로그인 => ${account.email} 계정이 이미 존재합니다.")
                 existAccount.fcmToken = account2.fcmToken
                 createUser(existAccount)
             }
@@ -90,7 +90,7 @@ class AccountService(
 
     fun signUp(dto: AccountRequestDto.SignUpRequest): Account.AccountLoginSuccess {
         if (accountRepository.findByEmail(dto.email) != null) {
-            log.info("${dto.email} account already exist!")
+            log.info("${dto.email} 계정이 이미 존재하여 회원가입 할 수 없습니다.")
             throw IllegalStateException(Message.EXIST_USER)
         }
 
@@ -164,7 +164,11 @@ class AccountService(
     @Transactional
     fun changeProfileImage(token: String, profile: MultipartFile): String {
         val account = jwtProvider.getAccountFromToken(token).let {
-            it.image = s3Uploader.upload(profile, DIR_NAME)
+            kotlin.runCatching {
+                it.image = s3Client.upload(profile, DIR_NAME)
+            }.onFailure {
+                log.warn("AmazonS3 upload error => directory name: $DIR_NAME ")
+            }
             it
         }
         return account.image
@@ -226,10 +230,11 @@ class AccountService(
             accountRepository.findByEmail(request.email) ?: throw IllegalStateException(Message.NOT_EXIST_EMAIL)
 
         if (!passwordEncoder.matches(request.password, account.password)) {
+            log.info("${account.email} 계정의 비밀번호와 일치하지 않습니다.")
             throw IllegalStateException(Message.USER_PASSWORD_MISMATCH)
         }
 
-        log.info("base login => ${account.email} succeed")
+        log.info("${account.email} 계정으로 로그인에 성공하였습니다.")
 
         return Account.AccountLoginSuccess(jwtProvider.createToken(account), account, true)
     }
@@ -259,16 +264,21 @@ class AccountService(
     }
 
     fun checkEmailExist(token: String, request: AccountRequestDto.EmailCheckRequest): String {
-        accountRepository.findByEmail(request.email)?.let {
-            if (it.email != request.email) {
-                throw EmailNotFoundException()
+        accountRepository.findByEmail(request.email).let {
+            if (it?.email == request.email) {
+                return Message.SUCCESS_EXIST_EMAIL
             }
         }
-        return Message.SUCCESS_EXIST_EMAIL
+        log.info("${request.email} 계정이 존재하지 않습니다.")
+
+        return Message.NOT_EXIST_EMAIL
     }
 
+    // 비밀번호는 8 ~ 16자 사이
     fun createTempPassword(): String {
-        return RandomStringUtils.randomAlphanumeric(12) + "!"
+        val randomAlphanumeric = RandomUtils.getRandomAlphanumeric(14)
+        val randomSpecialCharacter = RandomUtils.getRandomSpecialCharacter()
+        return RandomUtils.shuffleCharacters(randomAlphanumeric + randomSpecialCharacter)
     }
 
     fun sendMail(token: String, tempPassword: String): String {
@@ -280,7 +290,7 @@ class AccountService(
         mailMessage.setText("안녕하세요. \n\n 임시 비밀번호를 전달드립니다. \n\n 임시 비밀번호는: $tempPassword 입니다.")
         mailSender.send(mailMessage)
 
-        log.info("Send mail temp password succeed to ${account.email}")
+        log.info("${account.email} 계정으로 임시 비밀번호를 발송하였습니다.")
 
         return Message.SUCCESS_SEND_MAIL
     }

@@ -1,7 +1,7 @@
 package com.yapp.web2.util
 
 import com.ninjasquad.springmockk.MockkBean
-import com.yapp.web2.config.S3Uploader
+import com.yapp.web2.config.S3Client
 import com.yapp.web2.domain.ControllerTestUtil
 import com.yapp.web2.domain.account.controller.AccountController
 import com.yapp.web2.domain.account.service.AccountService
@@ -49,7 +49,7 @@ abstract class AbstractControllerTest {
     internal lateinit var accountService: AccountService
 
     @MockkBean
-    internal lateinit var s3Uploader: S3Uploader
+    internal lateinit var s3Client: S3Client
 
     internal val util = ControllerTestUtil()
 
