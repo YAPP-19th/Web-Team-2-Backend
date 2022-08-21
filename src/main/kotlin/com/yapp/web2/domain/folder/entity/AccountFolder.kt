@@ -15,14 +15,14 @@ class AccountFolder(
     var folder: Folder
 ) {
 
-    fun changeAuthority(authority: Authority) {
-        this.authority = authority
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
     @Enumerated(EnumType.STRING)
     var authority: Authority = Authority.NONE
+
+    fun changeAuthority(authority: Authority) {
+        this.authority = authority
+    }
 }

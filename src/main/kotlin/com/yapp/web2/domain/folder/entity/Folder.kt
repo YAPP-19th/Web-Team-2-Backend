@@ -35,7 +35,8 @@ class Folder(
     @JsonManagedReference
     var children: MutableList<Folder>? = mutableListOf()
 
-    @OneToMany(mappedBy = "folder", cascade = [CascadeType.ALL])
+    // TODO: 2022/08/14 cascadeType.REMOVE도 포함되어 있기 때문에, delete문이 실행된다고함. 이를 빼고 진행할 수 있도록 그리고 orphanRemoval만 사용했을 때 좋은 이유를 확실히 알것
+    @OneToMany(mappedBy = "folder", cascade = [CascadeType.ALL], orphanRemoval = true)
     var folders: MutableList<AccountFolder>? = mutableListOf()
 
     // TODO: 2022/05/06 공유 북마크인지 확인하기 위해서 추가한 컬럼
