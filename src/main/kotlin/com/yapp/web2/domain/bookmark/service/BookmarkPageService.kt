@@ -7,7 +7,6 @@ import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -30,11 +29,7 @@ class BookmarkPageService(
         val userId = jwtProvider.getIdFromToken(token)
 
         return when (remind) {
-            true -> {
-                val bookmarkList =
-                    bookmarkRepository.findRemindBookmarkInFolder(userId, folderIdList = mutableListOf(folderId))
-                PageImpl(bookmarkList, pageable, bookmarkList.size.toLong())
-            }
+            true -> bookmarkRepository.findRemindBookmarkInFolder(userId, folderIdList = mutableListOf(folderId), pageable)
             false -> bookmarkRepository.findAllByFolderIdAndDeletedIsFalse(folderId, pageable)
         }
     }
@@ -56,19 +51,15 @@ class BookmarkPageService(
         val account = jwtProvider.getAccountFromToken(token)
 
         return when (remind) {
-            true -> {
-                val bookmarkList =
-                    bookmarkRepository.findRemindBookmark(account.id!!)
-                PageImpl(bookmarkList, pageable, bookmarkList.size.toLong())
-            }
+            true -> bookmarkRepository.findRemindBookmark(account.id!!, pageable)
+
             false -> {
                 val folderIdList = mutableListOf<Long>()
 
                 for (af in account.accountFolderList)
                     folderIdList.addAll(getAllLowerFolderId(af.folder))
 
-                val bookmarkList = bookmarkRepository.findAllBookmark(account.id!!, folderIdList)
-                PageImpl(bookmarkList, pageable, bookmarkList.size.toLong())
+                bookmarkRepository.findAllBookmark(account.id!!, folderIdList, pageable)
             }
         }
     }
@@ -92,6 +83,4 @@ class BookmarkPageService(
             bookmarkRepository.findTodayRemindBookmark(idFromToken, yesterday)
         )
     }
-
-
 }
