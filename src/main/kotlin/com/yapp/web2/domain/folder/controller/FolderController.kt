@@ -125,6 +125,13 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(folderService.createFolderInvitationToken(folderId))
     }
 
+    @ApiOperation(value = "보관함 잠금/해제 API")
+    @GetMapping("state/{folderId}")
+    fun inverseFolderShare(@PathVariable folderId: Long): ResponseEntity<String> {
+        folderService.inverseSharedType(folderId)
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
+    }
+
     @ApiOperation(value = "보관함에 속한 유저 리스트 조회 API")
     @GetMapping("belong/{folderId}")
     fun getAccountList(@PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderId: Long):

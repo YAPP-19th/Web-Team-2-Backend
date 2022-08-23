@@ -348,6 +348,9 @@ class FolderService(
         val folder = folderRepository.findFolderById(rootFolderId) ?: throw FolderNotFoundException()
         if(!folder.isRootFolder()) throw RuntimeException("보관함이 아닙니다! 공유를 할 수 없습니다.")
 
+        // 폴더의 공유 상태 변경하기
+        folder.changeSharedTypeToInvite()
+
         // 하위 폴더들 모두 rootFolderId 추가해주기
         val sharedFolderIdList = changeFolderToShared(folder, rootFolderId)
 
@@ -383,7 +386,13 @@ class FolderService(
         require(folderId > 0) { "folderId must be greater than zero" }
 
         val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
+        folder.changeSharedTypeToOpen()
         return FolderTokenDto(jwtProvider.createFolderToken(folderId = folder.id!!))
+    }
+
+    fun inverseSharedType(folderId: Long) {
+        val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
+        folder.inverseShareType()
     }
 
     fun getAccountListAtRootFolder(folderId: Long): AccountDto.FolderBelongAccountListDto {

@@ -19,7 +19,7 @@ class AccountFolder(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(value = EnumType.STRING)
     var authority: Authority = Authority.NONE
 
     fun changeAuthority(authority: Authority) {
