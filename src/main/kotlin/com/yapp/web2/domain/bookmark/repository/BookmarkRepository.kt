@@ -14,6 +14,8 @@ interface BookmarkRepository : MongoRepository<Bookmark, String>, MongoTemplateR
 
     fun findAllByFolderId(folderId: Long): List<Bookmark>
 
+    fun findAllByFolderId(folderIdList: List<Long?>): List<Bookmark>
+
     fun findAllByFolderIdAndDeletedIsFalse(folderId: Long, pageable: Pageable): Page<Bookmark>
 
     fun findAllByUserIdAndDeletedIsTrue(userId: Long, pageable: Pageable): Page<Bookmark>

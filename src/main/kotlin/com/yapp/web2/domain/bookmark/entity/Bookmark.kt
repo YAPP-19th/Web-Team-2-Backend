@@ -29,6 +29,8 @@ class Bookmark(
 
     var remindList = mutableListOf<Remind>()
 
+    var shared: Boolean = false
+
     constructor(userId: Long, folderId: Long?, link: String, title: String?) : this(userId, folderId, link) {
         this.title = title
     }
@@ -56,6 +58,23 @@ class Bookmark(
         if (remind) remindOn(Remind(account))
     }
 
+//    constructor(
+//        userId: Long,
+//        folderId: Long?,
+//        folderEmoji: String?,
+//        folderName: String?,
+//        link: String,
+//        title: String?,
+//        remindTime: String?,
+//        image: String?,
+//        description: String?
+//    ) : this(userId, folderId, link, title, remindTime) {
+//        this.folderEmoji = folderEmoji
+//        this.folderName = folderName
+//        this.description = description
+//        this.image = image
+//    }
+
     fun restore(): Bookmark {
         this.deleted = false
         this.deleteTime = null
@@ -65,6 +84,10 @@ class Bookmark(
     fun updateBookmark(title: String, description: String) {
         this.title = title
         this.description = description
+    }
+
+    fun changeSharedTrue() {
+        this.shared = true
     }
 
     fun deletedByFolder() {

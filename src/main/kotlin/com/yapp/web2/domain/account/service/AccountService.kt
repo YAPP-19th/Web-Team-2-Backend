@@ -199,19 +199,36 @@ class AccountService(
         val folderId = jwtProvider.getIdFromToken(folderToken)
         val rootFolder = folderService.findByFolderId(folderId)
 
-        if(rootFolder.rootFolderId != null) throw FolderNotRootException()
+        if (rootFolder.rootFolderId != folderId) throw FolderNotRootException()
+        if(!rootFolder.isInviteState()) throw RuntimeException("보관함이 초대잠금상태입니다. 가입할 수 없습니다.")
 
         val accountFolder = AccountFolder(account, rootFolder)
         accountFolder.changeAuthority(Authority.INVITEE)
         // account에 굳이 추가하지 않아도 account-folder에 추가가 된다.
         // 왜???
-        if(account.isInsideAccountFolder(accountFolder)) throw AlreadyInvitedException()
+        if (account.isInsideAccountFolder(accountFolder)) throw AlreadyInvitedException()
 //        account.addAccountFolder(accountFolder)
         rootFolder.folders?.add(accountFolder)
     }
 
+    @Transactional
+    fun exitSharedFolder(folderId: Long, token: String) {
+        val account = jwtProvider.getAccountFromToken(token)
+        val folder = folderService.findByFolderId(folderId)
+        var exitFolder = folder.rootFolderId?.let {
+            folderService.findByFolderId(it)
+        } ?: folder
+
+        exitFolder.folders?.let {
+            it.removeIf { x -> x.account == account }
+        }
+
+        account.removeFolderInAccountFolder(exitFolder)
+    }
+
     fun signIn(request: AccountRequestDto.SignInRequest): Account.AccountLoginSuccess? {
-        val account = accountRepository.findByEmail(request.email) ?: throw IllegalStateException(Message.NOT_EXIST_EMAIL)
+        val account =
+            accountRepository.findByEmail(request.email) ?: throw IllegalStateException(Message.NOT_EXIST_EMAIL)
 
         if (!passwordEncoder.matches(request.password, account.password)) {
             log.info("${account.email} 계정의 비밀번호와 일치하지 않습니다.")

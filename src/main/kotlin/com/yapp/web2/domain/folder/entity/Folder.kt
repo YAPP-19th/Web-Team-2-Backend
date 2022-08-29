@@ -35,11 +35,13 @@ class Folder(
     @JsonManagedReference
     var children: MutableList<Folder>? = mutableListOf()
 
-    @OneToMany(mappedBy = "folder", cascade = [CascadeType.ALL])
+    // TODO: 2022/08/14 cascadeType.REMOVE도 포함되어 있기 때문에, delete문이 실행된다고함. 이를 빼고 진행할 수 있도록 그리고 orphanRemoval만 사용했을 때 좋은 이유를 확실히 알것
+    @OneToMany(mappedBy = "folder", cascade = [CascadeType.ALL], orphanRemoval = true)
     var folders: MutableList<AccountFolder>? = mutableListOf()
 
-    // TODO: 2022/05/06 공유 북마크인지 확인하기 위해서 추가한 컬럼
-    var share: Boolean? = false
+    // 공유 상태 저장
+    @Enumerated(value = EnumType.STRING)
+    var sharedType: SharedType = SharedType.ALL_CLOSED
 
     var rootFolderId: Long? = null
 
@@ -173,5 +175,43 @@ class Folder(
     @Transactional
     fun updateBookmarkCount(count: Int) {
         this.bookmarkCount += count
+    }
+
+    fun folderToShared(rootFolderId: Long) {
+        this.rootFolderId = rootFolderId
+    }
+
+    fun isRootFolder(): Boolean {
+        if(parentFolder == null) return true
+        return false
+    }
+
+    fun isFolderSameRootFolder(folder: Folder): Boolean {
+        if(folder.rootFolderId == this.rootFolderId) return true
+        return false
+    }
+
+    fun changeSharedTypeToOpen() {
+        if(this.sharedType == SharedType.INVITE) this.sharedType = SharedType.INVITE_AND_OPEN
+        else this.sharedType = SharedType.OPEN
+    }
+
+    fun changeSharedTypeToInvite() {
+        if(this.sharedType == SharedType.OPEN) this.sharedType = SharedType.INVITE_AND_OPEN
+        else this.sharedType = SharedType.INVITE
+    }
+
+    fun inverseShareType() {
+        this.sharedType = this.sharedType.inversionState()
+    }
+
+    fun isInviteState(): Boolean {
+        if(this.sharedType == SharedType.INVITE || this.sharedType == SharedType.INVITE_AND_OPEN) return true
+        return false
+    }
+
+    fun isOpenState(): Boolean {
+        if(this.sharedType == SharedType.OPEN || this.sharedType == SharedType.INVITE_AND_OPEN) return true
+        return false
     }
 }
