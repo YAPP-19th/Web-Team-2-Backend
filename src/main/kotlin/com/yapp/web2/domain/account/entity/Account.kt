@@ -77,6 +77,10 @@ class Account(
         return false
     }
 
+    fun inverseRemindToggle(reverse: Boolean) {
+        this.remindToggle = reverse
+    }
+
     companion object {
         fun signUpToAccount(dto: AccountRequestDto.SignUpRequest, encryptPassword: String, name: String): Account {
             return Account(dto.email, encryptPassword, dto.fcmToken, name)
