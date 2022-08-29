@@ -9,12 +9,10 @@ import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 
 @Repository
-interface BookmarkRepository : MongoRepository<Bookmark, String> {
+interface BookmarkRepository : MongoRepository<Bookmark, String>, MongoTemplateRepository {
     fun findBookmarkById(id: String): Bookmark?
 
     fun findAllByFolderId(folderId: Long): List<Bookmark>
-
-    fun findAllByFolderIdAndDeleteTimeIsNullAndRemindTimeIsNotNull(folderId: Long, pageable: Pageable): Page<Bookmark>
 
     fun findAllByFolderIdAndDeletedIsFalse(folderId: Long, pageable: Pageable): Page<Bookmark>
 
@@ -25,11 +23,8 @@ interface BookmarkRepository : MongoRepository<Bookmark, String> {
 
     fun findByFolderId(id: Long): List<Bookmark>
 
-    fun findAllByRemindTimeAndDeleteTimeIsNullAndRemindStatusIsFalse(remindTime: String): List<Bookmark>
-
-    fun findAllByUserId(userId: Long): List<Bookmark>
-
-    fun findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrueAndRemindTimeIsNotNull(userId: Long): List<Bookmark>
+    @Query(value = "{remindList: {\$elemMatch: {remindTime: ?0}}}")
+    fun findAllBookmarkByRemindTime(today: String): List<Bookmark>
 
     fun findAllByDeletedIsTrueAndDeleteTimeBefore(time: LocalDateTime): List<Bookmark>
 
@@ -43,8 +38,11 @@ interface BookmarkRepository : MongoRepository<Bookmark, String> {
     fun findAllBookmark(userId: Long, folderIdList: List<Long>, pageable: Pageable): Page<Bookmark>
 
     @Query(value = "{\$and: [{remindList: {\$elemMatch: {userId: ?0}}}, {remindList: {\$elemMatch: {remindTime: ?1}}}]}")
-    fun findTodayRemindBookmark(userId: Long, today: String): List<Bookmark>
+    fun findAllTodayRemindBookmarksByUserId(userId: Long, today: String): List<Bookmark>
 
     @Query(value = "{ 'remindList': { \$elemMatch: { 'userId' : ?0 } } }")
     fun findRemindBookmark(userId: Long, pageable: Pageable): Page<Bookmark>
+
+    @Query(value = "{ 'remindList': { \$elemMatch: { 'userId' : ?0 }}}")
+    fun findAllBookmarkByUserIdInRemindList(userId: Long): MutableList<Bookmark>
 }
