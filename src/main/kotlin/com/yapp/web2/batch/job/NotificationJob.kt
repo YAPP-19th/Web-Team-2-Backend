@@ -65,11 +65,12 @@ class NotificationJob(
         }
     }
 
+    // TODO: 코드 수정 
     @Bean
     fun remindBookmarkWriter(): ItemWriter<Bookmark> {
         return ItemWriter {
             it.stream().forEach { bookmark ->
-                bookmark.successRemind()
+//                bookmark.successRemind()
                 notificationService.save(bookmark)
                 log.info("{} -> {} Send Notification", bookmark.userId, bookmark.title)
             }
