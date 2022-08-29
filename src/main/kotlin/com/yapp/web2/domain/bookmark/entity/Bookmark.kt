@@ -12,17 +12,25 @@ class Bookmark(
     var folderId: Long?,
     val link: String
 ) {
+    @Id
+    lateinit var id: String
+
+    var title: String? = ""
+    var folderEmoji: String? = ""
+    var folderName: String? = ""
+
+    var clickCount: Int = 0
+    var deleteTime: LocalDateTime? = null
+    var deleted: Boolean = false
+    var description: String? = null
+    var image: String? = null
+
+    var saveTime: LocalDateTime = LocalDateTime.now()
+
+    var remindList = mutableListOf<Remind>()
+
     constructor(userId: Long, folderId: Long?, link: String, title: String?) : this(userId, folderId, link) {
         this.title = title
-    }
-
-    constructor(userId: Long, folderId: Long?, link: String, title: String?, remindTime: String?) : this(
-        userId,
-        folderId,
-        link,
-        title
-    ) {
-        this.remindTime = remindTime
     }
 
     constructor(
@@ -47,43 +55,6 @@ class Bookmark(
     ) : this(account.id!!, folderId = null, link, title, image, description) {
         if (remind) remindOn(Remind(account))
     }
-
-    constructor(
-        userId: Long,
-        folderId: Long?,
-        folderEmoji: String?,
-        folderName: String?,
-        link: String,
-        title: String?,
-        remindTime: String?,
-        image: String?,
-        description: String?
-    ) : this(userId, folderId, link, title, remindTime) {
-        this.folderEmoji = folderEmoji
-        this.folderName = folderName
-        this.description = description
-        this.image = image
-    }
-
-    @Id
-    lateinit var id: String
-
-    var title: String? = ""
-    var folderEmoji: String? = ""
-    var folderName: String? = ""
-
-    var clickCount: Int = 0
-    var deleteTime: LocalDateTime? = null
-    var deleted: Boolean = false
-    var description: String? = null
-    var image: String? = null
-
-    var saveTime: LocalDateTime = LocalDateTime.now()
-    var remindTime: String? = null
-    var remindCheck: Boolean = false
-    var remindStatus: Boolean = false
-
-    var remindList = mutableListOf<Remind>()
 
     fun restore(): Bookmark {
         this.deleted = false
@@ -131,19 +102,16 @@ class Bookmark(
         remindList.add(remind)
     }
 
-    fun updateRemindCheck() {
-        this.remindCheck = true
-    }
-
     fun moveFolder(nextFolderId: Long) {
         this.folderId = nextFolderId
-    }
-
-    fun successRemind() {
-        this.remindStatus = true
     }
 
     fun hitClickCount() {
         this.clickCount++
     }
+
+    override fun toString(): String {
+        return "Bookmark(userId=$userId, link='$link', id='$id', title=$title, remindList=$remindList)"
+    }
+
 }
