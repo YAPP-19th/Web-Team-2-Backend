@@ -8,6 +8,7 @@ import com.yapp.web2.domain.remind.entity.dto.RemindCycleRequest
 import com.yapp.web2.domain.remind.entity.dto.RemindListResponse
 import com.yapp.web2.domain.remind.entity.dto.RemindListResponseWrapper
 import com.yapp.web2.domain.remind.entity.dto.RemindToggleRequest
+import com.yapp.web2.exception.custom.AccountNotFoundException
 import com.yapp.web2.exception.custom.BookmarkNotFoundException
 import com.yapp.web2.infra.fcm.FirebaseService
 import com.yapp.web2.security.jwt.JwtProvider
@@ -16,7 +17,6 @@ import com.yapp.web2.util.RemindCycleUtil
 import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -33,47 +33,71 @@ class RemindService(
         private val log = LoggerFactory.getLogger(RemindService::class.java)
     }
 
+    /**
+     * 오늘자 기준으로 리마인드 발송 대상인 Bookmark List 조회
+     */
     fun getRemindBookmark(): List<Bookmark> {
         val today = LocalDate.now().toString()
-        return bookmarkRepository.findAllByRemindTimeAndDeleteTimeIsNullAndRemindStatusIsFalse(today)
+        val remindBookmarkList: List<Bookmark> =
+            bookmarkRepository.findAllBookmarkByRemindTime(today)
+
+        // 리마인드 발송 시각이 오늘이 아닌 리마인드들은 제거
+        remindBookmarkList.forEach { bookmark ->
+            bookmark.remindList.removeIf { remind ->
+                today != remind.remindTime
+            }
+        }
+        return remindBookmarkList
     }
 
     fun sendNotification(bookmark: Bookmark) {
-        val user = accountRepository.findAccountById(bookmark.userId)
-
-        requireNotNull(user) { "Account does not exist" }
-
-        val fcmToken: String = user.fcmToken ?: {
-            log.info("'${user.email}' account does not have a FCM-Token")
-            throw IllegalStateException("${user.email} 님은 FCM-Token이 존재하지 않습니다.")
-        }.toString()
-
-        val response = firebaseService.sendMessage(fcmToken, Message.NOTIFICATION_MESSAGE, bookmark.title!!)
-
-        log.info("Send notification to '${user.email}' succeed, Response => $response")
+        bookmark.remindList.forEach { remind ->
+            val response = firebaseService.sendMessage(remind.fcmToken, Message.NOTIFICATION_MESSAGE, bookmark.title!!)
+            log.info("Send notification [userId: ${remind.userId}] succeed, Response => $response")
+        }
     }
 
-    @Transactional
+    /**
+     * 프로필에서 리마인드 알람 받기 On & Off 설정 : 유저가 Off 할 경우 모든 리마인드가 삭제된다는 alert 띄어주는게 좋을 듯 함
+     * request: 리마인드 알림 토글 On(true) / Off(false) 정보
+     * On 일 경우: Account의 remindToggle 값만 true로 설정
+     * Off 일 경우:
+     *   1. 유저가 Off할 Case는 별로 없을 듯 하나 로그를 남겨 사용자 분석
+     *   2. Bookmark의 remindList 중 userId와 동일한 리마인드 전부 삭제
+     *   3. Account의 remindToggle 값만 false로 설정
+     */
+    // TODO: 상용 서버에서 해당 메서드를 처리하는 로직이 느린듯한데 파악해볼 것
     fun changeRemindToggle(request: RemindToggleRequest, accessToken: String) {
         val userId = jwtProvider.getIdFromToken(accessToken)
 
-        // 리마인드 알림을 Off 할 때, 모든 리마인드 주기 Null 처리
+        // 1. logging
+        log.info("$userId 번 회원이 리마인드 알람 받기 설정을 ${request.remindToggle}로 변경하였습니다.")
+
         if (isRemindOff(request.remindToggle)) {
-            bookmarkRepository.findAllByUserId(userId).let {
-                it.stream().forEach { bookmark ->
-                    bookmark.remindOff()
-                    bookmarkRepository.save(bookmark)
+            // 2. 해당 유저의 모든 Remind 삭제
+            bookmarkRepository.findAllBookmarkByUserIdInRemindList(userId).forEach { bookmark ->
+                bookmark.remindList.removeIf { remind ->
+                    userId == remind.userId
                 }
+                bookmarkRepository.save(bookmark)
             }
         }
-        accountRepository.findByIdOrNull(userId)?.let {
-            it.remindToggle = request.remindToggle
+
+        // 3. remindToggle 값 변경(true or false)
+        accountRepository.findAccountById(userId)?.let {
+            it.inverseRemindToggle(request.remindToggle)
+            accountRepository.save(it)
+        } ?: run {
+            log.info("$userId 에 해당하는 회원을 찾을 수 없습니다.")
+            throw AccountNotFoundException()
         }
     }
 
     private fun isRemindOff(remindToggle: Boolean) = !remindToggle
 
-    @Transactional
+    /**
+     * 프로필 -> 리마인드 주기 설정
+     */
     fun updateRemindAlarmCycle(request: RemindCycleRequest, accessToken: String) {
         RemindCycleUtil.validRemindCycle(request.remindCycle)
 
@@ -83,48 +107,64 @@ class RemindService(
         }
     }
 
-    @Transactional
-    fun bookmarkRemindOff(bookmarkId: String) {
+    // TODO: bookmarkService.toggleOffRemindBookmark 메서드랑 동일한 로직인 듯 함, 프론트에서 어떠한 URI 사용하는지 확인필요
+    fun bookmarkRemindOff(accessToken: String, bookmarkId: String) {
+        val accountId = jwtProvider.getIdFromToken(accessToken)
+
         bookmarkRepository.findByIdOrNull(bookmarkId)?.let {
-            it.remindOff()
+            it.remindOff(accountId)
             bookmarkRepository.save(it)
+        } ?: run {
+            log.error("Remind off failed. Bookmark not exist => userId: ${accountId}, bookmarkId: $bookmarkId")
+            throw BookmarkNotFoundException()
         }
+
     }
 
+    /**
+     * 도토리함 메인 화면에서 리마인드가 발송된 북마크 리스트 조회
+     */
     fun getRemindList(accessToken: String): RemindListResponseWrapper {
         val userId = jwtProvider.getIdFromToken(accessToken)
+        val bookmarks: List<Bookmark> = bookmarkRepository.findAllBookmarkByUserIdAndRemindsInRemindList(userId)
         val responseWrapper = RemindListResponseWrapper()
-        val remindList = responseWrapper.contents
-        val bookmarks =
-            bookmarkRepository.findAllByUserIdAndRemindCheckIsFalseAndRemindStatusIsTrueAndRemindTimeIsNotNull(userId)
+        val contents = responseWrapper.contents
 
-        bookmarks.stream()
-            .forEach { bookmark ->
-                val date = LocalDate.parse(bookmark.remindTime, DateTimeFormatter.ISO_DATE) // yyyy-MM-dd
-                val pushTime = date.atTime(13, 0, 0)
-                val remindResponse = RemindListResponse(bookmark.id, bookmark.title!!, pushTime!!)
-                remindList.add(remindResponse)
-            }
+        bookmarks.forEach { bookmark ->
+            // bookmark의 remindList에서 userId는 중복되는 케이스가 없으므로 리마인드가 존재하면 반드시 1건만 존재
+            val remind = bookmark.remindList[0]
+            val date = LocalDate.parse(remind.remindTime, DateTimeFormatter.ISO_DATE)
+            val pushTime = date.atTime(13, 0, 0)
+            contents.add(RemindListResponse(bookmark.id, bookmark.title!!, pushTime))
+        }
         return responseWrapper
     }
 
-    fun remindCheckUpdate(request: ReadRemindListRequest) {
-        request.bookmarkIdList.stream()
-            .forEach { id ->
-                bookmarkRepository.findByIdOrNull(id)?.let { bookmark ->
-                    bookmark.updateRemindCheck()
-                    bookmarkRepository.save(bookmark)
-                } ?: bookmarkNotFoundException
+    /**
+     * 발송된 리마인드 중 사용자가 읽음 처리한 리마인드의 BookmarkId List
+     */
+    fun remindCheckUpdate(accessToken: String, request: ReadRemindListRequest) {
+        val userId = jwtProvider.getIdFromToken(accessToken)
+
+        // 1) bookmarkId에 해당하는 북마크 조회
+        request.bookmarkIdList.stream().forEach { id ->
+            bookmarkRepository.findByIdOrNull(id)?.let { bookmark ->
+                // 2) bookmark 필드인 remindList 리스트에서 userId 동일한 remind 검색 후 update
+                bookmark.remindList.forEach { remind ->
+                    if (remind.userId == userId) {
+                        remind.updateRemindCheck()
+                        bookmarkRepository.save(bookmark)
+                    }
+                }
+            } ?: run {
+                log.info("Bookmark not exist => bookmarkId: $id")
+                throw bookmarkNotFoundException
             }
+        }
     }
 
     fun save(entity: Bookmark) {
         bookmarkRepository.save(entity)
     }
 
-    fun temp() {
-        val bookmark = bookmarkRepository.findBookmarkById("61d93b451af6fb65b4aa74b1")
-        bookmark?.remindCheck = false
-        bookmarkRepository.save(bookmark!!)
-    }
 }
