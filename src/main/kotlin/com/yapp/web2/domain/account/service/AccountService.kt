@@ -282,7 +282,8 @@ class AccountService(
         return RandomUtils.shuffleCharacters(randomAlphanumeric + randomSpecialCharacter)
     }
 
-    fun sendMail(token: String, tempPassword: String): String {
+    // TODO: 2022/07/16 비동기 처리
+    fun sendMail(token: String, tempPassword: String) {
         val account = jwtProvider.getAccountFromToken(token)
         val mailMessage = SimpleMailMessage()
         mailMessage.setTo(account.email)
@@ -292,8 +293,6 @@ class AccountService(
         mailSender.send(mailMessage)
 
         log.info("${account.email} 계정으로 임시 비밀번호를 발송하였습니다.")
-
-        return Message.SUCCESS_SEND_MAIL
     }
 
     fun updatePassword(token: String, tempPassword: String) {

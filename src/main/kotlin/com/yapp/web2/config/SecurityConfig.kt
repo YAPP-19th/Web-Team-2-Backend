@@ -47,7 +47,6 @@ class SecurityConfig(
 
         http.authorizeRequests()
             .antMatchers("/actuator/**").permitAll()
-//            .antMatchers("/api/v1/page/open/**").permitAll()
             .anyRequest().authenticated()
 
         http.apply(JwtSecurityConfig(jwtProvider))

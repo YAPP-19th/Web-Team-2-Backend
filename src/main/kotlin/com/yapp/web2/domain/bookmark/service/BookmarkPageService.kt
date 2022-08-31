@@ -77,10 +77,11 @@ class BookmarkPageService(
 
     fun getTodayRemindBookmark(token: String): BookmarkDto.RemindList {
         val idFromToken = jwtProvider.getIdFromToken(token)
+        // TODO: todayRemind 조회인데 yesterday로 하는 이유?
         val yesterday = LocalDate.now().minusDays(1).toString()
 
         return BookmarkDto.RemindList(
-            bookmarkRepository.findTodayRemindBookmark(idFromToken, yesterday)
+            bookmarkRepository.findAllTodayRemindBookmarksByUserId(idFromToken, yesterday)
         )
     }
 }
