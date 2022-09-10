@@ -7,10 +7,12 @@ import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
+import org.springframework.batch.core.configuration.annotation.JobScope
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.launch.support.RunIdIncrementer
 import org.springframework.batch.item.ItemProcessor
+import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.support.ListItemReader
 import org.springframework.context.annotation.Bean
@@ -21,15 +23,20 @@ import org.springframework.context.annotation.Configuration
 class NotificationJob(
     private val jobBuilderFactory: JobBuilderFactory,
     private val stepBuilderFactory: StepBuilderFactory,
-    private val notificationService: RemindService,
+    private val remindService: RemindService,
     private val jobCompletionListener: JobCompletionListener
 ) {
 
+    companion object {
+        const val SEND_NOTIFICATION_JOB = "SEND_NOTIFICATION_JOB"
+        const val SEND_NOTIFICATION_STEP = "SEND_NOTIFICATION_STEP"
+    }
+
     private val log = LoggerFactory.getLogger(javaClass)
 
-    @Bean("bookmarkNotificationJob")
+    @Bean
     fun bookmarkNotificationJob(): Job {
-        return jobBuilderFactory.get("bookmarkNotificationJob")
+        return jobBuilderFactory.get(SEND_NOTIFICATION_JOB)
             .start(bookmarkNotificationStep())
             .incrementer(RunIdIncrementer())
             .listener(jobCompletionListener)
@@ -37,8 +44,9 @@ class NotificationJob(
     }
 
     @Bean
+    @JobScope
     fun bookmarkNotificationStep(): Step {
-        return stepBuilderFactory.get("bookmarkNotificationStep")
+        return stepBuilderFactory.get(SEND_NOTIFICATION_STEP)
             .chunk<Bookmark, Bookmark>(10)
             .reader(remindBookmarkReader())
             .processor(remindBookmarkProcessor())
@@ -46,33 +54,34 @@ class NotificationJob(
             .build()
     }
 
+    // TODO: ListItemReader의 경우 모든 데이터를 읽고 메모리에 올려두고 사용하기에 데이터가 많을경우 OOM 발생할 가능성이 존재함
     @Bean
     @StepScope
-    fun remindBookmarkReader(): ListItemReader<Bookmark> {
-        val bookmarkOfList = notificationService.getRemindBookmark()
-
-        log.info("리마인드 발송할 도토리 갯수: ${bookmarkOfList.size}")
-
-        return ListItemReader(bookmarkOfList)
+    fun remindBookmarkReader(): ItemReader<Bookmark> {
+        return ListItemReader(remindService.getRemindBookmark())
     }
 
     // TODO: Notification 실패 처리 -> Queue(Kafka) 적재 후 Retry 처리
     @Bean
+    @StepScope
     fun remindBookmarkProcessor(): ItemProcessor<Bookmark, Bookmark> {
         return ItemProcessor {
-            notificationService.sendNotification(it)
+            log.info("Bookmark id: ${it.id}, 리마인드 발송 갯수: ${it.remindList.size}")
+            remindService.sendNotification(it)
             it
         }
     }
 
-    // TODO: 코드 수정 
     @Bean
+    @StepScope
     fun remindBookmarkWriter(): ItemWriter<Bookmark> {
         return ItemWriter {
             it.stream().forEach { bookmark ->
-//                bookmark.successRemind()
-                notificationService.save(bookmark)
-                log.info("{} -> {} Send Notification", bookmark.userId, bookmark.title)
+                bookmark.remindList.forEach { remind ->
+                    remind.successRemind()
+                }
+                remindService.save(bookmark)
+                log.info("${bookmark.userId} -> ${bookmark.title} Send Notification")
             }
         }
     }
