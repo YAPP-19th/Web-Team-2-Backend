@@ -17,8 +17,15 @@ class SlackServiceImpl : SlackService {
     @Value("\${slack.monitor.channel.id}")
     lateinit var defaultChannel: String
 
+    @Value("\${slack.verbose.channel.id}")
+    lateinit var verboseChannel: String
+
     override fun sendSlackAlarm(text: String) {
         sendSlackAlarm(defaultChannel, text)
+    }
+
+    override fun sendSlackAlarmToVerbose(text: String) {
+        sendSlackAlarm(verboseChannel, text)
     }
 
     /**
@@ -36,6 +43,7 @@ class SlackServiceImpl : SlackService {
             log.error("Slack Send Error: {}", e.message, e)
         }
     }
+
 
     /**
      * Slack Channel name, id list
