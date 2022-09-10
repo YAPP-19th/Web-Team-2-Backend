@@ -20,7 +20,7 @@ class JobCompletionListener(
         log.info("Job {} - {}", jobStatus, jobExecution.jobInstance.jobName)
 
         if (jobStatus == BatchStatus.COMPLETED) {
-            slackApi.sendSlackAlarm(
+            slackApi.sendSlackAlarmToVerbose(
                 "*`${jobExecution.jobInstance.jobName}`* - executed"
             )
         }
