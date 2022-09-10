@@ -59,8 +59,13 @@ class RemindService(
             }.onSuccess {
                 log.info("리마인드 발송 성공 => [User id: ${remind.userId}], response => $response")
             }.onFailure {
-                log.info("리마인드 발송 실패 => [User id: ${remind.userId}, Bookmark id: ${bookmark.id}]")
-                slackApi.sendSlackAlarm("<!channel> 리마인드 발송 실패 => User id: ${remind.userId}, Bookmark id: ${bookmark.id}")
+                val message = """
+                    <!channel> 리마인드 발송 실패 => User id: ${remind.userId}, Bookmark id: ${bookmark.id}\n
+                    response => $response
+                """.trimIndent()
+
+                log.info("리마인드 발송 실패 => [User id: ${remind.userId}, Bookmark id: ${bookmark.id}]\nresponse => $response")
+                slackApi.sendSlackAlarm(message)
             }
         }
     }
