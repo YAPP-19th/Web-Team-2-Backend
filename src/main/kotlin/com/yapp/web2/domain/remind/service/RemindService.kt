@@ -11,6 +11,7 @@ import com.yapp.web2.domain.remind.entity.dto.RemindToggleRequest
 import com.yapp.web2.exception.custom.AccountNotFoundException
 import com.yapp.web2.exception.custom.BookmarkNotFoundException
 import com.yapp.web2.infra.fcm.FirebaseService
+import com.yapp.web2.infra.slack.SlackService
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.util.Message
 import com.yapp.web2.util.RemindCycleUtil
@@ -25,7 +26,8 @@ class RemindService(
     private val bookmarkRepository: BookmarkRepository,
     private val accountRepository: AccountRepository,
     private val jwtProvider: JwtProvider,
-    private val firebaseService: FirebaseService
+    private val firebaseService: FirebaseService,
+    private val slackApi: SlackService
 ) {
 
     companion object {
@@ -36,15 +38,14 @@ class RemindService(
     /**
      * 오늘자 기준으로 리마인드 발송 대상인 Bookmark List 조회
      */
-    fun getRemindBookmark(): List<Bookmark> {
+    fun getRemindBookmark(): MutableList<Bookmark> {
         val today = LocalDate.now().toString()
-        val remindBookmarkList: List<Bookmark> =
-            bookmarkRepository.findAllBookmarkByRemindTime(today)
+        val remindBookmarkList: MutableList<Bookmark> = bookmarkRepository.findAllBookmarkByRemindTime(today)
 
-        // 리마인드 발송 시각이 오늘이 아닌 리마인드들은 제거
+        // 리마인드 발송 대상이 아닌 리마인드 제거(발송 시각이 오늘이 아니거나, 리마인드 발송이 이미 처리된 리마인드)
         remindBookmarkList.forEach { bookmark ->
             bookmark.remindList.removeIf { remind ->
-                today != remind.remindTime
+                (today != remind.remindTime) || remind.remindStatus
             }
         }
         return remindBookmarkList
@@ -52,8 +53,15 @@ class RemindService(
 
     fun sendNotification(bookmark: Bookmark) {
         bookmark.remindList.forEach { remind ->
-            val response = firebaseService.sendMessage(remind.fcmToken, Message.NOTIFICATION_MESSAGE, bookmark.title!!)
-            log.info("Send notification [userId: ${remind.userId}] succeed, Response => $response")
+            var response = ""
+            kotlin.runCatching {
+                response = firebaseService.sendMessage(remind.fcmToken, Message.NOTIFICATION_MESSAGE, bookmark.title!!)
+            }.onSuccess {
+                log.info("리마인드 발송 성공 => [User id: ${remind.userId}], response => $response")
+            }.onFailure {
+                log.info("리마인드 발송 실패 => [User id: ${remind.userId}, Bookmark id: ${bookmark.id}]")
+                slackApi.sendSlackAlarm("<!channel> 리마인드 발송 실패 => User id: ${remind.userId}, Bookmark id: ${bookmark.id}")
+            }
         }
     }
 
