@@ -13,6 +13,7 @@ import com.yapp.web2.exception.custom.ExistNameException
 import com.yapp.web2.exception.custom.FolderNotRootException
 import com.yapp.web2.exception.custom.ImageNotFoundException
 import com.yapp.web2.exception.custom.PasswordMismatchException
+import com.yapp.web2.infra.slack.SlackService
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.util.Message
@@ -34,7 +35,8 @@ class AccountService(
     private val jwtProvider: JwtProvider,
     private val s3Client: S3Client,
     private val passwordEncoder: PasswordEncoder,
-    private val mailSender: JavaMailSender
+    private val mailSender: JavaMailSender,
+    private val slackApi: SlackService
 ) {
 
     @Value("\${extension.version}")
@@ -77,8 +79,16 @@ class AccountService(
                 isRegistered = false
                 val newAccount = createUser(account)
                 folderService.createDefaultFolder(account)
+
+                val userCountMessage = """
+                    ${newAccount.id}: ${newAccount.name} 님이 회원가입을 진행하였습니다. 현재 회원 수: *`${accountRepository.count()}`*
+                    """.trimIndent()
+
+                slackApi.sendSlackAlarmToVerbose(userCountMessage)
+
                 newAccount
             }
+
             else -> {
                 log.info("소셜로그인 => ${account.email} 계정이 이미 존재합니다.")
                 existAccount.fcmToken = account2.fcmToken
@@ -100,6 +110,12 @@ class AccountService(
         folderService.createDefaultFolder(newAccount)
 
         log.info("${newAccount.email} account signUp succeed")
+
+        val userCountMessage = """
+            ${newAccount.id}: ${newAccount.name} 님이 회원가입을 진행하였습니다. 현재 회원 수: *`${accountRepository.count()}`*
+            """.trimIndent()
+
+        slackApi.sendSlackAlarmToVerbose(userCountMessage)
 
         return Account.AccountLoginSuccess(jwtProvider.createToken(newAccount), newAccount, false)
     }
@@ -200,7 +216,7 @@ class AccountService(
         val rootFolder = folderService.findByFolderId(folderId)
 
         if (rootFolder.rootFolderId != folderId) throw FolderNotRootException()
-        if(!rootFolder.isInviteState()) throw RuntimeException("보관함이 초대잠금상태입니다. 가입할 수 없습니다.")
+        if (!rootFolder.isInviteState()) throw RuntimeException("보관함이 초대잠금상태입니다. 가입할 수 없습니다.")
 
         val accountFolder = AccountFolder(account, rootFolder)
         accountFolder.changeAuthority(Authority.INVITEE)
