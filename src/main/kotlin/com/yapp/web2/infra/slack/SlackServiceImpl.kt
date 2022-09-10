@@ -17,14 +17,14 @@ class SlackServiceImpl : SlackService {
     @Value("\${slack.monitor.channel.id}")
     lateinit var defaultChannel: String
 
-    override fun sendMessage(text: String) {
-        sendMessage(defaultChannel, text)
+    override fun sendSlackAlarm(text: String) {
+        sendSlackAlarm(defaultChannel, text)
     }
 
     /**
      * Send Slack Alarm
      */
-    override fun sendMessage(channel: String, text: String) {
+    override fun sendSlackAlarm(channel: String, text: String) {
         val client = Slack.getInstance().methods()
         runCatching {
             client.chatPostMessage {
