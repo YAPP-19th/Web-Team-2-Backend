@@ -37,11 +37,11 @@ class Remind() {
     }
 
     override fun toString(): String {
-        return StringBuilder().append("Remind [")
+        return StringBuilder().append("Remind - [")
             .append("userId: $userId")
-            .append("remindTime: $remindTime")
-            .append("remindCheck: $remindCheck")
-            .append("remindStatus: $remindStatus")
+            .append(", remindTime: $remindTime")
+            .append(", remindCheck: $remindCheck")
+            .append(", remindStatus: $remindStatus")
             .append("]")
             .toString()
     }

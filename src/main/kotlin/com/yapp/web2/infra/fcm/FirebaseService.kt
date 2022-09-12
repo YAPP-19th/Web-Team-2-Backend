@@ -12,6 +12,7 @@ class FirebaseService {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
+    @Throws(Exception::class)
     fun sendMessage(targetToken: String, title: String, body: String): String {
         // 로컬 테스트
 //        val firebaseInit = FirebaseInit()

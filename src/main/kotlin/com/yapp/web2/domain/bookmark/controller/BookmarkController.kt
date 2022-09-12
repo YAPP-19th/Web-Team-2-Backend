@@ -60,7 +60,6 @@ class BookmarkController(
         @RequestParam(required = false) @ApiParam(value = "북마크가 저장될 폴더 ID", example = "12") folderId: Long?,
         @ApiParam(value = "북마크 생성 리스트 정보") @RequestBody dto: BookmarkDto.AddBookmarkListDto
     ): ResponseEntity<String> {
-        println(folderId)
         val token = ControllerUtil.extractAccessToken(request)
         bookmarkService.addBookmarkList(token, folderId, dto)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SAVED)

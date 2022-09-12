@@ -26,7 +26,7 @@ interface BookmarkRepository : MongoRepository<Bookmark, String>, MongoTemplateR
     fun findByFolderId(id: Long): List<Bookmark>
 
     @Query(value = "{remindList: {\$elemMatch: {remindTime: ?0}}}")
-    fun findAllBookmarkByRemindTime(today: String): List<Bookmark>
+    fun findAllBookmarkByRemindTime(today: String): MutableList<Bookmark>
 
     fun findAllByDeletedIsTrueAndDeleteTimeBefore(time: LocalDateTime): List<Bookmark>
 
