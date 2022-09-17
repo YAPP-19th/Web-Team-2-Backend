@@ -2,11 +2,15 @@ package com.yapp.web2.domain.account.entity
 
 import com.yapp.web2.domain.BaseTimeEntity
 import com.yapp.web2.domain.folder.entity.AccountFolder
+import com.yapp.web2.domain.folder.entity.Folder
 import com.yapp.web2.security.jwt.TokenDto
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import org.springframework.transaction.annotation.Transactional
-import javax.persistence.*
+import javax.persistence.CascadeType
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.OneToMany
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
 
@@ -15,6 +19,40 @@ class Account(
     @Column(unique = true, nullable = true, length = 255)
     var email: String
 ) : BaseTimeEntity() {
+
+    @Column(nullable = true)
+    var password: String? = null
+
+    @Column(nullable = true)
+    var name: String = ""
+
+    @Column(nullable = true, length = 20)
+    var socialType: String = "none"
+
+    @Column(length = 255)
+    var fcmToken: String? = null
+
+    @Column(length = 10)
+    var remindCycle: Int = 7
+
+    @Column(nullable = true, length = 255)
+    var image: String = BASIC_IMAGE_URL
+
+    @Column(length = 20)
+    var backgroundColor: String = "black"
+
+    @Column
+    var remindToggle: Boolean = true
+
+    @Column
+    var deleted: Boolean = false
+
+    @OneToMany(mappedBy = "account", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var accountFolderList: MutableList<AccountFolder> = mutableListOf()
+
+    fun inverseRemindToggle(reverse: Boolean) {
+        this.remindToggle = reverse
+    }
 
     companion object {
         fun signUpToAccount(dto: AccountRequestDto.SignUpRequest, encryptPassword: String, name: String): Account {
@@ -70,36 +108,6 @@ class Account(
         }
         return false
     }
-
-    @Column(nullable = true)
-    var password: String? = null
-
-    @Column(nullable = true)
-    var name: String = ""
-
-    @Column(nullable = true, length = 20)
-    var socialType: String = "none"
-
-    @Column(length = 255)
-    var fcmToken: String? = null
-
-    @Column(length = 10)
-    var remindCycle: Int = 7
-
-    @Column(nullable = true, length = 255)
-    var image: String = BASIC_IMAGE_URL
-
-    @Column(length = 20)
-    var backgroundColor: String = "black"
-
-    @Column
-    var remindToggle: Boolean = true
-
-    @Column
-    var deleted: Boolean = false
-
-    @OneToMany(mappedBy = "account")
-    var accountFolderList: MutableList<AccountFolder> = mutableListOf()
 
     @ApiModel(description = "소셜로그인 DTO")
     class AccountProfile(
@@ -166,11 +174,10 @@ class Account(
         val nickName: String
     )
 
-    fun hasAccountFolder(accountFolder: AccountFolder): Boolean {
-        for (af in this.accountFolderList)
-            if (accountFolder == af) return true
-
-        return false
+    fun removeFolderInAccountFolder(folder: Folder) {
+        this.accountFolderList.let {
+            it.removeIf { af -> af.folder == folder }
+        }
     }
 
     fun softDeleteAccount() {

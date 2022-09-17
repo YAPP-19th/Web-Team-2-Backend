@@ -6,10 +6,10 @@ import com.yapp.web2.domain.folder.controller.FolderController
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.util.AbstractControllerTest
 import com.yapp.web2.util.Message
+import com.yapp.web2.util.RandomUtils
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
-import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
@@ -293,10 +293,12 @@ class AccountControllerTest : AbstractControllerTest() {
     @Test
     fun `비밀번호 재설정 시 임시 비밀번호를 생성하고 메일을 발송한다`() {
         // given
-        val tempPassword = RandomStringUtils.randomAlphanumeric(12) + "!"
+        val tempPassword = RandomUtils.shuffleCharacters(
+            RandomUtils.getRandomAlphanumeric(12) + RandomUtils.getRandomSpecialCharacter()
+        )
         every { accountService.createTempPassword() } returns tempPassword
         every { accountService.updatePassword(any(), any()) } just Runs
-        every { accountService.sendMail(any(), tempPassword) } returns Message.SUCCESS_SEND_MAIL
+        every { accountService.sendMail(any(), tempPassword) } just Runs
 
         // when
         val resultAction = util.postResultAction("/api/v1/user/password/reset", "", mockMvc)

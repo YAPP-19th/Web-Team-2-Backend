@@ -113,10 +113,23 @@ class FolderController(
     }
 
     // TODO: 2022/06/22 유저 정보 확인
-    @ApiOperation(value = "암호화된 폴더 ID 조회 API")
+    @ApiOperation(value = "폴더 토큰 발급 API")
     @GetMapping("encrypt/{folderId}")
     fun getEncryptFolderId(@PathVariable folderId: Long): ResponseEntity<FolderTokenDto> {
         return ResponseEntity.status(HttpStatus.OK).body(folderService.encryptFolderId(folderId))
+    }
+
+    @ApiOperation(value = "초대를 위한 폴더 토큰 발급 API")
+    @GetMapping("invite/{folderId}")
+    fun getFolderInvitationToken(@PathVariable folderId: Long): ResponseEntity<FolderTokenDto> {
+        return ResponseEntity.status(HttpStatus.OK).body(folderService.createFolderInvitationToken(folderId))
+    }
+
+    @ApiOperation(value = "보관함 잠금/해제 API")
+    @GetMapping("state/{folderId}")
+    fun inverseFolderShare(@PathVariable folderId: Long): ResponseEntity<String> {
+        folderService.inverseSharedType(folderId)
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
     @ApiOperation(value = "보관함에 속한 유저 리스트 조회 API")

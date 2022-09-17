@@ -132,11 +132,20 @@ class AccountController(
         return ResponseEntity.status(HttpStatus.OK).body(accountService.checkExtension(extensionVersion))
     }
 
+    @ApiOperation(value = "폴더 토큰을 통하여 공유 폴더에 초대받는 API")
     @GetMapping("/invite/{folderToken}")
-    fun acceptInvitation(request: HttpServletRequest, @PathVariable folderToken: String): ResponseEntity<String> {
+    fun acceptInvitation(request: HttpServletRequest, @ApiParam(value = "폴더 토큰") @PathVariable folderToken: String): ResponseEntity<String> {
         val token = ControllerUtil.extractAccessToken(request)
         accountService.acceptInvitation(token, folderToken)
-        return ResponseEntity.status(HttpStatus.OK).body("good")
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
+    }
+
+    @ApiOperation(value = "folderId를 통하여 공유 폴더에서 나가는 API")
+    @GetMapping("/exit/{folderId}")
+    fun exitSharedFolder(request: HttpServletRequest, @ApiParam(value = "폴더 아이디") @PathVariable folderId: Long): ResponseEntity<String> {
+        val token = ControllerUtil.extractAccessToken(request)
+        accountService.exitSharedFolder(folderId, token)
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
     @ApiOperation("회원가입 API")
@@ -226,8 +235,9 @@ class AccountController(
         val token = ControllerUtil.extractAccessToken(request)
         val tempPassword = accountService.createTempPassword()
         accountService.updatePassword(token, tempPassword)
+        accountService.sendMail(token, tempPassword)
 
-        return ResponseEntity.status(HttpStatus.OK).body(accountService.sendMail(token, tempPassword))
+        return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
 }

@@ -303,7 +303,7 @@ internal open class BookmarkServiceTest {
             every { bookmarkRepository.save(any()) } returns bookmark1
 
             // when
-            bookmarkService.restore(list)
+            bookmarkService.restoreBookmarks(list)
 
             // then
             assertAll(
@@ -327,7 +327,7 @@ internal open class BookmarkServiceTest {
             every { bookmarkRepository.delete(any()) } just Runs
 
             // when
-            bookmarkService.permanentDelete(list)
+            bookmarkService.deleteBookmarkPermanently(list)
 
             // then
             verify(exactly = list.size) { bookmarkRepository.delete(any()) }

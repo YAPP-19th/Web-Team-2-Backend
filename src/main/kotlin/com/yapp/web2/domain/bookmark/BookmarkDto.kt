@@ -55,7 +55,6 @@ class BookmarkDto {
     @ApiModel(description = "북마크 생성 DTO")
     data class AddBookmarkDto(
 
-        // TODO: 2021/12/04 RequestParam 데이터 검증
         @ApiModelProperty(value = "북마크 url", required = true, example = "https://www.naver.com")
         var url: String,
 

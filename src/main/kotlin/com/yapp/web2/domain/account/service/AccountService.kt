@@ -13,6 +13,7 @@ import com.yapp.web2.exception.custom.ExistNameException
 import com.yapp.web2.exception.custom.FolderNotRootException
 import com.yapp.web2.exception.custom.ImageNotFoundException
 import com.yapp.web2.exception.custom.PasswordMismatchException
+import com.yapp.web2.infra.slack.SlackService
 import com.yapp.web2.security.jwt.JwtProvider
 import com.yapp.web2.security.jwt.TokenDto
 import com.yapp.web2.util.Message
@@ -34,7 +35,8 @@ class AccountService(
     private val jwtProvider: JwtProvider,
     private val s3Client: S3Client,
     private val passwordEncoder: PasswordEncoder,
-    private val mailSender: JavaMailSender
+    private val mailSender: JavaMailSender,
+    private val slackApi: SlackService
 ) {
 
     @Value("\${extension.version}")
@@ -77,8 +79,16 @@ class AccountService(
                 isRegistered = false
                 val newAccount = createUser(account)
                 folderService.createDefaultFolder(account)
+
+                val userCountMessage = """
+                    ${newAccount.id}: ${newAccount.name} 님이 회원가입을 진행하였습니다. 현재 회원 수: *`${accountRepository.count()}`*
+                    """.trimIndent()
+
+                slackApi.sendSlackAlarmToVerbose(userCountMessage)
+
                 newAccount
             }
+
             else -> {
                 log.info("소셜로그인 => ${account.email} 계정이 이미 존재합니다.")
                 existAccount.fcmToken = account2.fcmToken
@@ -100,6 +110,12 @@ class AccountService(
         folderService.createDefaultFolder(newAccount)
 
         log.info("${newAccount.email} account signUp succeed")
+
+        val userCountMessage = """
+            ${newAccount.id}: ${newAccount.name} 님이 회원가입을 진행하였습니다. 현재 회원 수: *`${accountRepository.count()}`*
+            """.trimIndent()
+
+        slackApi.sendSlackAlarmToVerbose(userCountMessage)
 
         return Account.AccountLoginSuccess(jwtProvider.createToken(newAccount), newAccount, false)
     }
@@ -199,19 +215,36 @@ class AccountService(
         val folderId = jwtProvider.getIdFromToken(folderToken)
         val rootFolder = folderService.findByFolderId(folderId)
 
-        if(rootFolder.rootFolderId != null) throw FolderNotRootException()
+        if (rootFolder.rootFolderId != folderId) throw FolderNotRootException()
+        if (!rootFolder.isInviteState()) throw RuntimeException("보관함이 초대잠금상태입니다. 가입할 수 없습니다.")
 
         val accountFolder = AccountFolder(account, rootFolder)
         accountFolder.changeAuthority(Authority.INVITEE)
         // account에 굳이 추가하지 않아도 account-folder에 추가가 된다.
         // 왜???
-        if(account.isInsideAccountFolder(accountFolder)) throw AlreadyInvitedException()
+        if (account.isInsideAccountFolder(accountFolder)) throw AlreadyInvitedException()
 //        account.addAccountFolder(accountFolder)
         rootFolder.folders?.add(accountFolder)
     }
 
+    @Transactional
+    fun exitSharedFolder(folderId: Long, token: String) {
+        val account = jwtProvider.getAccountFromToken(token)
+        val folder = folderService.findByFolderId(folderId)
+        var exitFolder = folder.rootFolderId?.let {
+            folderService.findByFolderId(it)
+        } ?: folder
+
+        exitFolder.folders?.let {
+            it.removeIf { x -> x.account == account }
+        }
+
+        account.removeFolderInAccountFolder(exitFolder)
+    }
+
     fun signIn(request: AccountRequestDto.SignInRequest): Account.AccountLoginSuccess? {
-        val account = accountRepository.findByEmail(request.email) ?: throw IllegalStateException(Message.NOT_EXIST_EMAIL)
+        val account =
+            accountRepository.findByEmail(request.email) ?: throw IllegalStateException(Message.NOT_EXIST_EMAIL)
 
         if (!passwordEncoder.matches(request.password, account.password)) {
             log.info("${account.email} 계정의 비밀번호와 일치하지 않습니다.")
@@ -265,7 +298,8 @@ class AccountService(
         return RandomUtils.shuffleCharacters(randomAlphanumeric + randomSpecialCharacter)
     }
 
-    fun sendMail(token: String, tempPassword: String): String {
+    // TODO: 2022/07/16 비동기 처리
+    fun sendMail(token: String, tempPassword: String) {
         val account = jwtProvider.getAccountFromToken(token)
         val mailMessage = SimpleMailMessage()
         mailMessage.setTo(account.email)
@@ -275,8 +309,6 @@ class AccountService(
         mailSender.send(mailMessage)
 
         log.info("${account.email} 계정으로 임시 비밀번호를 발송하였습니다.")
-
-        return Message.SUCCESS_SEND_MAIL
     }
 
     fun updatePassword(token: String, tempPassword: String) {

@@ -12,6 +12,7 @@ import com.yapp.web2.exception.custom.FolderNotFoundException
 import com.yapp.web2.exception.custom.ObjectNotFoundException
 import com.yapp.web2.exception.custom.SameBookmarkException
 import com.yapp.web2.security.jwt.JwtProvider
+import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -26,6 +27,7 @@ class BookmarkService(
 
     companion object {
         private val bookmarkNotFoundException = BookmarkNotFoundException()
+        private val log = LoggerFactory.getLogger(BookmarkService::class.java)
     }
 
     fun addBookmark(token: String, folderId: Long?, bookmarkDto: BookmarkDto.AddBookmarkDto): Bookmark {
@@ -58,7 +60,10 @@ class BookmarkService(
         val bookmarkList = bookmarkRepository.findAllByFolderId(folderId)
 
         for (savedBookmark in bookmarkList) {
-            if (savedBookmark.link == bookmark.link) throw SameBookmarkException()
+            if (savedBookmark.link == bookmark.link) {
+                if(savedBookmark.deleted) throw RuntimeException("휴지통에 존재하는 북마크와 url이 동일합니다!")
+                throw SameBookmarkException()
+            }
         }
     }
 
@@ -94,20 +99,31 @@ class BookmarkService(
 
     fun toggleOnRemindBookmark(token: String, bookmarkId: String) {
         val account = jwtProvider.getAccountFromToken(token)
-        val bookmark = bookmarkRepository.findBookmarkById(bookmarkId) ?: throw BookmarkNotFoundException()
         val remind = Remind(account)
 
-        if(bookmark.isRemindExist(remind)) throw AlreadyExistRemindException()
-        bookmark.remindOn(remind)
-        bookmarkRepository.save(bookmark)
+        bookmarkRepository.findBookmarkById(bookmarkId)?.let {
+            if (it.isRemindExist(remind)) {
+                log.info("Remind already exist in bookmark => userId: ${account.id}, bookmarkId: $bookmarkId")
+                throw AlreadyExistRemindException()
+            }
+            it.remindOn(remind)
+            bookmarkRepository.save(it)
+        } ?: run {
+            log.error("Remind on failed. Bookmark not exist => userId: ${account.id}, bookmarkId: $bookmarkId")
+            throw BookmarkNotFoundException()
+        }
     }
 
     fun toggleOffRemindBookmark(token: String, bookmarkId: String) {
         val account = jwtProvider.getAccountFromToken(token)
-        val bookmark = bookmarkRepository.findBookmarkById(bookmarkId) ?: throw BookmarkNotFoundException()
 
-        bookmark.remindOff(account.id!!)
-        bookmarkRepository.save(bookmark)
+        bookmarkRepository.findBookmarkById(bookmarkId)?.let {
+            it.remindOff(account.id!!)
+            bookmarkRepository.save(it)
+        } ?: run {
+            log.error("Remind off failed. Bookmark not exist => userId: ${account.id}, bookmarkId: $bookmarkId")
+            throw BookmarkNotFoundException()
+        }
     }
 
     fun increaseBookmarkClickCount(bookmarkId: String): Bookmark {
@@ -135,17 +151,16 @@ class BookmarkService(
         bookmarkRepository.saveAll(bookmarkList)
     }
 
-    fun restore(bookmarkIdList: MutableList<String>?) {
+    fun restoreBookmarks(bookmarkIdList: MutableList<String>?) {
         bookmarkIdList?.let {
             bookmarkIdList.forEach {
-                // TODO: 2021/12/02  Bookmark 예외처리
                 val restoreBookmark = bookmarkRepository.findByIdOrNull(it)?.restore()
                 bookmarkRepository.save(restoreBookmark!!)
             }
         }
     }
 
-    fun permanentDelete(bookmarkIdList: MutableList<String>?) {
+    fun deleteBookmarkPermanently(bookmarkIdList: MutableList<String>?) {
         bookmarkIdList?.let {
             bookmarkIdList.forEach {
                 val bookmark = bookmarkRepository.findByIdOrNull(it)
