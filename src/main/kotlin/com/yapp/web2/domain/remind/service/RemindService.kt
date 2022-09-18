@@ -117,6 +117,7 @@ class RemindService(
         val userId = jwtProvider.getIdFromToken(accessToken)
         accountRepository.findByIdOrNull(userId)?.let {
             it.remindCycle = request.remindCycle
+            accountRepository.save(it)
         }
     }
 
