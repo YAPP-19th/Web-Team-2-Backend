@@ -4,6 +4,7 @@ import com.yapp.web2.domain.bookmark.BookmarkDto
 import com.yapp.web2.domain.bookmark.entity.Bookmark
 import com.yapp.web2.domain.bookmark.repository.BookmarkRepository
 import com.yapp.web2.domain.folder.entity.Folder
+import com.yapp.web2.domain.folder.entity.SharedType
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.security.jwt.JwtProvider
 import org.springframework.data.domain.Page
@@ -36,8 +37,10 @@ class BookmarkPageService(
 
     fun getAllPageByEncryptFolderId(token: String, pageable: Pageable): Page<Bookmark> {
         val folderId = jwtProvider.getIdFromToken(token)
+        val sharedType = jwtProvider.getSharedTypeFromToken(token)
         val folder = folderService.findByFolderId(folderId)
-        if(!folder.isOpenState()) throw RuntimeException("보관함이 조회잠금상태입니다. 조회할 수 없습니다!")
+
+        if(sharedType >= SharedType.CLOSED_EDIT) throw RuntimeException("보관함이 잠금상태입니다.")
         return bookmarkRepository.findAllByFolderIdAndDeletedIsFalse(folderId, pageable)
     }
 

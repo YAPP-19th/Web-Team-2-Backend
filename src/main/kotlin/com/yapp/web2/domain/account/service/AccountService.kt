@@ -6,6 +6,7 @@ import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Authority
+import com.yapp.web2.domain.folder.entity.SharedType
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.AlreadyInvitedException
@@ -197,10 +198,11 @@ class AccountService(
     fun acceptInvitation(token: String, folderToken: String) {
         val account = jwtProvider.getAccountFromToken(token)
         val folderId = jwtProvider.getIdFromToken(folderToken)
+        val sharedType = jwtProvider.getSharedTypeFromToken(folderToken)
         val rootFolder = folderService.findByFolderId(folderId)
 
+        if(sharedType != SharedType.EDIT) throw RuntimeException("초대 링크가 아닙니다.")
         if (rootFolder.rootFolderId != folderId) throw FolderNotRootException()
-        if(!rootFolder.isInviteState()) throw RuntimeException("보관함이 초대잠금상태입니다. 가입할 수 없습니다.")
 
         val accountFolder = AccountFolder(account, rootFolder)
         accountFolder.changeAuthority(Authority.INVITEE)
