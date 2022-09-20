@@ -81,7 +81,8 @@ class AccountService(
                 folderService.createDefaultFolder(account)
 
                 val userCountMessage = """
-                    ${newAccount.id}: ${newAccount.name} 님이 회원가입을 진행하였습니다. 현재 회원 수: *`${accountRepository.count()}`*
+                    *`${newAccount.name}`* 님이 회원가입을 진행하였습니다.
+                    현재까지 총 회원 수는 *`${accountRepository.count()}`* 명 입니다.
                     """.trimIndent()
 
                 slackApi.sendSlackAlarmToVerbose(userCountMessage)
@@ -112,7 +113,8 @@ class AccountService(
         log.info("${newAccount.email} account signUp succeed")
 
         val userCountMessage = """
-            ${newAccount.id}: ${newAccount.name} 님이 회원가입을 진행하였습니다. 현재 회원 수: *`${accountRepository.count()}`*
+            *`${newAccount.name}`* 님이 회원가입을 진행하였습니다. 
+            현재까지 총 회원 수는 *`${accountRepository.count()}`* 명 입니다.
             """.trimIndent()
 
         slackApi.sendSlackAlarmToVerbose(userCountMessage)
