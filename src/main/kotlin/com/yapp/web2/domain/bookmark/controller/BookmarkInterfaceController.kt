@@ -8,7 +8,11 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import javax.servlet.http.HttpServletRequest
 
 @RestController
@@ -26,7 +30,6 @@ class BookmarkInterfaceController(
         @RequestParam(required = false) @ApiParam(value = "북마크가 저장될 폴더 ID", example = "12") folderId: Long?,
         @ApiParam(value = "북마크 생성 리스트 정보") @RequestBody dto: BookmarkDto.AddBookmarkListDto
     ): ResponseEntity<String> {
-        println(folderId)
         val token = ControllerUtil.extractAccessToken(request)
         personalBookmarkService.addBookmarkList(token, folderId, dto)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SAVED)

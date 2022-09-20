@@ -17,14 +17,21 @@ class SlackServiceImpl : SlackService {
     @Value("\${slack.monitor.channel.id}")
     lateinit var defaultChannel: String
 
-    override fun sendMessage(text: String) {
-        sendMessage(defaultChannel, text)
+    @Value("\${slack.verbose.channel.id}")
+    lateinit var verboseChannel: String
+
+    override fun sendSlackAlarm(text: String) {
+        sendSlackAlarm(defaultChannel, text)
+    }
+
+    override fun sendSlackAlarmToVerbose(text: String) {
+        sendSlackAlarm(verboseChannel, text)
     }
 
     /**
      * Send Slack Alarm
      */
-    override fun sendMessage(channel: String, text: String) {
+    override fun sendSlackAlarm(channel: String, text: String) {
         val client = Slack.getInstance().methods()
         runCatching {
             client.chatPostMessage {
@@ -36,6 +43,7 @@ class SlackServiceImpl : SlackService {
             log.error("Slack Send Error: {}", e.message, e)
         }
     }
+
 
     /**
      * Slack Channel name, id list

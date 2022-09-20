@@ -7,7 +7,10 @@ import com.yapp.web2.security.jwt.TokenDto
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import org.springframework.transaction.annotation.Transactional
-import javax.persistence.*
+import javax.persistence.CascadeType
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.OneToMany
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
 
@@ -16,33 +19,6 @@ class Account(
     @Column(unique = true, nullable = true, length = 255)
     var email: String
 ) : BaseTimeEntity() {
-
-    companion object {
-        fun signUpToAccount(dto: AccountRequestDto.SignUpRequest, encryptPassword: String, name: String): Account {
-            return Account(dto.email, encryptPassword, dto.fcmToken, name)
-        }
-
-        fun profileToAccount(dto: AccountProfile): Account {
-            return Account(dto.email, dto.image, dto.name, dto.socialType, dto.fcmToken)
-        }
-
-        fun accountToProfile(account: Account): AccountProfile {
-            return AccountProfile(
-                account.email,
-                account.name,
-                account.image,
-                account.socialType,
-                account.fcmToken ?: ""
-            )
-        }
-
-        fun accountToRemindElements(account: Account): RemindElements {
-            return RemindElements(account.remindCycle, account.remindToggle)
-        }
-
-        const val BASIC_IMAGE_URL: String = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png"
-    }
-
 
     @Column(nullable = true)
     var password: String? = null
@@ -73,6 +49,36 @@ class Account(
 
     @OneToMany(mappedBy = "account", cascade = [CascadeType.ALL], orphanRemoval = true)
     var accountFolderList: MutableList<AccountFolder> = mutableListOf()
+
+    fun inverseRemindToggle(reverse: Boolean) {
+        this.remindToggle = reverse
+    }
+
+    companion object {
+        fun signUpToAccount(dto: AccountRequestDto.SignUpRequest, encryptPassword: String, name: String): Account {
+            return Account(dto.email, encryptPassword, dto.fcmToken, name)
+        }
+
+        fun profileToAccount(dto: AccountProfile): Account {
+            return Account(dto.email, dto.image, dto.name, dto.socialType, dto.fcmToken)
+        }
+
+        fun accountToProfile(account: Account): AccountProfile {
+            return AccountProfile(
+                account.email,
+                account.name,
+                account.image,
+                account.socialType,
+                account.fcmToken ?: ""
+            )
+        }
+
+        fun accountToRemindElements(account: Account): RemindElements {
+            return RemindElements(account.remindCycle, account.remindToggle)
+        }
+
+        const val BASIC_IMAGE_URL: String = "https://yapp-bucket-test.s3.ap-northeast-2.amazonaws.com/basicImage.png"
+    }
 
     constructor(email: String, password: String) : this(email) {
         this.password = password
