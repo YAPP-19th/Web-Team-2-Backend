@@ -36,13 +36,13 @@ interface BookmarkRepository : MongoRepository<Bookmark, String>, MongoTemplateR
     @Query(value = "{\$and: [{folderId: {\$in: ?1}}, {deleted: false}, {remindList: {\$elemMatch: {userId : ?0}}}]}")
     fun findRemindBookmarkInFolder(userId: Long, folderIdList: List<Long>, pageable: Pageable): Page<Bookmark>
 
-    @Query(value = "{\$or: [{folderId: {\$in: ?1}}, {userId: ?0}]}")
+    @Query(value = "{\$and: [{deleted: false}, {\$or: [{folderId: {\$in: ?1}}, {userId: ?0}]}]}")
     fun findAllBookmark(userId: Long, folderIdList: List<Long>, pageable: Pageable): Page<Bookmark>
 
     @Query(value = "{\$and: [{remindList: {\$elemMatch: {userId: ?0}}}, {remindList: {\$elemMatch: {remindTime: ?1}}}]}")
     fun findAllTodayRemindBookmarksByUserId(userId: Long, today: String): List<Bookmark>
 
-    @Query(value = "{ 'remindList': { \$elemMatch: { 'userId' : ?0 } } }")
+    @Query(value = "{\$and: [{deleted: false}, {'remindList': { \$elemMatch: { 'userId' : ?0 }}}]")
     fun findRemindBookmark(userId: Long, pageable: Pageable): Page<Bookmark>
 
     @Query(value = "{ 'remindList': { \$elemMatch: { 'userId' : ?0 }}}")
