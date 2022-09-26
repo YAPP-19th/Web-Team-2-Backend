@@ -58,22 +58,6 @@ class Bookmark(
         if (remind) remindOn(Remind(account))
     }
 
-//    constructor(
-//        userId: Long,
-//        folderId: Long?,
-//        folderEmoji: String?,
-//        folderName: String?,
-//        link: String,
-//        title: String?,
-//        remindTime: String?,
-//        image: String?,
-//        description: String?
-//    ) : this(userId, folderId, link, title, remindTime) {
-//        this.folderEmoji = folderEmoji
-//        this.folderName = folderName
-//        this.description = description
-//        this.image = image
-//    }
 
     fun restore(): Bookmark {
         this.deleted = false
