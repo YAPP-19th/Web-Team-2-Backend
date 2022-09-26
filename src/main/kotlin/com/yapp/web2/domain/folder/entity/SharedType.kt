@@ -1,36 +1,26 @@
 package com.yapp.web2.domain.folder.entity
 
 enum class SharedType {
-    INVITE {
+    EDIT {
         override fun inversionState(): SharedType {
-            return CLOSED_INVITE
+            return CLOSED_EDIT
         }
     },
-    OPEN {
+    BLOCK_EDIT {
         override fun inversionState(): SharedType {
-            return CLOSED_OPEN
+            return CLOSED_BLOCK_EDIT
         }
     },
-    INVITE_AND_OPEN {
+    CLOSED_EDIT {
         override fun inversionState(): SharedType {
-            return ALL_CLOSED
+            return EDIT
         }
     },
-    CLOSED_INVITE {
+    CLOSED_BLOCK_EDIT {
         override fun inversionState(): SharedType {
-            return INVITE
+            return BLOCK_EDIT
         }
-    },
-    CLOSED_OPEN {
-        override fun inversionState(): SharedType {
-            return OPEN
-        }
-    },
-    ALL_CLOSED {
-        override fun inversionState(): SharedType {
-            return INVITE_AND_OPEN
-        }
-    };
+    } ;
 
     abstract fun inversionState(): SharedType
 }

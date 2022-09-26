@@ -8,6 +8,7 @@ import com.yapp.web2.domain.folder.FolderDto
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Authority
 import com.yapp.web2.domain.folder.entity.Folder
+import com.yapp.web2.domain.folder.entity.SharedType
 import com.yapp.web2.domain.folder.repository.FolderRepository
 import com.yapp.web2.domain.folder.service.move.factory.FolderMoveFactory
 import com.yapp.web2.domain.folder.service.move.inner.FolderMoveInnerStrategy
@@ -343,22 +344,26 @@ class FolderService(
         return childList
     }
 
-    fun createFolderInvitationToken(rootFolderId: Long): FolderTokenDto {
-        //그냥 재귀를 돌면서 Folder 리스트들을 다 받고, 그 후에 폴더들에 rootFolder 추가, 북마크 shared 변경 하면 되지 않을까? 굳이 재귀?
-        val folder = folderRepository.findFolderById(rootFolderId) ?: throw FolderNotFoundException()
-        if(!folder.isRootFolder()) throw RuntimeException("보관함이 아닙니다! 공유를 할 수 없습니다.")
+    fun inverseFolderStatus(folderId: Long) {
+        val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
+        folder.inverseShareType()
+    }
 
-        // 폴더의 공유 상태 변경하기
-        folder.changeSharedTypeToInvite()
+    fun getFolderLink(folderId: Long, sharedType: SharedType): FolderTokenDto {
+        val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
+        folder.updateSharedType(sharedType)
 
-        // 하위 폴더들 모두 rootFolderId 추가해주기
+        // 사용자가 folder의 링크를 edit이 가능한 상태로 받으려고 할 때, folder가 공유 상태가 아니라면 공유로 바꾼다.
+        if (sharedType == SharedType.EDIT && !folder.isSharedFolder()) changeRootFolderToShared(folder, folderId)
+
+        return FolderTokenDto(jwtProvider.createFolderToken(folderId, sharedType))
+    }
+
+    private fun changeRootFolderToShared(folder: Folder, rootFolderId: Long) {
+        if (!folder.isRootFolder()) throw RuntimeException("보관함이 아닙니다! 공유를 할 수 없습니다.")
+
         val sharedFolderIdList = changeFolderToShared(folder, rootFolderId)
-
-        // 하위 북마크들 모두 shared가 true인 상태로 변경해주기
         changeBookmarkToShared(sharedFolderIdList)
-
-        // 토큰 발급
-        return FolderTokenDto(jwtProvider.createFolderToken(rootFolderId))
     }
 
     private fun changeBookmarkToShared(sharedFolderIdList: List<Long?>) {
@@ -380,19 +385,6 @@ class FolderService(
         }
 
         return folderIdList
-    }
-
-    fun encryptFolderId(folderId: Long): FolderTokenDto {
-        require(folderId > 0) { "folderId must be greater than zero" }
-
-        val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
-        folder.changeSharedTypeToOpen()
-        return FolderTokenDto(jwtProvider.createFolderToken(folderId = folder.id!!))
-    }
-
-    fun inverseSharedType(folderId: Long) {
-        val folder = folderRepository.findFolderById(folderId) ?: throw FolderNotFoundException()
-        folder.inverseShareType()
     }
 
     fun getAccountListAtRootFolder(folderId: Long): AccountDto.FolderBelongAccountListDto {

@@ -4,8 +4,10 @@ import com.yapp.web2.exception.custom.NoRefreshTokenException
 import com.yapp.web2.exception.custom.TokenMisMatchException
 import com.yapp.web2.domain.account.entity.Account
 import com.yapp.web2.domain.account.repository.AccountRepository
+import com.yapp.web2.domain.folder.entity.SharedType
 import com.yapp.web2.exception.custom.AccountNotFoundException
 import io.jsonwebtoken.Claims
+import io.jsonwebtoken.Jwt
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import org.springframework.beans.factory.annotation.Autowired
@@ -43,14 +45,6 @@ class JwtProvider(
         val refreshToken: String = createRefreshToken(id)
 
         return TokenDto(accessToken, refreshToken)
-    }
-
-    fun createFolderToken(folderId: Long): String {
-        return Jwts.builder()
-            .setSubject(folderId.toString())
-            .setIssuedAt(Date())
-            .signWith(SignatureAlgorithm.HS512, secretKey)
-            .compact()
     }
 
     fun reIssuedAccessToken(accessToken: String, refreshToken: String): TokenDto {
@@ -97,6 +91,19 @@ class JwtProvider(
         return refreshToken
     }
 
+    fun createFolderToken(folderId: Long, sharedType: SharedType): String {
+        val claims = Jwts.claims()
+        claims.id = folderId.toString()
+        claims["sharedType"] = sharedType
+
+        return Jwts.builder()
+            .setSubject(folderId.toString())
+            .claim("sharedType", sharedType)
+            .setIssuedAt(Date())
+            .signWith(SignatureAlgorithm.HS512, secretKey)
+            .compact()
+    }
+
     private fun saveRefreshToken(compact: String, id: String) {
         redisTemplate.opsForValue().set(id, compact, redisExpiration, TimeUnit.DAYS)
     }
@@ -110,6 +117,12 @@ class JwtProvider(
 
     fun getExpirationDateFromToken(token: String): Date {
         return getClaimFromToken(token) { obj: Claims -> obj.expiration }
+    }
+
+    fun getSharedTypeFromToken(token: String): SharedType {
+        val sharedType = getClaimFromToken(token) { obj -> obj["sharedType"] }
+
+        return SharedType.valueOf(sharedType.toString())
     }
 
     fun getAccountFromToken(token: String): Account {
