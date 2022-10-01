@@ -6,6 +6,7 @@ import com.yapp.web2.domain.account.entity.AccountRequestDto
 import com.yapp.web2.domain.account.repository.AccountRepository
 import com.yapp.web2.domain.folder.entity.AccountFolder
 import com.yapp.web2.domain.folder.entity.Authority
+import com.yapp.web2.domain.folder.entity.SharedType
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.exception.BusinessException
 import com.yapp.web2.exception.custom.AlreadyInvitedException
@@ -81,7 +82,8 @@ class AccountService(
                 folderService.createDefaultFolder(account)
 
                 val userCountMessage = """
-                    ${newAccount.id}: ${newAccount.name} 님이 회원가입을 진행하였습니다. 현재 회원 수: *`${accountRepository.count()}`*
+                    *`${newAccount.name}`* 님이 회원가입을 진행하였습니다.
+                    현재까지 총 회원 수는 *`${accountRepository.count()}`* 명 입니다.
                     """.trimIndent()
 
                 slackApi.sendSlackAlarmToVerbose(userCountMessage)
@@ -112,7 +114,8 @@ class AccountService(
         log.info("${newAccount.email} account signUp succeed")
 
         val userCountMessage = """
-            ${newAccount.id}: ${newAccount.name} 님이 회원가입을 진행하였습니다. 현재 회원 수: *`${accountRepository.count()}`*
+            *`${newAccount.name}`* 님이 회원가입을 진행하였습니다. 
+            현재까지 총 회원 수는 *`${accountRepository.count()}`* 명 입니다.
             """.trimIndent()
 
         slackApi.sendSlackAlarmToVerbose(userCountMessage)
@@ -213,10 +216,11 @@ class AccountService(
     fun acceptInvitation(token: String, folderToken: String) {
         val account = jwtProvider.getAccountFromToken(token)
         val folderId = jwtProvider.getIdFromToken(folderToken)
+        val sharedType = jwtProvider.getSharedTypeFromToken(folderToken)
         val rootFolder = folderService.findByFolderId(folderId)
 
+        if(sharedType != SharedType.EDIT) throw RuntimeException("초대 링크가 아닙니다.")
         if (rootFolder.rootFolderId != folderId) throw FolderNotRootException()
-        if (!rootFolder.isInviteState()) throw RuntimeException("보관함이 초대잠금상태입니다. 가입할 수 없습니다.")
 
         val accountFolder = AccountFolder(account, rootFolder)
         accountFolder.changeAuthority(Authority.INVITEE)

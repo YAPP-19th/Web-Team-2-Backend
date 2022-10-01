@@ -60,11 +60,14 @@ class RemindService(
                 log.info("리마인드 발송 성공 => [User id: ${remind.userId}], response => $response")
             }.onFailure {
                 val message = """
-                    <!channel> 리마인드 발송 실패 => User id: ${remind.userId}, Bookmark id: ${bookmark.id}\n
-                    response => $response
+                    <!channel> 리마인드 발송 실패 - [유저 id: ${remind.userId}, 북마크 id: ${bookmark.id} 북마크 제목: ${bookmark.title}]
+                    ${it.cause} - ${it.message}
+                    ${it.stackTrace[0]}
+                    ${it.stackTrace[1]}
                 """.trimIndent()
 
-                log.info("리마인드 발송 실패 => [User id: ${remind.userId}, Bookmark id: ${bookmark.id}]\nresponse => $response")
+                log.info("리마인드 발송 실패 => [유저 id: ${remind.userId}, 북마크 id: ${bookmark.id}, 북마크 제목: ${bookmark.title}]")
+                log.info(it.stackTraceToString())
                 slackApi.sendSlackAlarm(message)
             }
         }
@@ -72,8 +75,7 @@ class RemindService(
 
     /**
      * 프로필에서 리마인드 알람 받기 On & Off 설정 : 유저가 Off 할 경우 모든 리마인드가 삭제된다는 alert 띄어주는게 좋을 듯 함
-     * request: 리마인드 알림 토글 On(true) / Off(false) 정보
-     * On 일 경우: Account의 remindToggle 값만 true로 설정
+가     * On 일 경우: Account의 remindToggle 값만 true로 설정
      * Off 일 경우:
      *   1. 유저가 Off할 Case는 별로 없을 듯 하나 로그를 남겨 사용자 분석
      *   2. Bookmark의 remindList 중 userId와 동일한 리마인드 전부 삭제
@@ -117,6 +119,7 @@ class RemindService(
         val userId = jwtProvider.getIdFromToken(accessToken)
         accountRepository.findByIdOrNull(userId)?.let {
             it.remindCycle = request.remindCycle
+            accountRepository.save(it)
         }
     }
 
