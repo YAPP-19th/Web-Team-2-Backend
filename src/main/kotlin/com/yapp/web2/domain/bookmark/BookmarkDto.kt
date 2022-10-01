@@ -17,7 +17,7 @@ class BookmarkDto {
         fun addBookmarkDtoToPersonalBookmark(bookmarkDto: AddBookmarkDto, account: Account): BookmarkInterface {
             return PersonalBookmark(
                 account,
-                bookmarkDto.url,
+                bookmarkDto.link,
                 bookmarkDto.title,
                 bookmarkDto.image,
                 bookmarkDto.description,
@@ -26,13 +26,13 @@ class BookmarkDto {
         }
 
         fun addBookmarkDtoToBookmark(bookmarkDto: AddBookmarkDto, account: Account): Bookmark {
-            return Bookmark(account, bookmarkDto.url, bookmarkDto.title, bookmarkDto.image, bookmarkDto.description, bookmarkDto.remind)
+            return Bookmark(account, bookmarkDto.link, bookmarkDto.title, bookmarkDto.image, bookmarkDto.description, bookmarkDto.remind)
         }
 
         fun addBookmarkDtoToSharedBookmark(bookmarkDto: AddBookmarkDto, account: Account, folder: Folder): BookmarkInterface {
             return SharedBookmark(
                 account,
-                bookmarkDto.url,
+                bookmarkDto.link,
                 bookmarkDto.title,
                 bookmarkDto.image,
                 bookmarkDto.description,
@@ -56,7 +56,7 @@ class BookmarkDto {
     data class AddBookmarkDto(
 
         @ApiModelProperty(value = "북마크 url", required = true, example = "https://www.naver.com")
-        var url: String,
+        var link: String,
 
         @ApiModelProperty(value = "북마크 제목", example = "Bookmark Title")
         var title: String,
