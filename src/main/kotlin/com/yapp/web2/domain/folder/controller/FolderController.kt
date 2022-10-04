@@ -3,6 +3,7 @@ package com.yapp.web2.domain.folder.controller
 import com.yapp.web2.domain.account.AccountDto
 import com.yapp.web2.domain.folder.FolderDto
 import com.yapp.web2.domain.folder.entity.Folder
+import com.yapp.web2.domain.folder.entity.SharedType
 
 import com.yapp.web2.domain.folder.service.FolderService
 import com.yapp.web2.util.ControllerUtil
@@ -112,23 +113,19 @@ class FolderController(
         return ResponseEntity.status(HttpStatus.OK).body(folderService.findAllParentFolderList(folderId))
     }
 
-    // TODO: 2022/06/22 유저 정보 확인
-    @ApiOperation(value = "폴더 토큰 발급 API")
-    @GetMapping("encrypt/{folderId}")
-    fun getEncryptFolderId(@PathVariable folderId: Long): ResponseEntity<FolderTokenDto> {
-        return ResponseEntity.status(HttpStatus.OK).body(folderService.encryptFolderId(folderId))
-    }
-
-    @ApiOperation(value = "초대를 위한 폴더 토큰 발급 API")
-    @GetMapping("invite/{folderId}")
-    fun getFolderInvitationToken(@PathVariable folderId: Long): ResponseEntity<FolderTokenDto> {
-        return ResponseEntity.status(HttpStatus.OK).body(folderService.createFolderInvitationToken(folderId))
+    @ApiOperation(value = "폴더 링크 생성 API")
+    @GetMapping("share/{folderId}")
+    fun getFolderLink(
+        @PathVariable folderId: Long,
+        @RequestParam sharedType: SharedType
+    ): ResponseEntity<FolderTokenDto> {
+        return ResponseEntity.status(HttpStatus.OK).body(folderService.getFolderLink(folderId, sharedType))
     }
 
     @ApiOperation(value = "보관함 잠금/해제 API")
-    @GetMapping("state/{folderId}")
-    fun inverseFolderShare(@PathVariable folderId: Long): ResponseEntity<String> {
-        folderService.inverseSharedType(folderId)
+    @GetMapping("status/{folderId}")
+    fun changeFolderStatus(@PathVariable folderId: Long): ResponseEntity<String> {
+        folderService.inverseFolderStatus(folderId)
         return ResponseEntity.status(HttpStatus.OK).body(Message.SUCCESS)
     }
 
@@ -142,7 +139,7 @@ class FolderController(
     @ApiOperation(value = "폴더의 이름 조회 API")
     @GetMapping("name/{folderToken}")
     fun getFolderName(@PathVariable @ApiParam(value = "폴더 ID", example = "2", required = true) folderToken: String)
-    : ResponseEntity<FolderDto.FolderInfoDto> {
+        : ResponseEntity<FolderDto.FolderInfoDto> {
         return ResponseEntity.status(HttpStatus.OK).body(folderService.getFolderInfo(folderToken))
     }
 }

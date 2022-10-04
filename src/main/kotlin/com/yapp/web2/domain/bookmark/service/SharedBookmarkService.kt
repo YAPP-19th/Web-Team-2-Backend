@@ -112,7 +112,7 @@ class SharedBookmarkService(
         val beforeFolder = folderRepository.findFolderById(beforeFolderId) ?: throw FolderNotFoundException()
         val nextFolder = folderRepository.findFolderById(nextFolderId) ?: throw FolderNotFoundException()
 
-        if(!beforeFolder.isFolderSameRootFolder(nextFolder)) throw NotSameRootFolderException()
+//        if(!beforeFolder.isFolderSameRootFolder(nextFolder)) throw NotSameRootFolderException()
     }
 
     fun deleteBookmarkInfoAtFolder(bookmark: Bookmark) {
