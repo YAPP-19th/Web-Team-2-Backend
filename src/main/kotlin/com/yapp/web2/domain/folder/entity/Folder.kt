@@ -34,14 +34,13 @@ class Folder(
     @OneToMany(mappedBy = "parentFolder", cascade = [CascadeType.ALL])
     @JsonManagedReference
     var children: MutableList<Folder>? = mutableListOf()
-
     // TODO: 2022/08/14 cascadeType.REMOVE도 포함되어 있기 때문에, delete문이 실행된다고함. 이를 빼고 진행할 수 있도록 그리고 orphanRemoval만 사용했을 때 좋은 이유를 확실히 알것
     @OneToMany(mappedBy = "folder", cascade = [CascadeType.ALL], orphanRemoval = true)
     var folders: MutableList<AccountFolder>? = mutableListOf()
 
     // 공유 상태 저장
     @Enumerated(value = EnumType.STRING)
-    var sharedType: SharedType = SharedType.CLOSED_BLOCK_EDIT
+    var sharedType: SharedType? = SharedType.CLOSED_BLOCK_EDIT
 
     var rootFolderId: Long? = null
 
@@ -191,7 +190,7 @@ class Folder(
     }
 
     fun inverseShareType() {
-        this.sharedType = this.sharedType.inversionState()
+        this.sharedType = this.sharedType?.inversionState()
     }
 
     fun isSharedFolder(): Boolean = rootFolderId != null
